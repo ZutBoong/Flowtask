@@ -1,7 +1,9 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
-const WEBSOCKET_URL = process.env.REACT_APP_WS_URL || 'http://localhost:8081/ws';
+const WEBSOCKET_URL = process.env.REACT_APP_WS_URL !== undefined
+    ? process.env.REACT_APP_WS_URL
+    : 'http://localhost:8081/ws';
 
 class WebSocketService {
     constructor() {
