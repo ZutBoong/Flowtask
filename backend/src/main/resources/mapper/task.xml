@@ -4,9 +4,9 @@
 
 	<!-- 태스크 생성 -->
 	<insert id="insert" parameterType="task">
-		INSERT INTO kari_task (task_id, column_id, title, description, position, created_at,
+		INSERT INTO flowtask_task (task_id, column_id, title, description, position, created_at,
 			assignee_no, priority, due_date, status)
-		VALUES (kari_task_seq.nextval, #{columnId}, #{title}, #{description, jdbcType=VARCHAR},
+		VALUES (flowtask_task_seq.nextval, #{columnId}, #{title}, #{description, jdbcType=VARCHAR},
 			#{position}, sysdate,
 			#{assigneeNo, jdbcType=INTEGER}, #{priority, jdbcType=VARCHAR},
 			#{dueDate, jdbcType=DATE}, NVL(#{status, jdbcType=VARCHAR}, 'OPEN'))
@@ -17,9 +17,9 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.column_id = #{columnId}
 		ORDER BY t.position ASC
 	</select>
@@ -29,9 +29,9 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		ORDER BY t.column_id, t.position ASC
 	</select>
 
@@ -40,10 +40,10 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		JOIN kari_column c ON t.column_id = c.column_id
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		JOIN flowtask_column c ON t.column_id = c.column_id
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
 		ORDER BY t.column_id, t.position ASC
 	</select>
@@ -53,10 +53,10 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		JOIN kari_column c ON t.column_id = c.column_id
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		JOIN flowtask_column c ON t.column_id = c.column_id
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.project_id = #{projectId}
 		ORDER BY t.column_id, t.position ASC
 	</select>
@@ -66,15 +66,15 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.task_id = #{taskId}
 	</select>
 
 	<!-- 태스크 수정 (전체 필드) -->
 	<update id="update" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET title = #{title},
 			description = #{description, jdbcType=VARCHAR},
 			assignee_no = #{assigneeNo, jdbcType=INTEGER},
@@ -86,19 +86,19 @@
 
 	<!-- 태스크 삭제 -->
 	<delete id="delete" parameterType="int">
-		DELETE FROM kari_task WHERE task_id = #{taskId}
+		DELETE FROM flowtask_task WHERE task_id = #{taskId}
 	</delete>
 
 	<!-- 태스크 위치/컬럼 변경 -->
 	<update id="updatePosition" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET column_id = #{columnId}, position = #{position}
 		WHERE task_id = #{taskId}
 	</update>
 
 	<!-- 컬럼 내 최대 position 조회 -->
 	<select id="getMaxPosition" parameterType="int" resultType="int">
-		SELECT NVL(MAX(position), 0) FROM kari_task WHERE column_id = #{columnId}
+		SELECT NVL(MAX(position), 0) FROM flowtask_task WHERE column_id = #{columnId}
 	</select>
 
 	<!-- 담당자별 태스크 목록 -->
@@ -106,9 +106,9 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.assignee_no = #{memberNo}
 		ORDER BY
 			CASE t.priority
@@ -125,10 +125,10 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		JOIN kari_column c ON t.column_id = c.column_id
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		JOIN flowtask_column c ON t.column_id = c.column_id
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
 		AND t.status = #{status}
 		ORDER BY
@@ -143,21 +143,21 @@
 
 	<!-- 상태만 변경 -->
 	<update id="updateStatus" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET status = #{status}
 		WHERE task_id = #{taskId}
 	</update>
 
 	<!-- 담당자만 변경 -->
 	<update id="updateAssignee" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET assignee_no = #{assigneeNo, jdbcType=INTEGER}
 		WHERE task_id = #{taskId}
 	</update>
 
 	<!-- 검증자 지정 -->
 	<update id="updateVerifier" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET verifier_no = #{verifierNo, jdbcType=INTEGER},
 			verification_status = CASE
 				WHEN #{verifierNo, jdbcType=INTEGER} IS NOT NULL THEN 'PENDING'
@@ -168,7 +168,7 @@
 
 	<!-- 검증 처리 (승인/반려) -->
 	<update id="updateVerification" parameterType="task">
-		UPDATE kari_task
+		UPDATE flowtask_task
 		SET verification_status = #{verificationStatus},
 			verified_at = CASE
 				WHEN #{verificationStatus} IN ('APPROVED', 'REJECTED') THEN sysdate
@@ -188,9 +188,9 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.verifier_no = #{verifierNo}
 		AND t.verification_status = 'PENDING'
 		ORDER BY
@@ -208,10 +208,10 @@
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
 			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
-		FROM kari_task t
-		JOIN kari_column c ON t.column_id = c.column_id
-		LEFT JOIN kari_member m ON t.assignee_no = m.no
-		LEFT JOIN kari_member v ON t.verifier_no = v.no
+		FROM flowtask_task t
+		JOIN flowtask_column c ON t.column_id = c.column_id
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
 		AND t.due_date IS NOT NULL
 		AND t.due_date BETWEEN #{startDate} AND #{endDate}

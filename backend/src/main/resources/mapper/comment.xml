@@ -5,9 +5,9 @@
 	<!-- 댓글 생성 -->
 	<insert id="insert" parameterType="comment">
 		<selectKey keyProperty="commentId" resultType="int" order="BEFORE">
-			SELECT kari_comment_seq.nextval FROM dual
+			SELECT flowtask_comment_seq.nextval FROM dual
 		</selectKey>
-		INSERT INTO kari_comment (comment_id, task_id, author_no, content, created_at, updated_at)
+		INSERT INTO flowtask_comment (comment_id, task_id, author_no, content, created_at, updated_at)
 		VALUES (#{commentId}, #{taskId}, #{authorNo}, #{content}, sysdate, sysdate)
 	</insert>
 
@@ -15,8 +15,8 @@
 	<select id="listByTask" parameterType="int" resultType="comment">
 		SELECT c.comment_id, c.task_id, c.author_no, m.name as author_name, m.userid as author_userid,
 			c.content, c.created_at, c.updated_at
-		FROM kari_comment c
-		JOIN kari_member m ON c.author_no = m.no
+		FROM flowtask_comment c
+		JOIN flowtask_member m ON c.author_no = m.no
 		WHERE c.task_id = #{taskId}
 		ORDER BY c.created_at ASC
 	</select>
@@ -25,26 +25,26 @@
 	<select id="content" parameterType="int" resultType="comment">
 		SELECT c.comment_id, c.task_id, c.author_no, m.name as author_name, m.userid as author_userid,
 			c.content, c.created_at, c.updated_at
-		FROM kari_comment c
-		JOIN kari_member m ON c.author_no = m.no
+		FROM flowtask_comment c
+		JOIN flowtask_member m ON c.author_no = m.no
 		WHERE c.comment_id = #{commentId}
 	</select>
 
 	<!-- 댓글 수정 -->
 	<update id="update" parameterType="comment">
-		UPDATE kari_comment
+		UPDATE flowtask_comment
 		SET content = #{content}, updated_at = sysdate
 		WHERE comment_id = #{commentId}
 	</update>
 
 	<!-- 댓글 삭제 -->
 	<delete id="delete" parameterType="int">
-		DELETE FROM kari_comment WHERE comment_id = #{commentId}
+		DELETE FROM flowtask_comment WHERE comment_id = #{commentId}
 	</delete>
 
 	<!-- 태스크별 댓글 수 -->
 	<select id="countByTask" parameterType="int" resultType="int">
-		SELECT COUNT(*) FROM kari_comment WHERE task_id = #{taskId}
+		SELECT COUNT(*) FROM flowtask_comment WHERE task_id = #{taskId}
 	</select>
 
 </mapper>

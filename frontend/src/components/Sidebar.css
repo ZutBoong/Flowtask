@@ -509,3 +509,141 @@
 .modal-btn.primary:hover {
     background: #0079bf;
 }
+
+/* 팀원 섹션 헤더 */
+.menu-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.menu-item-header .menu-item {
+    flex: 1;
+}
+
+.invite-btn-wrapper {
+    width: 48px;
+    display: flex;
+    justify-content: center;
+}
+
+.invite-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: #026aa7;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.invite-btn:hover {
+    background: #0079bf;
+}
+
+/* 팀원 초대 모달 */
+.search-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.search-input-row input {
+    flex: 1;
+}
+
+.search-btn {
+    padding: 10px 16px;
+    background: #026aa7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.search-btn:hover {
+    background: #0079bf;
+}
+
+.searched-member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.searched-member-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.searched-avatar {
+    width: 40px;
+    height: 40px;
+    background: #026aa7;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.searched-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.searched-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.searched-userid {
+    font-size: 13px;
+    color: #888;
+}
+
+/* 팀원 강퇴 버튼 */
+.member-item {
+    position: relative;
+}
+
+.kick-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.member-item:hover .kick-btn {
+    opacity: 1;
+}
+
+.kick-btn:hover {
+    background: #c82333;
+}

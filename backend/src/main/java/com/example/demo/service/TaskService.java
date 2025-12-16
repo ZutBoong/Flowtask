@@ -6,11 +6,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.dao.TaskDao;
-import com.example.demo.dao.KariColumnDao;
+import com.example.demo.dao.FlowtaskColumnDao;
 import com.example.demo.dao.TagDao;
 import com.example.demo.model.Task;
 import com.example.demo.model.Tag;
-import com.example.demo.model.KariColumn;
+import com.example.demo.model.FlowtaskColumn;
 
 @Service
 public class TaskService {
@@ -19,7 +19,7 @@ public class TaskService {
 	private TaskDao dao;
 
 	@Autowired
-	private KariColumnDao columnDao;
+	private FlowtaskColumnDao columnDao;
 
 	@Autowired
 	private TagDao tagDao;
@@ -46,7 +46,7 @@ public class TaskService {
 	public int insert(Task task) {
 		int result = dao.insert(task);
 		if (result == 1) {
-			KariColumn column = columnDao.content(task.getColumnId());
+			FlowtaskColumn column = columnDao.content(task.getColumnId());
 			if (column != null) {
 				// Fetch the latest task in this column to get the created one
 				List<Task> tasks = dao.listByColumn(task.getColumnId());
@@ -94,7 +94,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
@@ -107,7 +107,7 @@ public class TaskService {
 		Task task = dao.content(taskId);
 		int result = dao.delete(taskId);
 		if (result == 1 && task != null) {
-			KariColumn column = columnDao.content(task.getColumnId());
+			FlowtaskColumn column = columnDao.content(task.getColumnId());
 			if (column != null) {
 				notificationService.notifyTaskDeleted(column.getTeamId(), taskId);
 			}
@@ -120,7 +120,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskMoved(updated, column.getTeamId());
 				}
@@ -155,7 +155,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
@@ -169,7 +169,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
@@ -186,7 +186,7 @@ public class TaskService {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
 				populateTags(updated);
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
@@ -201,7 +201,7 @@ public class TaskService {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
 				populateTags(updated);
-				KariColumn column = columnDao.content(updated.getColumnId());
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}

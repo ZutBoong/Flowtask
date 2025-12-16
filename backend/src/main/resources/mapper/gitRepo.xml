@@ -5,29 +5,29 @@
 	<!-- 저장소 연결 -->
 	<insert id="insert" parameterType="gitRepo">
 		<selectKey keyProperty="repoId" resultType="int" order="BEFORE">
-			SELECT kari_git_repo_seq.nextval FROM dual
+			SELECT flowtask_git_repo_seq.nextval FROM dual
 		</selectKey>
-		INSERT INTO kari_git_repo (repo_id, team_id, provider, repo_owner, repo_name, access_token, created_at)
+		INSERT INTO flowtask_git_repo (repo_id, team_id, provider, repo_owner, repo_name, access_token, created_at)
 		VALUES (#{repoId}, #{teamId}, #{provider}, #{repoOwner}, #{repoName}, #{accessToken}, sysdate)
 	</insert>
 
 	<!-- 팀별 저장소 조회 -->
 	<select id="getByTeamId" parameterType="int" resultType="gitRepo">
 		SELECT repo_id, team_id, provider, repo_owner, repo_name, access_token, created_at
-		FROM kari_git_repo
+		FROM flowtask_git_repo
 		WHERE team_id = #{teamId}
 	</select>
 
 	<!-- ID로 조회 -->
 	<select id="getById" parameterType="int" resultType="gitRepo">
 		SELECT repo_id, team_id, provider, repo_owner, repo_name, access_token, created_at
-		FROM kari_git_repo
+		FROM flowtask_git_repo
 		WHERE repo_id = #{repoId}
 	</select>
 
 	<!-- 저장소 수정 -->
 	<update id="update" parameterType="gitRepo">
-		UPDATE kari_git_repo
+		UPDATE flowtask_git_repo
 		SET provider = #{provider},
 			repo_owner = #{repoOwner},
 			repo_name = #{repoName},
@@ -37,7 +37,7 @@
 
 	<!-- 저장소 연결 해제 -->
 	<delete id="delete" parameterType="int">
-		DELETE FROM kari_git_repo WHERE repo_id = #{repoId}
+		DELETE FROM flowtask_git_repo WHERE repo_id = #{repoId}
 	</delete>
 
 </mapper>

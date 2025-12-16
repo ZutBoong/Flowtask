@@ -144,4 +144,104 @@ public class MemberController {
 
 		return result;
 	}
+
+	// 회원 정보 조회 (마이페이지)
+	@GetMapping("member/profile/{no}")
+	public Map<String, Object> getProfile(@PathVariable int no) {
+		System.out.println("회원 정보 조회: " + no);
+		Map<String, Object> result = new HashMap<>();
+
+		Member member = service.findByNo(no);
+		if (member != null) {
+			member.setPassword(null); // 비밀번호 제외
+			result.put("success", true);
+			result.put("member", member);
+		} else {
+			result.put("success", false);
+			result.put("message", "회원 정보를 찾을 수 없습니다.");
+		}
+
+		return result;
+	}
+
+	// 회원 정보 수정 (마이페이지)
+	@PutMapping("member/update")
+	public Map<String, Object> updateProfile(@RequestBody Member member) {
+		System.out.println("회원 정보 수정 요청: " + member);
+		Map<String, Object> result = new HashMap<>();
+
+		// 이메일 중복 체크 (본인 제외)
+		int emailCount = service.checkEmailExcludeSelf(member);
+		if (emailCount > 0) {
+			result.put("success", false);
+			result.put("message", "이미 사용 중인 이메일입니다.");
+			return result;
+		}
+
+		int updateResult = service.update(member);
+		if (updateResult == 1) {
+			Member updatedMember = service.findByNo(member.getNo());
+			updatedMember.setPassword(null);
+			result.put("success", true);
+			result.put("message", "회원 정보가 수정되었습니다.");
+			result.put("member", updatedMember);
+		} else {
+			result.put("success", false);
+			result.put("message", "회원 정보 수정에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 비밀번호 변경 (마이페이지 - 현재 비밀번호 확인)
+	@PutMapping("member/change-password")
+	public Map<String, Object> changePassword(@RequestBody Map<String, Object> request) {
+		int no = (Integer) request.get("no");
+		String currentPassword = (String) request.get("currentPassword");
+		String newPassword = (String) request.get("newPassword");
+
+		System.out.println("비밀번호 변경 요청 (마이페이지) - no: " + no);
+		Map<String, Object> result = new HashMap<>();
+
+		// 현재 비밀번호 확인
+		if (!service.verifyPassword(no, currentPassword)) {
+			result.put("success", false);
+			result.put("message", "현재 비밀번호가 일치하지 않습니다.");
+			return result;
+		}
+
+		Member member = new Member();
+		member.setNo(no);
+		member.setPassword(newPassword);
+
+		int updateResult = service.updatePassword(member);
+		if (updateResult == 1) {
+			result.put("success", true);
+			result.put("message", "비밀번호가 변경되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "비밀번호 변경에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 아이디 또는 이메일로 회원 검색 (팀 초대용)
+	@GetMapping("member/search")
+	public Map<String, Object> searchMember(@RequestParam String keyword) {
+		System.out.println("회원 검색: " + keyword);
+		Map<String, Object> result = new HashMap<>();
+
+		Member member = service.findByUseridOrEmail(keyword);
+		if (member != null) {
+			member.setPassword(null); // 비밀번호 제외
+			result.put("success", true);
+			result.put("member", member);
+		} else {
+			result.put("success", false);
+			result.put("message", "해당 아이디 또는 이메일을 가진 회원이 없습니다.");
+		}
+
+		return result;
+	}
 }

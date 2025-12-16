@@ -8,7 +8,7 @@ function Home() {
     return (
         <div className="home-container">
             <div className="home-content">
-                <h1 className="home-title">Kari</h1>
+                <h1 className="home-title">Flowtask</h1>
                 <p className="home-subtitle">프로젝트 관리 및 협업 플랫폼</p>
 
                 <div className="home-buttons">

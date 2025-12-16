@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyTeams, createTeam, joinTeam, deleteTeam, leaveTeam } from '../api/teamApi';
+import { getMyTeams, createTeam, joinTeam, deleteTeam, leaveTeam, getTeamMembers, kickMember } from '../api/teamApi';
 import './TeamList.css';
 
 function TeamList() {
@@ -8,10 +8,14 @@ function TeamList() {
     const [teams, setTeams] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
+    const [showManageModal, setShowManageModal] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const [teamMembers, setTeamMembers] = useState([]);
     const [newTeamName, setNewTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [error, setError] = useState('');
     const [loginMember, setLoginMember] = useState(null);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -111,6 +115,58 @@ function TeamList() {
         navigate('/board');
     };
 
+    // 팀 관리 모달 열기
+    const handleManageTeam = async (team, e) => {
+        e.stopPropagation();
+        setSelectedTeam(team);
+        setCopySuccess(false);
+        try {
+            const members = await getTeamMembers(team.teamId);
+            setTeamMembers(members || []);
+            setShowManageModal(true);
+        } catch (error) {
+            console.error('팀원 목록 조회 실패:', error);
+        }
+    };
+
+    // 팀 코드 복사
+    const handleCopyCode = async () => {
+        try {
+            await navigator.clipboard.writeText(selectedTeam.teamCode);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        } catch (error) {
+            console.error('복사 실패:', error);
+            // fallback
+            const textArea = document.createElement('textarea');
+            textArea.value = selectedTeam.teamCode;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        }
+    };
+
+    // 팀원 강퇴
+    const handleKickMember = async (memberNo, memberName) => {
+        if (!window.confirm(`${memberName}님을 팀에서 강퇴하시겠습니까?`)) return;
+        try {
+            const result = await kickMember(selectedTeam.teamId, memberNo, loginMember.no);
+            if (result.success) {
+                alert('팀원이 강퇴되었습니다.');
+                const members = await getTeamMembers(selectedTeam.teamId);
+                setTeamMembers(members || []);
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('팀원 강퇴 실패:', error);
+            alert('팀원 강퇴에 실패했습니다.');
+        }
+    };
+
     return (
         <div className="team-list-container">
             <div className="team-list-header">
@@ -138,7 +194,13 @@ function TeamList() {
                             <p className="team-code">코드: {team.teamCode}</p>
                             <p className="team-leader">팀장: {team.leaderName}</p>
                             <div className="team-card-actions" onClick={e => e.stopPropagation()}>
-                                <button 
+                                <button
+                                    className="btn btn-info btn-small"
+                                    onClick={(e) => handleManageTeam(team, e)}
+                                >
+                                    관리
+                                </button>
+                                <button
                                     className="btn btn-danger btn-small"
                                     onClick={() => handleLeaveTeam(team)}
                                 >
@@ -193,6 +255,58 @@ function TeamList() {
                         <div className="modal-actions">
                             <button className="btn btn-primary" onClick={handleJoinTeam}>가입</button>
                             <button className="btn btn-secondary" onClick={() => { setShowJoinModal(false); setError(''); }}>취소</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 팀 관리 모달 */}
+            {showManageModal && selectedTeam && (
+                <div className="modal-overlay" onClick={() => setShowManageModal(false)}>
+                    <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
+                        <h3>{selectedTeam.teamName} 관리</h3>
+
+                        {/* 팀 초대 코드 */}
+                        <div className="invite-section">
+                            <label>팀 초대 코드</label>
+                            <div className="invite-code-box">
+                                <span className="invite-code">{selectedTeam.teamCode}</span>
+                                <button className="btn btn-copy" onClick={handleCopyCode}>
+                                    {copySuccess ? '복사됨!' : '복사'}
+                                </button>
+                            </div>
+                            <p className="invite-hint">이 코드를 공유하여 팀원을 초대하세요.</p>
+                        </div>
+
+                        {/* 팀원 목록 */}
+                        <div className="members-section">
+                            <label>팀원 목록 ({teamMembers.length}명)</label>
+                            <div className="members-list">
+                                {teamMembers.map(member => (
+                                    <div key={member.memberNo} className="member-item">
+                                        <div className="member-info">
+                                            <span className="member-name">{member.memberName}</span>
+                                            <span className="member-userid">@{member.memberUserid}</span>
+                                            {member.role === 'LEADER' && (
+                                                <span className="member-badge leader">리더</span>
+                                            )}
+                                        </div>
+                                        {selectedTeam.leaderNo === loginMember?.no &&
+                                         member.memberNo !== loginMember?.no && (
+                                            <button
+                                                className="btn btn-danger btn-small"
+                                                onClick={() => handleKickMember(member.memberNo, member.memberName)}
+                                            >
+                                                강퇴
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="btn btn-secondary" onClick={() => setShowManageModal(false)}>닫기</button>
                         </div>
                     </div>
                 </div>

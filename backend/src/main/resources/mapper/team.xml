@@ -5,15 +5,15 @@
 	<!-- 팀 생성 -->
 	<insert id="insertTeam" parameterType="team">
 		<selectKey keyProperty="teamId" resultType="int" order="BEFORE">
-			SELECT kari_team_seq.nextval FROM dual
+			SELECT flowtask_team_seq.nextval FROM dual
 		</selectKey>
-		INSERT INTO kari_team (team_id, team_name, team_code, leader_no, created_at)
+		INSERT INTO flowtask_team (team_id, team_name, team_code, leader_no, created_at)
 		VALUES (#{teamId}, #{teamName}, #{teamCode}, #{leaderNo}, sysdate)
 	</insert>
 
 	<!-- 팀 멤버 추가 -->
 	<insert id="insertMember" parameterType="teamMember">
-		INSERT INTO kari_team_member (team_id, member_no, role, joined_at)
+		INSERT INTO flowtask_team_member (team_id, member_no, role, joined_at)
 		VALUES (#{teamId}, #{memberNo}, #{role}, sysdate)
 	</insert>
 
@@ -21,8 +21,8 @@
 	<select id="findByCode" parameterType="String" resultType="team">
 		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
 			   m.name as leader_name
-		FROM kari_team t
-		JOIN kari_member m ON t.leader_no = m.no
+		FROM flowtask_team t
+		JOIN flowtask_member m ON t.leader_no = m.no
 		WHERE t.team_code = #{teamCode}
 	</select>
 
@@ -30,8 +30,8 @@
 	<select id="findById" parameterType="int" resultType="team">
 		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
 			   m.name as leader_name
-		FROM kari_team t
-		JOIN kari_member m ON t.leader_no = m.no
+		FROM flowtask_team t
+		JOIN flowtask_member m ON t.leader_no = m.no
 		WHERE t.team_id = #{teamId}
 	</select>
 
@@ -39,9 +39,9 @@
 	<select id="findMyTeams" parameterType="int" resultType="team">
 		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
 			   m.name as leader_name
-		FROM kari_team t
-		JOIN kari_team_member tm ON t.team_id = tm.team_id
-		JOIN kari_member m ON t.leader_no = m.no
+		FROM flowtask_team t
+		JOIN flowtask_team_member tm ON t.team_id = tm.team_id
+		JOIN flowtask_member m ON t.leader_no = m.no
 		WHERE tm.member_no = #{memberNo}
 		ORDER BY t.created_at DESC
 	</select>
@@ -50,32 +50,32 @@
 	<select id="findMembers" parameterType="int" resultType="teamMember">
 		SELECT tm.team_id, tm.member_no, tm.role, tm.joined_at,
 			   m.name as member_name, m.userid as member_userid
-		FROM kari_team_member tm
-		JOIN kari_member m ON tm.member_no = m.no
+		FROM flowtask_team_member tm
+		JOIN flowtask_member m ON tm.member_no = m.no
 		WHERE tm.team_id = #{teamId}
 		ORDER BY tm.role DESC, tm.joined_at ASC
 	</select>
 
 	<!-- 팀 멤버 여부 확인 -->
 	<select id="isMember" parameterType="teamMember" resultType="int">
-		SELECT COUNT(*) FROM kari_team_member
+		SELECT COUNT(*) FROM flowtask_team_member
 		WHERE team_id = #{teamId} AND member_no = #{memberNo}
 	</select>
 
 	<!-- 팀 멤버 삭제 -->
 	<delete id="deleteMember" parameterType="teamMember">
-		DELETE FROM kari_team_member
+		DELETE FROM flowtask_team_member
 		WHERE team_id = #{teamId} AND member_no = #{memberNo}
 	</delete>
 
 	<!-- 팀 삭제 -->
 	<delete id="deleteTeam" parameterType="int">
-		DELETE FROM kari_team WHERE team_id = #{teamId}
+		DELETE FROM flowtask_team WHERE team_id = #{teamId}
 	</delete>
 
 	<!-- 팀 정보 수정 -->
 	<update id="updateTeam" parameterType="team">
-		UPDATE kari_team SET team_name = #{teamName}
+		UPDATE flowtask_team SET team_name = #{teamName}
 		WHERE team_id = #{teamId}
 	</update>
 

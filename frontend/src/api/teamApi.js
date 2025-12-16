@@ -43,3 +43,20 @@ export const deleteTeam = async (teamId) => {
     const response = await axiosInstance.delete(`${API_PATH}/${teamId}`);
     return response.data;
 };
+
+// 팀원 강퇴 (팀장만)
+export const kickMember = async (teamId, memberNo, leaderNo) => {
+    const response = await axiosInstance.delete(`${API_PATH}/${teamId}/kick/${memberNo}`, {
+        params: { leaderNo }
+    });
+    return response.data;
+};
+
+// 팀원 초대 (회원번호로 직접 추가)
+export const inviteMember = async (teamId, memberNo, leaderNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/${teamId}/invite`, {
+        memberNo,
+        leaderNo
+    });
+    return response.data;
+};

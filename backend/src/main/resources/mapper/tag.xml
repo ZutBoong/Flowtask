@@ -6,57 +6,57 @@
 
     <insert id="insert" parameterType="Tag">
         <selectKey keyProperty="tagId" resultType="int" order="BEFORE">
-            SELECT kari_tag_seq.nextval FROM dual
+            SELECT flowtask_tag_seq.nextval FROM dual
         </selectKey>
-        INSERT INTO kari_tag (tag_id, team_id, tag_name, color, created_at)
+        INSERT INTO flowtask_tag (tag_id, team_id, tag_name, color, created_at)
         VALUES (#{tagId}, #{teamId}, #{tagName}, #{color, jdbcType=VARCHAR}, SYSDATE)
     </insert>
 
     <select id="listByTeam" parameterType="int" resultType="Tag">
         SELECT tag_id, team_id, tag_name, color, created_at
-        FROM kari_tag
+        FROM flowtask_tag
         WHERE team_id = #{teamId}
         ORDER BY tag_name
     </select>
 
     <select id="listByTask" parameterType="int" resultType="Tag">
         SELECT t.tag_id, t.team_id, t.tag_name, t.color, t.created_at
-        FROM kari_tag t
-        INNER JOIN kari_task_tag tt ON t.tag_id = tt.tag_id
+        FROM flowtask_tag t
+        INNER JOIN flowtask_task_tag tt ON t.tag_id = tt.tag_id
         WHERE tt.task_id = #{taskId}
         ORDER BY t.tag_name
     </select>
 
     <select id="getById" parameterType="int" resultType="Tag">
         SELECT tag_id, team_id, tag_name, color, created_at
-        FROM kari_tag
+        FROM flowtask_tag
         WHERE tag_id = #{tagId}
     </select>
 
     <update id="update" parameterType="Tag">
-        UPDATE kari_tag
+        UPDATE flowtask_tag
         SET tag_name = #{tagName},
             color = #{color, jdbcType=VARCHAR}
         WHERE tag_id = #{tagId}
     </update>
 
     <delete id="delete" parameterType="int">
-        DELETE FROM kari_tag WHERE tag_id = #{tagId}
+        DELETE FROM flowtask_tag WHERE tag_id = #{tagId}
     </delete>
 
     <!-- Task-Tag mapping -->
     <insert id="addTagToTask">
-        INSERT INTO kari_task_tag (task_id, tag_id)
+        INSERT INTO flowtask_task_tag (task_id, tag_id)
         VALUES (#{param1}, #{param2})
     </insert>
 
     <delete id="removeTagFromTask">
-        DELETE FROM kari_task_tag
+        DELETE FROM flowtask_task_tag
         WHERE task_id = #{param1} AND tag_id = #{param2}
     </delete>
 
     <delete id="removeAllTagsFromTask" parameterType="int">
-        DELETE FROM kari_task_tag WHERE task_id = #{taskId}
+        DELETE FROM flowtask_task_tag WHERE task_id = #{taskId}
     </delete>
 
 </mapper>

@@ -5,16 +5,16 @@
 	<!-- 프로젝트 생성 -->
 	<insert id="insert" parameterType="project" useGeneratedKeys="false">
 		<selectKey keyProperty="projectId" resultType="int" order="BEFORE">
-			SELECT kari_project_seq.nextval FROM dual
+			SELECT flowtask_project_seq.nextval FROM dual
 		</selectKey>
-		INSERT INTO kari_project (project_id, team_id, project_name, created_at)
+		INSERT INTO flowtask_project (project_id, team_id, project_name, created_at)
 		VALUES (#{projectId}, #{teamId}, #{projectName}, SYSDATE)
 	</insert>
 
 	<!-- 팀별 프로젝트 목록 -->
 	<select id="listByTeam" parameterType="int" resultType="project">
 		SELECT project_id, team_id, project_name, created_at
-		FROM kari_project
+		FROM flowtask_project
 		WHERE team_id = #{teamId}
 		ORDER BY created_at ASC
 	</select>
@@ -22,20 +22,20 @@
 	<!-- 프로젝트 상세 -->
 	<select id="content" parameterType="int" resultType="project">
 		SELECT project_id, team_id, project_name, created_at
-		FROM kari_project
+		FROM flowtask_project
 		WHERE project_id = #{projectId}
 	</select>
 
 	<!-- 프로젝트 수정 -->
 	<update id="update" parameterType="project">
-		UPDATE kari_project
+		UPDATE flowtask_project
 		SET project_name = #{projectName}
 		WHERE project_id = #{projectId}
 	</update>
 
 	<!-- 프로젝트 삭제 -->
 	<delete id="delete" parameterType="int">
-		DELETE FROM kari_project WHERE project_id = #{projectId}
+		DELETE FROM flowtask_project WHERE project_id = #{projectId}
 	</delete>
 
 </mapper>

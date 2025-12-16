@@ -51,3 +51,29 @@ export const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('member');
 };
+
+// 회원 정보 조회 (마이페이지)
+export const getProfile = async (no) => {
+    const response = await axiosInstance.get(`/member/profile/${no}`);
+    return response.data;
+};
+
+// 회원 정보 수정 (마이페이지)
+export const updateProfile = async (member) => {
+    const response = await axiosInstance.put('/member/update', member);
+    return response.data;
+};
+
+// 비밀번호 변경 (마이페이지)
+export const changePassword = async (data) => {
+    const response = await axiosInstance.put('/member/change-password', data);
+    return response.data;
+};
+
+// 아이디 또는 이메일로 회원 검색 (팀 초대용)
+export const searchMember = async (keyword) => {
+    const response = await axiosInstance.get('/member/search', {
+        params: { keyword }
+    });
+    return response.data;
+};

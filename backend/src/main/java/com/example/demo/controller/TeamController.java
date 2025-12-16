@@ -140,4 +140,93 @@ public class TeamController {
 		}
 		return result;
 	}
+
+	// 팀원 초대 (회원번호로 직접 추가)
+	@PostMapping("/{teamId}/invite")
+	public Map<String, Object> inviteMember(@PathVariable int teamId, @RequestBody Map<String, Object> request) {
+		int memberNo = (int) request.get("memberNo");
+		int leaderNo = (int) request.get("leaderNo");
+		System.out.println("팀원 초대: teamId=" + teamId + ", memberNo=" + memberNo + ", leaderNo=" + leaderNo);
+
+		Map<String, Object> result = new HashMap<>();
+
+		// 팀 존재 확인
+		Team team = service.findById(teamId);
+		if (team == null) {
+			result.put("success", false);
+			result.put("message", "존재하지 않는 팀입니다.");
+			return result;
+		}
+
+		// 팀장 권한 확인
+		if (team.getLeaderNo() != leaderNo) {
+			result.put("success", false);
+			result.put("message", "팀장만 팀원을 초대할 수 있습니다.");
+			return result;
+		}
+
+		// 이미 팀원인지 확인
+		if (service.isMember(teamId, memberNo)) {
+			result.put("success", false);
+			result.put("message", "이미 팀에 가입된 회원입니다.");
+			return result;
+		}
+
+		TeamMember member = new TeamMember();
+		member.setTeamId(teamId);
+		member.setMemberNo(memberNo);
+		member.setRole("MEMBER");
+
+		int insertResult = service.addMember(member);
+		if (insertResult == 1) {
+			result.put("success", true);
+			result.put("message", "팀원이 초대되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "팀원 초대에 실패했습니다.");
+		}
+		return result;
+	}
+
+	// 팀원 강퇴 (팀장만)
+	@DeleteMapping("/{teamId}/kick/{memberNo}")
+	public Map<String, Object> kickMember(@PathVariable int teamId, @PathVariable int memberNo,
+			@RequestParam int leaderNo) {
+		System.out.println("팀원 강퇴: teamId=" + teamId + ", memberNo=" + memberNo + ", leaderNo=" + leaderNo);
+		Map<String, Object> result = new HashMap<>();
+
+		// 팀장 권한 확인
+		Team team = service.findById(teamId);
+		if (team == null) {
+			result.put("success", false);
+			result.put("message", "존재하지 않는 팀입니다.");
+			return result;
+		}
+
+		if (team.getLeaderNo() != leaderNo) {
+			result.put("success", false);
+			result.put("message", "팀장만 팀원을 강퇴할 수 있습니다.");
+			return result;
+		}
+
+		if (memberNo == leaderNo) {
+			result.put("success", false);
+			result.put("message", "자기 자신을 강퇴할 수 없습니다.");
+			return result;
+		}
+
+		TeamMember member = new TeamMember();
+		member.setTeamId(teamId);
+		member.setMemberNo(memberNo);
+
+		int deleteResult = service.removeMember(member);
+		if (deleteResult == 1) {
+			result.put("success", true);
+			result.put("message", "팀원이 강퇴되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "팀원 강퇴에 실패했습니다.");
+		}
+		return result;
+	}
 }

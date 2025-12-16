@@ -4,14 +4,14 @@
 
 	<!-- 커밋 추가 -->
 	<insert id="insert" parameterType="taskCommit">
-		INSERT INTO kari_task_commit (task_id, commit_sha, commit_message, author_name, author_email, committed_at, commit_url)
+		INSERT INTO flowtask_task_commit (task_id, commit_sha, commit_message, author_name, author_email, committed_at, commit_url)
 		VALUES (#{taskId}, #{commitSha}, #{commitMessage}, #{authorName}, #{authorEmail}, #{committedAt}, #{commitUrl})
 	</insert>
 
 	<!-- 태스크별 커밋 목록 -->
 	<select id="listByTaskId" parameterType="int" resultType="taskCommit">
 		SELECT task_id, commit_sha, commit_message, author_name, author_email, committed_at, commit_url
-		FROM kari_task_commit
+		FROM flowtask_task_commit
 		WHERE task_id = #{taskId}
 		ORDER BY committed_at DESC
 	</select>
@@ -19,19 +19,19 @@
 	<!-- 특정 커밋 조회 -->
 	<select id="getByTaskAndSha" parameterType="taskCommit" resultType="taskCommit">
 		SELECT task_id, commit_sha, commit_message, author_name, author_email, committed_at, commit_url
-		FROM kari_task_commit
+		FROM flowtask_task_commit
 		WHERE task_id = #{taskId} AND commit_sha = #{commitSha}
 	</select>
 
 	<!-- 커밋 삭제 -->
 	<delete id="delete" parameterType="taskCommit">
-		DELETE FROM kari_task_commit
+		DELETE FROM flowtask_task_commit
 		WHERE task_id = #{taskId} AND commit_sha = #{commitSha}
 	</delete>
 
 	<!-- 태스크의 모든 커밋 삭제 -->
 	<delete id="deleteByTaskId" parameterType="int">
-		DELETE FROM kari_task_commit WHERE task_id = #{taskId}
+		DELETE FROM flowtask_task_commit WHERE task_id = #{taskId}
 	</delete>
 
 </mapper>

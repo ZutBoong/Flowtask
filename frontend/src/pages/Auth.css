@@ -56,12 +56,14 @@
 
 .input-with-button input {
     flex: 1;
+    min-width: 0;
 }
 
-.btn-small {
+.auth-box .btn-small {
     padding: 10px 15px;
     font-size: 13px;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .error-msg {

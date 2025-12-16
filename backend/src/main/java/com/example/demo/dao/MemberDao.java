@@ -28,4 +28,16 @@ public interface MemberDao {
 
 	// 비밀번호 변경
 	int updatePassword(Member member);
+
+	// 회원번호로 회원 조회
+	Member findByNo(int no);
+
+	// 회원 정보 수정
+	int update(Member member);
+
+	// 이메일 중복 체크 (본인 제외)
+	int checkEmailExcludeSelf(Member member);
+
+	// 아이디 또는 이메일로 회원 검색
+	Member findByUseridOrEmail(String keyword);
 }

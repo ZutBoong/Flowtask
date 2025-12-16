@@ -62,6 +62,27 @@ function Board() {
         assigneeNo: null,
         dueDateFilter: ''
     });
+    const [showTeamCode, setShowTeamCode] = useState(false);
+    const [codeCopySuccess, setCodeCopySuccess] = useState(false);
+
+    // 팀 코드 복사
+    const handleCopyTeamCode = async () => {
+        if (!currentTeam?.teamCode) return;
+        try {
+            await navigator.clipboard.writeText(currentTeam.teamCode);
+            setCodeCopySuccess(true);
+            setTimeout(() => setCodeCopySuccess(false), 2000);
+        } catch (error) {
+            const textArea = document.createElement('textarea');
+            textArea.value = currentTeam.teamCode;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCodeCopySuccess(true);
+            setTimeout(() => setCodeCopySuccess(false), 2000);
+        }
+    };
 
     // WebSocket 이벤트 핸들러
     const handleBoardEvent = useCallback((event) => {
@@ -434,7 +455,25 @@ function Board() {
                         {currentTeam && (
                             <>
                                 <h1>{currentTeam.teamName}</h1>
-                                <span className="team-code-badge">{currentTeam.teamCode}</span>
+                                <div className="team-code-section">
+                                    <span className="team-code-badge">
+                                        {showTeamCode ? currentTeam.teamCode : '••••••••'}
+                                    </span>
+                                    <button
+                                        className="code-toggle-btn"
+                                        onClick={() => setShowTeamCode(!showTeamCode)}
+                                        title={showTeamCode ? '코드 숨기기' : '코드 보기'}
+                                    >
+                                        {showTeamCode ? '숨김' : '보기'}
+                                    </button>
+                                    <button
+                                        className="code-copy-btn"
+                                        onClick={handleCopyTeamCode}
+                                        title="코드 복사"
+                                    >
+                                        {codeCopySuccess ? '복사됨!' : '복사'}
+                                    </button>
+                                </div>
                                 {wsConnected && <span className="ws-status connected" title="실시간 연결됨">●</span>}
                             </>
                         )}

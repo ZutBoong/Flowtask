@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getMyTeams, createTeam, joinTeam, deleteTeam, leaveTeam, getTeamMembers } from '../api/teamApi';
+import { getMyTeams, createTeam, joinTeam, deleteTeam, leaveTeam, getTeamMembers, kickMember, inviteMember } from '../api/teamApi';
+import { searchMember } from '../api/memberApi';
 import GitRepoSettings from './GitRepoSettings';
 import './Sidebar.css';
 
@@ -16,6 +17,10 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
     const [joinCode, setJoinCode] = useState('');
     const [error, setError] = useState('');
     const [showGitSettings, setShowGitSettings] = useState(false);
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteKeyword, setInviteKeyword] = useState('');
+    const [searchedMember, setSearchedMember] = useState(null);
+    const [inviteError, setInviteError] = useState('');
 
     useEffect(() => {
         if (loginMember) {
@@ -132,6 +137,65 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
         }
     };
 
+    // 회원 검색 (팀 초대용)
+    const handleSearchMember = async () => {
+        if (!inviteKeyword.trim()) {
+            setInviteError('아이디 또는 이메일을 입력해주세요.');
+            return;
+        }
+        setInviteError('');
+        setSearchedMember(null);
+        try {
+            const result = await searchMember(inviteKeyword.trim());
+            if (result.success) {
+                setSearchedMember(result.member);
+            } else {
+                setInviteError(result.message);
+            }
+        } catch (error) {
+            console.error('회원 검색 실패:', error);
+            setInviteError('회원 검색에 실패했습니다.');
+        }
+    };
+
+    // 팀원 초대
+    const handleInviteMember = async () => {
+        if (!searchedMember) return;
+        try {
+            const result = await inviteMember(currentTeam.teamId, searchedMember.no, loginMember.no);
+            if (result.success) {
+                alert(`${searchedMember.name}님이 팀에 초대되었습니다.`);
+                setShowInviteModal(false);
+                setInviteKeyword('');
+                setSearchedMember(null);
+                setInviteError('');
+                fetchTeamMembers();
+            } else {
+                setInviteError(result.message);
+            }
+        } catch (error) {
+            console.error('팀원 초대 실패:', error);
+            setInviteError('팀원 초대에 실패했습니다.');
+        }
+    };
+
+    // 팀원 강퇴
+    const handleKickMember = async (memberNo, memberName) => {
+        if (!window.confirm(`${memberName}님을 팀에서 강퇴하시겠습니까?`)) return;
+        try {
+            const result = await kickMember(currentTeam.teamId, memberNo, loginMember.no);
+            if (result.success) {
+                alert('팀원이 강퇴되었습니다.');
+                fetchTeamMembers();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('팀원 강퇴 실패:', error);
+            alert('팀원 강퇴에 실패했습니다.');
+        }
+    };
+
     return (
         <>
             {/* 펼친 사이드바 */}
@@ -140,7 +204,7 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                     <div className="sidebar-expanded">
                         {/* 상단 헤더 */}
                         <div className="sidebar-header">
-                            <span className="sidebar-logo">Kari</span>
+                            <span className="sidebar-logo">Flowtask</span>
                             <button className="sidebar-collapse-btn" onClick={onToggle} title="사이드바 접기">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -215,17 +279,30 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
 
                         {/* 팀원 섹션 */}
                         <div className="sidebar-menu">
-                            <div
-                                className={`menu-item ${showMembersSection ? 'active' : ''}`}
-                                onClick={() => setShowMembersSection(!showMembersSection)}
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                </svg>
-                                <span>팀원 {currentTeam && `(${teamMembers.length})`}</span>
+                            <div className="menu-item-header">
+                                <div
+                                    className={`menu-item ${showMembersSection ? 'active' : ''}`}
+                                    onClick={() => setShowMembersSection(!showMembersSection)}
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </svg>
+                                    <span>팀원 {currentTeam && `(${teamMembers.length})`}</span>
+                                </div>
+                                <div className="invite-btn-wrapper">
+                                    {currentTeam && currentTeam.leaderNo === loginMember?.no && (
+                                        <button
+                                            className="invite-btn"
+                                            onClick={() => setShowInviteModal(true)}
+                                            title="팀원 초대"
+                                        >
+                                            +
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             {showMembersSection && currentTeam && (
                                 <ul className="members-list menu-members">
@@ -247,6 +324,16 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                                                     {member.role === 'LEADER' ? '팀장' : '멤버'}
                                                 </span>
                                             </div>
+                                            {currentTeam.leaderNo === loginMember?.no &&
+                                             member.memberNo !== loginMember?.no && (
+                                                <button
+                                                    className="kick-btn"
+                                                    onClick={() => handleKickMember(member.memberNo, member.memberName)}
+                                                    title="강퇴"
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
                                         </li>
                                     ))}
                                     {teamMembers.length === 0 && (
@@ -283,7 +370,7 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                         </div>
 
                         {/* 하단 사용자 정보 */}
-                        <div className="sidebar-footer">
+                        <div className="sidebar-footer" onClick={() => navigate('/mypage')} style={{ cursor: 'pointer' }}>
                             <div className="user-avatar">
                                 {loginMember?.name?.charAt(0) || 'U'}
                             </div>
@@ -388,6 +475,45 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                     teamId={currentTeam.teamId}
                     onClose={() => setShowGitSettings(false)}
                 />
+            )}
+
+            {/* 팀원 초대 모달 */}
+            {showInviteModal && (
+                <div className="sidebar-modal-overlay" onClick={() => { setShowInviteModal(false); setInviteError(''); setSearchedMember(null); setInviteKeyword(''); }}>
+                    <div className="sidebar-modal" onClick={e => e.stopPropagation()}>
+                        <h3>팀원 초대</h3>
+                        <div className="modal-form-group">
+                            <label>아이디 또는 이메일</label>
+                            <div className="search-input-row">
+                                <input
+                                    type="text"
+                                    value={inviteKeyword}
+                                    onChange={e => { setInviteKeyword(e.target.value); setInviteError(''); setSearchedMember(null); }}
+                                    placeholder="초대할 회원의 아이디 또는 이메일"
+                                    onKeyPress={e => e.key === 'Enter' && handleSearchMember()}
+                                    autoFocus
+                                />
+                                <button className="search-btn" onClick={handleSearchMember}>검색</button>
+                            </div>
+                        </div>
+                        {inviteError && <p className="modal-error">{inviteError}</p>}
+                        {searchedMember && (
+                            <div className="searched-member">
+                                <div className="searched-member-info">
+                                    <div className="searched-avatar">{searchedMember.name?.charAt(0) || 'U'}</div>
+                                    <div className="searched-details">
+                                        <span className="searched-name">{searchedMember.name}</span>
+                                        <span className="searched-userid">@{searchedMember.userid}</span>
+                                    </div>
+                                </div>
+                                <button className="modal-btn primary" onClick={handleInviteMember}>초대</button>
+                            </div>
+                        )}
+                        <div className="modal-buttons">
+                            <button className="modal-btn" onClick={() => { setShowInviteModal(false); setInviteError(''); setSearchedMember(null); setInviteKeyword(''); }}>취소</button>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

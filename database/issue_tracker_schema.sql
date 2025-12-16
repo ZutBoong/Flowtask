@@ -1,8 +1,8 @@
 -- Issue Tracker Schema Extension
--- kari_task 테이블에 이슈 트래커 필드 추가
+-- flowtask_task 테이블에 이슈 트래커 필드 추가
 
 -- 새 컬럼 추가
-ALTER TABLE kari_task ADD (
+ALTER TABLE flowtask_task ADD (
     assignee_no NUMBER,
     priority VARCHAR2(20) DEFAULT 'MEDIUM',
     due_date DATE,
@@ -10,18 +10,18 @@ ALTER TABLE kari_task ADD (
 );
 
 -- 외래 키 제약조건 (담당자 삭제 시 NULL로 설정)
-ALTER TABLE kari_task ADD CONSTRAINT fk_task_assignee
-    FOREIGN KEY (assignee_no) REFERENCES kari_member(no) ON DELETE SET NULL;
+ALTER TABLE flowtask_task ADD CONSTRAINT fk_task_assignee
+    FOREIGN KEY (assignee_no) REFERENCES flowtask_member(no) ON DELETE SET NULL;
 
 -- 인덱스 생성
-CREATE INDEX idx_task_assignee ON kari_task(assignee_no);
-CREATE INDEX idx_task_status ON kari_task(status);
-CREATE INDEX idx_task_priority ON kari_task(priority);
-CREATE INDEX idx_task_due_date ON kari_task(due_date);
+CREATE INDEX idx_task_assignee ON flowtask_task(assignee_no);
+CREATE INDEX idx_task_status ON flowtask_task(status);
+CREATE INDEX idx_task_priority ON flowtask_task(priority);
+CREATE INDEX idx_task_due_date ON flowtask_task(due_date);
 
 -- 기존 데이터에 기본값 적용
-UPDATE kari_task SET status = 'OPEN' WHERE status IS NULL;
-UPDATE kari_task SET priority = 'MEDIUM' WHERE priority IS NULL;
+UPDATE flowtask_task SET status = 'OPEN' WHERE status IS NULL;
+UPDATE flowtask_task SET priority = 'MEDIUM' WHERE priority IS NULL;
 
 COMMIT;
 

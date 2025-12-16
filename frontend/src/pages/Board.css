@@ -50,6 +50,12 @@
     color: #1a1a1a;
 }
 
+.team-code-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .team-code-badge {
     font-size: 12px;
     font-family: monospace;
@@ -57,6 +63,35 @@
     color: #666;
     padding: 4px 8px;
     border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.code-toggle-btn,
+.code-copy-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.code-toggle-btn {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.code-toggle-btn:hover {
+    background: #d0d0d0;
+}
+
+.code-copy-btn {
+    background: #026aa7;
+    color: white;
+}
+
+.code-copy-btn:hover {
+    background: #0079bf;
 }
 
 .ws-status {

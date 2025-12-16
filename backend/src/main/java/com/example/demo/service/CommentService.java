@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.dao.CommentDao;
 import com.example.demo.dao.TaskDao;
-import com.example.demo.dao.KariColumnDao;
+import com.example.demo.dao.FlowtaskColumnDao;
 import com.example.demo.model.Comment;
 import com.example.demo.model.Task;
-import com.example.demo.model.KariColumn;
+import com.example.demo.model.FlowtaskColumn;
 
 @Service
 public class CommentService {
@@ -20,7 +20,7 @@ public class CommentService {
 	private TaskDao taskDao;
 
 	@Autowired
-	private KariColumnDao columnDao;
+	private FlowtaskColumnDao columnDao;
 
 	@Autowired
 	private BoardNotificationService notificationService;
@@ -74,7 +74,7 @@ public class CommentService {
 		// Task에서 Column을 찾고, Column에서 TeamId를 가져옴
 		Task task = taskDao.content(comment.getTaskId());
 		if (task != null) {
-			KariColumn column = columnDao.content(task.getColumnId());
+			FlowtaskColumn column = columnDao.content(task.getColumnId());
 			if (column != null) {
 				notificationService.notifyCommentEvent(eventType, comment, column.getTeamId());
 			}

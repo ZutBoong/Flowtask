@@ -5,7 +5,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.BoardEvent;
-import com.example.demo.model.KariColumn;
+import com.example.demo.model.FlowtaskColumn;
 import com.example.demo.model.Task;
 import com.example.demo.model.Comment;
 
@@ -16,11 +16,11 @@ public class BoardNotificationService {
 	private SimpMessagingTemplate messagingTemplate;
 
 	// Column Events
-	public void notifyColumnCreated(KariColumn column) {
+	public void notifyColumnCreated(FlowtaskColumn column) {
 		sendBoardEvent(column.getTeamId(), "COLUMN_CREATED", "column", column);
 	}
 
-	public void notifyColumnUpdated(KariColumn column) {
+	public void notifyColumnUpdated(FlowtaskColumn column) {
 		sendBoardEvent(column.getTeamId(), "COLUMN_UPDATED", "column", column);
 	}
 
@@ -28,7 +28,7 @@ public class BoardNotificationService {
 		sendBoardEvent(teamId, "COLUMN_DELETED", "column", columnId);
 	}
 
-	public void notifyColumnMoved(KariColumn column) {
+	public void notifyColumnMoved(FlowtaskColumn column) {
 		sendBoardEvent(column.getTeamId(), "COLUMN_MOVED", "column", column);
 	}
 

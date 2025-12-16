@@ -69,4 +69,33 @@ public class MemberService {
 		member.setPassword(encodedPassword);
 		return dao.updatePassword(member);
 	}
+
+	// 회원번호로 회원 조회
+	public Member findByNo(int no) {
+		return dao.findByNo(no);
+	}
+
+	// 회원 정보 수정
+	public int update(Member member) {
+		return dao.update(member);
+	}
+
+	// 이메일 중복 체크 (본인 제외)
+	public int checkEmailExcludeSelf(Member member) {
+		return dao.checkEmailExcludeSelf(member);
+	}
+
+	// 현재 비밀번호 확인
+	public boolean verifyPassword(int no, String rawPassword) {
+		Member member = dao.findByNo(no);
+		if (member != null) {
+			return passwordEncoder.matches(rawPassword, member.getPassword());
+		}
+		return false;
+	}
+
+	// 아이디 또는 이메일로 회원 검색
+	public Member findByUseridOrEmail(String keyword) {
+		return dao.findByUseridOrEmail(keyword);
+	}
 }

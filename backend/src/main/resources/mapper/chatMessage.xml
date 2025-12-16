@@ -5,9 +5,9 @@
 	<!-- 메시지 생성 -->
 	<insert id="insert" parameterType="chatMessage">
 		<selectKey keyProperty="messageId" resultType="int" order="BEFORE">
-			SELECT kari_chat_seq.nextval FROM dual
+			SELECT flowtask_chat_seq.nextval FROM dual
 		</selectKey>
-		INSERT INTO kari_chat_message (message_id, team_id, sender_no, content, sent_at)
+		INSERT INTO flowtask_chat_message (message_id, team_id, sender_no, content, sent_at)
 		VALUES (#{messageId}, #{teamId}, #{senderNo}, #{content}, systimestamp)
 	</insert>
 
@@ -17,14 +17,14 @@
 			SELECT c.message_id, c.team_id, c.sender_no, m.name as sender_name, m.userid as sender_userid,
 				c.content, c.sent_at, ROWNUM as rn
 			FROM (
-				SELECT * FROM kari_chat_message
+				SELECT * FROM flowtask_chat_message
 				WHERE team_id = #{teamId}
 				<if test="beforeId != null">
 					AND message_id &lt; #{beforeId}
 				</if>
 				ORDER BY sent_at DESC
 			) c
-			JOIN kari_member m ON c.sender_no = m.no
+			JOIN flowtask_member m ON c.sender_no = m.no
 			WHERE ROWNUM &lt;= #{limit}
 		)
 		ORDER BY sent_at ASC
@@ -35,8 +35,8 @@
 		SELECT * FROM (
 			SELECT c.message_id, c.team_id, c.sender_no, m.name as sender_name, m.userid as sender_userid,
 				c.content, c.sent_at
-			FROM kari_chat_message c
-			JOIN kari_member m ON c.sender_no = m.no
+			FROM flowtask_chat_message c
+			JOIN flowtask_member m ON c.sender_no = m.no
 			WHERE c.team_id = #{teamId}
 			ORDER BY c.sent_at DESC
 		)
@@ -48,14 +48,14 @@
 	<select id="content" parameterType="int" resultType="chatMessage">
 		SELECT c.message_id, c.team_id, c.sender_no, m.name as sender_name, m.userid as sender_userid,
 			c.content, c.sent_at
-		FROM kari_chat_message c
-		JOIN kari_member m ON c.sender_no = m.no
+		FROM flowtask_chat_message c
+		JOIN flowtask_member m ON c.sender_no = m.no
 		WHERE c.message_id = #{messageId}
 	</select>
 
 	<!-- 메시지 삭제 -->
 	<delete id="delete" parameterType="int">
-		DELETE FROM kari_chat_message WHERE message_id = #{messageId}
+		DELETE FROM flowtask_chat_message WHERE message_id = #{messageId}
 	</delete>
 
 </mapper>

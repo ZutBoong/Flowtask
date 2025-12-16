@@ -4,43 +4,67 @@
 
 	<!-- 회원가입 -->
 	<insert id="insert" parameterType="member">
-		INSERT INTO kari_member (no, userid, password, name, email, phone, register)
-		VALUES (kari_member_seq.nextval, #{userid}, #{password}, #{name}, #{email}, #{phone}, sysdate)
+		INSERT INTO flowtask_member (no, userid, password, name, email, phone, register)
+		VALUES (flowtask_member_seq.nextval, #{userid}, #{password}, #{name}, #{email}, #{phone}, sysdate)
 	</insert>
 
 	<!-- 아이디 중복 체크 -->
 	<select id="checkUserid" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM kari_member WHERE userid = #{userid}
+		SELECT COUNT(*) FROM flowtask_member WHERE userid = #{userid}
 	</select>
 
 	<!-- 이메일 중복 체크 -->
 	<select id="checkEmail" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM kari_member WHERE email = #{email}
+		SELECT COUNT(*) FROM flowtask_member WHERE email = #{email}
 	</select>
 
 	<!-- 로그인 (기존 - 더 이상 사용 안함) -->
 	<select id="login" parameterType="member" resultType="member">
-		SELECT * FROM kari_member WHERE userid = #{userid} AND password = #{password}
+		SELECT * FROM flowtask_member WHERE userid = #{userid} AND password = #{password}
 	</select>
 
 	<!-- userid로 회원 조회 (BCrypt 비밀번호 검증용) -->
 	<select id="findByUserid" parameterType="String" resultType="member">
-		SELECT * FROM kari_member WHERE userid = #{userid}
+		SELECT * FROM flowtask_member WHERE userid = #{userid}
 	</select>
 
 	<!-- 아이디 찾기 -->
 	<select id="findUserid" parameterType="member" resultType="String">
-		SELECT userid FROM kari_member WHERE name = #{name} AND email = #{email}
+		SELECT userid FROM flowtask_member WHERE name = #{name} AND email = #{email}
 	</select>
 
 	<!-- 비밀번호 찾기 전 회원 확인 -->
 	<select id="findMemberForPassword" parameterType="member" resultType="member">
-		SELECT * FROM kari_member WHERE userid = #{userid} AND email = #{email}
+		SELECT * FROM flowtask_member WHERE userid = #{userid} AND email = #{email}
 	</select>
 
 	<!-- 비밀번호 변경 -->
 	<update id="updatePassword" parameterType="member">
-		UPDATE kari_member SET password = #{password} WHERE no = #{no}
+		UPDATE flowtask_member SET password = #{password} WHERE no = #{no}
 	</update>
+
+	<!-- 회원번호로 회원 조회 -->
+	<select id="findByNo" parameterType="int" resultType="member">
+		SELECT * FROM flowtask_member WHERE no = #{no}
+	</select>
+
+	<!-- 회원 정보 수정 -->
+	<update id="update" parameterType="member">
+		UPDATE flowtask_member
+		SET name = #{name},
+			email = #{email},
+			phone = #{phone}
+		WHERE no = #{no}
+	</update>
+
+	<!-- 이메일 중복 체크 (본인 제외) -->
+	<select id="checkEmailExcludeSelf" parameterType="member" resultType="int">
+		SELECT COUNT(*) FROM flowtask_member WHERE email = #{email} AND no != #{no}
+	</select>
+
+	<!-- 아이디 또는 이메일로 회원 검색 -->
+	<select id="findByUseridOrEmail" parameterType="String" resultType="member">
+		SELECT * FROM flowtask_member WHERE userid = #{keyword} OR email = #{keyword}
+	</select>
 
 </mapper>
