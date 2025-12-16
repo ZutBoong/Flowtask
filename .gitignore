@@ -4,11 +4,17 @@ backend/target/
 *.jar
 *.war
 *.ear
+!.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
 
 # Frontend (React/Node)
 frontend/node_modules/
 frontend/build/
 frontend/.cache/
+frontend/.pnp/
+frontend/.pnp.js
 
 # IDE
 .idea/
@@ -16,22 +22,55 @@ frontend/.cache/
 .vscode/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Logs
 *.log
+logs/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment files (uncomment if you use .env)
-# .env
-# .env.local
-# .env.*.local
-
-# Claude Code local settings
-.claude/
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Test coverage
 coverage/
+*.lcov
+
+# Claude Code
+.claude/
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# PostgreSQL data (local)
+postgres_data/
+pgdata/
+
+# Spring Boot
+*.pid
+.springBeans
+
+# Misc
+*.bak
+*.tmp
+*.temp
+*~
