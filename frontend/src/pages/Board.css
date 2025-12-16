@@ -3,15 +3,17 @@
     display: flex;
     min-height: 100vh;
     width: 100%;
+    overflow: hidden;
 }
 
 .board-layout {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
     margin-left: 52px;
     transition: margin-left 0.2s ease;
+    overflow: hidden;
 }
 
 .board-layout.sidebar-open {
@@ -130,14 +132,19 @@
 .board-content {
     flex: 1;
     background-color: #f4f5f7;
-    overflow: auto;
+    overflow: hidden;
     width: 100%;
     box-sizing: border-box;
+    min-height: 0;
 }
 
 .board {
     padding: 20px;
-    min-height: calc(100vh - 76px);
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .board-loading {
@@ -168,20 +175,94 @@
     color: #888;
 }
 
+/* ===== 컬럼 래퍼 (화살표 + 페이드) ===== */
+.columns-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+/* 페이드 효과 */
+.scroll-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.scroll-fade-left {
+    left: 0;
+    background: linear-gradient(to right, #f4f5f7 0%, transparent 100%);
+}
+
+.scroll-fade-right {
+    right: 0;
+    background: linear-gradient(to left, #f4f5f7 0%, transparent 100%);
+}
+
+/* 화살표 버튼 */
+.scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 20px;
+    color: #555;
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.scroll-arrow:hover {
+    background: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.scroll-arrow-left {
+    left: 8px;
+}
+
+.scroll-arrow-right {
+    right: 8px;
+}
+
 /* ===== 컬럼 컨테이너 ===== */
 .columns-container {
     display: flex;
     gap: 16px;
     align-items: flex-start;
+    flex: 1;
+    padding: 0 40px 20px 40px;
     overflow-x: auto;
-    padding-bottom: 20px;
+    min-height: 0;
+
+    /* 스크롤바 숨김 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.columns-container::-webkit-scrollbar {
+    display: none;
 }
 
 .column {
     background-color: #ebecf0;
     border-radius: 8px;
-    min-width: 280px;
-    max-width: 280px;
+    width: calc(25% - 12px);
+    min-width: 220px;
+    flex-shrink: 0;
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -427,7 +508,9 @@
 .add-column {
     background-color: rgba(255, 255, 255, 0.3);
     border-radius: 8px;
-    min-width: 280px;
+    width: calc(25% - 12px);
+    min-width: 220px;
+    flex-shrink: 0;
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -500,6 +583,7 @@
 .board-layout.chat-open .board-content {
     width: calc(100% - 320px);
     flex: none;
+    height: calc(100vh - 56px);
 }
 
 .board-layout .chat-panel-wrapper {

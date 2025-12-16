@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
@@ -64,6 +64,48 @@ function Board() {
     });
     const [showTeamCode, setShowTeamCode] = useState(false);
     const [codeCopySuccess, setCodeCopySuccess] = useState(false);
+
+    // 스크롤 관련
+    const columnsContainerRef = useRef(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    // 스크롤 상태 체크
+    const checkScrollState = useCallback(() => {
+        const container = columnsContainerRef.current;
+        if (container) {
+            setCanScrollLeft(container.scrollLeft > 0);
+            setCanScrollRight(
+                container.scrollLeft < container.scrollWidth - container.clientWidth - 1
+            );
+        }
+    }, []);
+
+    // 화살표 클릭 시 스크롤
+    const handleScroll = (direction) => {
+        const container = columnsContainerRef.current;
+        if (container) {
+            const scrollAmount = 300;
+            container.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // 스크롤 이벤트 리스너
+    useEffect(() => {
+        const container = columnsContainerRef.current;
+        if (container) {
+            checkScrollState();
+            container.addEventListener('scroll', checkScrollState);
+            window.addEventListener('resize', checkScrollState);
+            return () => {
+                container.removeEventListener('scroll', checkScrollState);
+                window.removeEventListener('resize', checkScrollState);
+            };
+        }
+    }, [checkScrollState, columns]);
 
     // 팀 코드 복사
     const handleCopyTeamCode = async () => {
@@ -503,13 +545,39 @@ function Board() {
                                 onFilterChange={setFilters}
                             />
                             <DragDropContext onDragEnd={onDragEnd}>
-                                <Droppable droppableId="board" direction="horizontal" type="column">
-                                    {(provided) => (
-                                        <div
-                                            className="columns-container"
-                                            ref={provided.innerRef}
-                                            {...provided.droppableProps}
-                                        >
+                                <div className="columns-wrapper">
+                                    {canScrollLeft && (
+                                        <>
+                                            <div className="scroll-fade scroll-fade-left" />
+                                            <button
+                                                className="scroll-arrow scroll-arrow-left"
+                                                onClick={() => handleScroll('left')}
+                                            >
+                                                ‹
+                                            </button>
+                                        </>
+                                    )}
+                                    {canScrollRight && (
+                                        <>
+                                            <div className="scroll-fade scroll-fade-right" />
+                                            <button
+                                                className="scroll-arrow scroll-arrow-right"
+                                                onClick={() => handleScroll('right')}
+                                            >
+                                                ›
+                                            </button>
+                                        </>
+                                    )}
+                                    <Droppable droppableId="board" direction="horizontal" type="column">
+                                        {(provided) => (
+                                            <div
+                                                className="columns-container"
+                                                ref={(node) => {
+                                                    provided.innerRef(node);
+                                                    columnsContainerRef.current = node;
+                                                }}
+                                                {...provided.droppableProps}
+                                            >
                                             {columns.map((column, index) => (
                                                 <Draggable
                                                     key={`column-${column.columnId}`}
@@ -684,9 +752,10 @@ function Board() {
                                                 />
                                                 <button onClick={handleAddColumn}>+ 컬럼 추가</button>
                                             </div>
-                                        </div>
-                                    )}
-                                </Droppable>
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </div>
                             </DragDropContext>
                         </div>
                     )}
