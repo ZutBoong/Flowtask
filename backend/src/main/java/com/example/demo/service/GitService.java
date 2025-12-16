@@ -37,7 +37,7 @@ public class GitService {
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	// 이슈 번호 패턴 (#123, #KARI-123 등)
+	// 이슈 번호 패턴 (#123, #FLOW-123 등)
 	private static final Pattern ISSUE_PATTERN = Pattern.compile("#(\\d+)");
 
 	// 저장소 연결

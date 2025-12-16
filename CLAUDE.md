@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kari is a team-based Kanban board application with a Spring Boot backend and React frontend, using Oracle database for persistence. Features include JWT authentication, real-time updates via WebSocket, task comments, tags, verification workflow, team chat, and Git integration.
+Flowtask is a team-based Kanban board application with a Spring Boot backend and React frontend, using Oracle database for persistence. Features include JWT authentication, real-time updates via WebSocket, task comments, tags, verification workflow, team chat, and Git integration.
 
 ## Build and Run Commands
 
@@ -48,7 +48,7 @@ Oracle XE running on localhost:1521. Schema files in `database/`:
 - **Config** (`config/`): WebSocket and Security configuration
 - **Security** (`security/`): JWT token provider and authentication filter
 
-Key entities: Member, Team, TeamMember, Project, KariColumn, Task, Tag, Comment, ChatMessage, GitRepo, TaskCommit
+Key entities: Member, Team, TeamMember, Project, FlowtaskColumn, Task, Tag, Comment, ChatMessage, GitRepo, TaskCommit
 
 ### Frontend Structure (React 18 + React Router)
 - **Pages** (`pages/`): Route components (Board, Login, Register, Calendar, etc.)
@@ -78,5 +78,5 @@ JWT-based authentication with tokens stored client-side. Configured in `Security
 ## Key Configuration
 - Backend port: 8081 (application.properties)
 - Frontend proxy: http://localhost:8081 (package.json)
-- DB credentials: kari/kari123@localhost:1521:xe
+- DB credentials: flow/flow123@localhost:1521:xe
 - Java version: 17

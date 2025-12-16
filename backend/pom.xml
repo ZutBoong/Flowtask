@@ -11,8 +11,8 @@
 	<groupId>com.example</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>kari</name>
-	<description>Kari Project</description>
+	<name>flowtask</name>
+	<description>Flowtask Project</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

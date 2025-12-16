@@ -36,12 +36,12 @@ Oracle XE에 사용자와 테이블을 생성합니다.
 
 ```sql
 -- Oracle에 접속 후 사용자 생성
-CREATE USER kari IDENTIFIED BY kari123;
-GRANT CONNECT, RESOURCE TO kari;
-GRANT UNLIMITED TABLESPACE TO kari;
+CREATE USER flow IDENTIFIED BY flow123;
+GRANT CONNECT, RESOURCE TO flow;
+GRANT UNLIMITED TABLESPACE TO flow;
 ```
 
-kari 사용자로 접속 후 스키마 파일들을 순서대로 실행:
+flow 사용자로 접속 후 스키마 파일들을 순서대로 실행:
 
 ```bash
 # SQL*Plus 또는 SQL Developer에서 실행
@@ -77,7 +77,7 @@ npm start
 ## 프로젝트 구조
 
 ```
-Kari/
+Flowtask/
 ├── backend/                 # Spring Boot 백엔드
 │   ├── src/main/java/      # Java 소스
 │   └── src/main/resources/ # 설정 및 MyBatis 매퍼
@@ -97,8 +97,8 @@ Kari/
 
 ```properties
 spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
-spring.datasource.username=kari
-spring.datasource.password=kari123
+spring.datasource.username=flow
+spring.datasource.password=flow123
 ```
 
 ## 라이선스
