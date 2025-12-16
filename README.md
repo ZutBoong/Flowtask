@@ -93,6 +93,62 @@ npm start
 
 브라우저에서 `http://localhost:3000`으로 접속합니다.
 
+## Docker로 실행
+
+Docker를 사용하면 Java, Node.js, PostgreSQL 설치 없이 바로 실행할 수 있습니다.
+
+### 필수 요구사항
+
+- Docker
+- Docker Compose
+
+### 실행 방법
+
+```bash
+# 빌드 및 실행
+docker-compose up --build
+
+# 백그라운드 실행
+docker-compose up -d --build
+
+# 로그 확인
+docker-compose logs -f
+
+# 종료
+docker-compose down
+
+# 데이터 포함 완전 삭제
+docker-compose down -v
+```
+
+### 접속 정보
+
+| 서비스 | URL |
+|--------|-----|
+| Frontend | http://localhost |
+| Backend API | http://localhost:8081 |
+| PostgreSQL | localhost:5432 |
+
+DB 스키마는 컨테이너 최초 실행 시 자동으로 초기화됩니다.
+
+### AWS EC2 배포
+
+```bash
+# 1. Docker 설치 (Ubuntu)
+sudo apt update
+sudo apt install docker.io docker-compose -y
+sudo usermod -aG docker $USER
+
+# 2. 프로젝트 클론
+git clone https://github.com/your-repo/Flowtask.git
+cd Flowtask
+
+# 3. 실행
+docker-compose up -d --build
+```
+
+EC2 보안그룹에서 80번 포트를 열어야 웹 접속이 가능합니다.
+
 ## 프로젝트 구조
 
 ```
