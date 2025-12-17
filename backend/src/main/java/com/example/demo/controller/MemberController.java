@@ -9,6 +9,7 @@ import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.MemberService;
 
 @RestController
+@RequestMapping("/api")
 public class MemberController {
 
 	private final MemberService service;
