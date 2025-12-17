@@ -172,3 +172,35 @@ export const tasklistByDateRange = async (teamId, startDate, endDate) => {
     });
     return response.data;
 };
+
+// ========== Task Assignees (복수 담당자) API ==========
+
+// 태스크별 담당자 목록 조회
+export const getTaskAssignees = async (taskId) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/${taskId}/assignees`);
+    return response.data;
+};
+
+// 담당자 추가
+export const addTaskAssignee = async (taskId, memberNo, senderNo = null) => {
+    const url = senderNo
+        ? `${API_PATH}/task/${taskId}/assignees?senderNo=${senderNo}`
+        : `${API_PATH}/task/${taskId}/assignees`;
+    const response = await axiosInstance.post(url, { memberNo });
+    return response.data;
+};
+
+// 담당자 삭제
+export const removeTaskAssignee = async (taskId, memberNo) => {
+    const response = await axiosInstance.delete(`${API_PATH}/task/${taskId}/assignees/${memberNo}`);
+    return response.data;
+};
+
+// 담당자 일괄 변경
+export const updateTaskAssignees = async (taskId, memberNos, senderNo = null) => {
+    const url = senderNo
+        ? `${API_PATH}/task/${taskId}/assignees?senderNo=${senderNo}`
+        : `${API_PATH}/task/${taskId}/assignees`;
+    const response = await axiosInstance.put(url, { memberNos });
+    return response.data;
+};

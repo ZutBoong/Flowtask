@@ -31,4 +31,7 @@ public class Task {
 
 	// 태그 목록
 	private List<Tag> tags;
+
+	// 복수 담당자 목록
+	private List<TaskAssignee> assignees;
 }

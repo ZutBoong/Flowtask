@@ -379,9 +379,11 @@ function Board() {
                 if (!filters.tags.some(tagId => taskTagIds.includes(tagId))) return false;
             }
 
-            // 담당자 필터
+            // 담당자 필터 (복수 담당자 지원)
             if (filters.assigneeNo) {
-                if (task.assigneeNo !== filters.assigneeNo) return false;
+                const hasAssignee = task.assignees?.some(a => a.memberNo === filters.assigneeNo)
+                    || task.assigneeNo === filters.assigneeNo;
+                if (!hasAssignee) return false;
             }
 
             // 마감일 필터
@@ -821,9 +823,15 @@ function Board() {
                                                                                                 </span>
                                                                                             </div>
                                                                                         )}
-                                                                                        {(task.assigneeName || task.dueDate) && (
+                                                                                        {((task.assignees && task.assignees.length > 0) || task.assigneeName || task.dueDate) && (
                                                                                             <div className="task-card-meta">
-                                                                                                {task.assigneeName && (
+                                                                                                {task.assignees && task.assignees.length > 0 ? (
+                                                                                                    <span className="assignee multi-assignees">
+                                                                                                        <span className="icon">👥</span>
+                                                                                                        {task.assignees.slice(0, 2).map(a => a.memberName).join(', ')}
+                                                                                                        {task.assignees.length > 2 && ` 외 ${task.assignees.length - 2}명`}
+                                                                                                    </span>
+                                                                                                ) : task.assigneeName && (
                                                                                                     <span className="assignee">
                                                                                                         <span className="icon">👤</span>
                                                                                                         {task.assigneeName}

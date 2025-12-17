@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.TaskAssigneeDao">
+
+    <!-- 담당자 추가 -->
+    <insert id="insert" parameterType="taskAssignee">
+        INSERT INTO flowtask_task_assignee (task_id, member_no, assigned_at, assigned_by)
+        VALUES (#{taskId}, #{memberNo}, CURRENT_TIMESTAMP, #{assignedBy})
+        ON CONFLICT (task_id, member_no) DO NOTHING
+    </insert>
+
+    <!-- 담당자 삭제 -->
+    <delete id="delete">
+        DELETE FROM flowtask_task_assignee
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </delete>
+
+    <!-- 태스크의 모든 담당자 삭제 -->
+    <delete id="deleteByTask" parameterType="int">
+        DELETE FROM flowtask_task_assignee
+        WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 태스크별 담당자 목록 -->
+    <select id="listByTask" parameterType="int" resultType="taskAssignee">
+        SELECT ta.task_id, ta.member_no, ta.assigned_at, ta.assigned_by,
+               m.name as member_name, m.userid as member_userid
+        FROM flowtask_task_assignee ta
+        JOIN flowtask_member m ON ta.member_no = m.no
+        WHERE ta.task_id = #{taskId}
+        ORDER BY ta.assigned_at ASC
+    </select>
+
+    <!-- 멤버별 담당 태스크 목록 -->
+    <select id="listByMember" parameterType="int" resultType="taskAssignee">
+        SELECT ta.task_id, ta.member_no, ta.assigned_at, ta.assigned_by,
+               m.name as member_name, m.userid as member_userid
+        FROM flowtask_task_assignee ta
+        JOIN flowtask_member m ON ta.member_no = m.no
+        WHERE ta.member_no = #{memberNo}
+        ORDER BY ta.assigned_at DESC
+    </select>
+
+    <!-- 태스크 담당자 수 -->
+    <select id="countByTask" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM flowtask_task_assignee
+        WHERE task_id = #{taskId}
+    </select>
+
+</mapper>

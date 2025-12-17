@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { taskupdate, updateTaskVerifier, approveTask, rejectTask } from '../api/boardApi';
+import React, { useState, useEffect, useRef } from 'react';
+import { taskupdate, updateTaskVerifier, approveTask, rejectTask, updateTaskAssignees } from '../api/boardApi';
 import { getTeamMembers } from '../api/teamApi';
 import { updateTaskTags } from '../api/tagApi';
 import TagInput from './TagInput';
@@ -45,16 +45,32 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         verificationNotes: task?.verificationNotes || ''
     });
     const [selectedTags, setSelectedTags] = useState(task?.tags || []);
+    const [selectedAssignees, setSelectedAssignees] = useState(
+        task?.assignees?.map(a => a.memberNo) || (task?.assigneeNo ? [task.assigneeNo] : [])
+    );
     const [teamMembers, setTeamMembers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [verifyNotes, setVerifyNotes] = useState('');
     const [activeTab, setActiveTab] = useState('details'); // 'details', 'comments', or 'commits'
+    const [assigneeDropdownOpen, setAssigneeDropdownOpen] = useState(false);
+    const assigneeDropdownRef = useRef(null);
 
     useEffect(() => {
         if (teamId) {
             fetchTeamMembers();
         }
     }, [teamId]);
+
+    // 드롭다운 외부 클릭 감지
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (assigneeDropdownRef.current && !assigneeDropdownRef.current.contains(event.target)) {
+                setAssigneeDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchTeamMembers = async () => {
         try {
@@ -63,6 +79,28 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         } catch (error) {
             console.error('팀 멤버 조회 실패:', error);
         }
+    };
+
+    // 담당자 선택/해제 토글
+    const toggleAssignee = (memberNo) => {
+        setSelectedAssignees(prev => {
+            if (prev.includes(memberNo)) {
+                return prev.filter(no => no !== memberNo);
+            } else {
+                return [...prev, memberNo];
+            }
+        });
+    };
+
+    // 선택된 담당자 이름 목록 가져오기
+    const getSelectedAssigneeNames = () => {
+        if (selectedAssignees.length === 0) return '담당자 선택';
+        const names = selectedAssignees
+            .map(no => teamMembers.find(m => m.memberNo === no))
+            .filter(m => m)
+            .map(m => m.memberName);
+        if (names.length <= 2) return names.join(', ');
+        return `${names.slice(0, 2).join(', ')} 외 ${names.length - 2}명`;
     };
 
     const handleChange = (e) => {
@@ -84,7 +122,7 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         try {
             const taskData = {
                 ...form,
-                assigneeNo: form.assigneeNo ? parseInt(form.assigneeNo) : null,
+                assigneeNo: selectedAssignees.length > 0 ? selectedAssignees[0] : null,
                 dueDate: form.dueDate || null
             };
             await taskupdate(taskData);
@@ -94,6 +132,14 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                 const tagIds = selectedTags.map(t => t.tagId);
                 await updateTaskTags(form.taskId, tagIds);
                 taskData.tags = selectedTags;
+
+                // 복수 담당자 저장
+                const senderNo = loginMember?.no || null;
+                await updateTaskAssignees(form.taskId, selectedAssignees, senderNo);
+                taskData.assignees = selectedAssignees.map(no => {
+                    const member = teamMembers.find(m => m.memberNo === no);
+                    return { memberNo: no, memberName: member?.memberName || '' };
+                });
             }
 
             onSave && onSave(taskData);
@@ -248,18 +294,57 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                     <div className="form-row">
                         <div className="form-group">
                             <label>담당자</label>
-                            <select
-                                name="assigneeNo"
-                                value={form.assigneeNo || ''}
-                                onChange={handleChange}
-                            >
-                                <option value="">미지정</option>
-                                {teamMembers.map(member => (
-                                    <option key={member.memberNo} value={member.memberNo}>
-                                        {member.memberName} ({member.memberUserid})
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="multi-select-dropdown" ref={assigneeDropdownRef}>
+                                <div
+                                    className="multi-select-trigger"
+                                    onClick={() => setAssigneeDropdownOpen(!assigneeDropdownOpen)}
+                                >
+                                    <span className={selectedAssignees.length === 0 ? 'placeholder' : ''}>
+                                        {getSelectedAssigneeNames()}
+                                    </span>
+                                    <span className="dropdown-arrow">{assigneeDropdownOpen ? '▲' : '▼'}</span>
+                                </div>
+                                {assigneeDropdownOpen && (
+                                    <div className="multi-select-options">
+                                        {teamMembers.length === 0 ? (
+                                            <div className="no-options">팀 멤버가 없습니다</div>
+                                        ) : (
+                                            teamMembers.map(member => (
+                                                <label key={member.memberNo} className="multi-select-option">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedAssignees.includes(member.memberNo)}
+                                                        onChange={() => toggleAssignee(member.memberNo)}
+                                                    />
+                                                    <span className="member-info">
+                                                        <span className="member-name">{member.memberName}</span>
+                                                        <span className="member-userid">({member.memberUserid})</span>
+                                                    </span>
+                                                </label>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            {selectedAssignees.length > 0 && (
+                                <div className="selected-assignees-chips">
+                                    {selectedAssignees.map(no => {
+                                        const member = teamMembers.find(m => m.memberNo === no);
+                                        return member ? (
+                                            <span key={no} className="assignee-chip">
+                                                {member.memberName}
+                                                <button
+                                                    type="button"
+                                                    className="chip-remove"
+                                                    onClick={() => toggleAssignee(no)}
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ) : null;
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         <div className="form-group">

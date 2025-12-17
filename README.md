@@ -1,6 +1,6 @@
 # Flowtask
 
-프로젝트 관리 및 실시간 협업 애플리케이션입니다.
+팀 기반 칸반 보드 및 실시간 협업 애플리케이션입니다.
 
 ## 기술 스택
 
@@ -9,7 +9,7 @@
 |------|------|
 | Java | 17 |
 | Node.js | 18+ |
-| PostgreSQL | 15+ |
+| PostgreSQL | 16+ |
 
 ### Backend
 | 라이브러리 | 버전 |
@@ -25,9 +25,7 @@
 | 라이브러리 | 버전 |
 |------------|------|
 | React | 18.2.0 |
-| React DOM | 18.2.0 |
 | React Router DOM | 6.20.0 |
-| React Scripts | 5.0.1 |
 | Axios | 1.6.2 |
 | @hello-pangea/dnd | 16.5.0 |
 | @stomp/stompjs | 7.2.1 |
@@ -36,78 +34,34 @@
 ## 주요 기능
 
 - 팀/프로젝트 관리
-- 보드 (드래그 앤 드롭)
-- 태스크 관리 (담당자, 마감일, 우선순위)
+- 칸반 보드 (드래그 앤 드롭)
+- 태스크 관리 (복수 담당자, 마감일, 우선순위)
 - 태스크 댓글
 - 태그 시스템
 - 검증자 워크플로우
-- 팀 채팅 (실시간)
+- 팀 채팅 (실시간 WebSocket)
 - 캘린더 뷰
-- Git 연동
+- Git 커밋 연동
+- 실시간 알림
 
-## 필수 요구사항
+## 빠른 시작 (Docker)
 
-- Java 17+
-- Node.js 18+
-- PostgreSQL 15+
-
-## 초기 설정
-
-### 1. 데이터베이스 설정
-
-PostgreSQL에 데이터베이스와 사용자를 생성합니다.
-
-```sql
--- PostgreSQL에 접속 후
-CREATE DATABASE flowtask;
-CREATE USER flow WITH PASSWORD 'flow123';
-GRANT ALL PRIVILEGES ON DATABASE flowtask TO flow;
-
--- flowtask DB에 접속 후 스키마 권한 부여
-\c flowtask
-GRANT ALL ON SCHEMA public TO flow;
-```
-
-flow 사용자로 접속 후 스키마 파일 실행:
+Docker만 설치되어 있으면 바로 실행할 수 있습니다.
 
 ```bash
-psql -U flow -d flowtask -f database/postgresql_schema.sql
-```
+# 클론
+git clone https://github.com/your-repo/Flowtask.git
+cd Flowtask
 
-### 2. Backend 실행
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-서버가 `http://localhost:8081`에서 시작됩니다.
-
-### 3. Frontend 실행
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-브라우저에서 `http://localhost:3000`으로 접속합니다.
-
-## Docker로 실행
-
-Docker를 사용하면 Java, Node.js, PostgreSQL 설치 없이 바로 실행할 수 있습니다.
-
-### 필수 요구사항
-
-- Docker
-- Docker Compose
-
-### 실행 방법
-
-```bash
-# 빌드 및 실행
+# 실행
 docker-compose up --build
+```
 
+브라우저에서 http://localhost 접속
+
+### Docker 명령어
+
+```bash
 # 백그라운드 실행
 docker-compose up -d --build
 
@@ -129,25 +83,98 @@ docker-compose down -v
 | Backend API | http://localhost:8081 |
 | PostgreSQL | localhost:5432 |
 
-DB 스키마는 컨테이너 최초 실행 시 자동으로 초기화됩니다.
+## 로컬 개발 환경 (Docker 없이)
 
-### AWS EC2 배포
+### 필수 요구사항
+
+- Java 17+
+- Node.js 18+
+- PostgreSQL 16+
+
+### 1. 데이터베이스 설정
+
+```sql
+CREATE DATABASE flowtask;
+CREATE USER flow WITH PASSWORD 'flow123';
+GRANT ALL PRIVILEGES ON DATABASE flowtask TO flow;
+\c flowtask
+GRANT ALL ON SCHEMA public TO flow;
+```
 
 ```bash
-# 1. Docker 설치 (Ubuntu)
-sudo apt update
-sudo apt install docker.io docker-compose -y
-sudo usermod -aG docker $USER
+psql -U flow -d flowtask -f database/postgresql_schema.sql
+```
 
-# 2. 프로젝트 클론
+### 2. Backend 실행
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+### 3. Frontend 실행
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+브라우저에서 http://localhost:3000 접속
+
+## AWS EC2 배포
+
+### 1. EC2 인스턴스 생성
+- AMI: Amazon Linux 2023 또는 Ubuntu 22.04
+- 인스턴스 유형: t3.small 이상
+- 보안 그룹: SSH(22), HTTP(80) 허용
+
+### 2. Docker 설치
+
+**Amazon Linux 2023:**
+```bash
+sudo dnf update -y
+sudo dnf install -y docker git
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ec2-user
+
+# Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# 재로그인
+exit
+```
+
+**Ubuntu:**
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose git
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ubuntu
+exit
+```
+
+### 3. 배포
+
+```bash
+# 프로젝트 클론
 git clone https://github.com/your-repo/Flowtask.git
 cd Flowtask
 
-# 3. 실행
-docker-compose up -d --build
+# 환경 변수 설정
+cp .env.aws.example .env.aws
+nano .env.aws
+
+# 배포
+docker-compose -f docker-compose.aws.yml --env-file .env.aws up -d --build
 ```
 
-EC2 보안그룹에서 80번 포트를 열어야 웹 접속이 가능합니다.
+브라우저에서 `http://EC2-퍼블릭-IP` 접속
+
+자세한 내용은 [AWS_DEPLOY.md](AWS_DEPLOY.md) 참고
 
 ## 프로젝트 구조
 

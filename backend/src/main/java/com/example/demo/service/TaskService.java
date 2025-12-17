@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dao.TaskDao;
 import com.example.demo.dao.FlowtaskColumnDao;
 import com.example.demo.dao.TagDao;
+import com.example.demo.dao.TaskAssigneeDao;
 import com.example.demo.model.Task;
 import com.example.demo.model.Tag;
 import com.example.demo.model.FlowtaskColumn;
@@ -23,6 +24,9 @@ public class TaskService {
 
 	@Autowired
 	private TagDao tagDao;
+
+	@Autowired
+	private TaskAssigneeDao taskAssigneeDao;
 
 	@Autowired
 	private BoardNotificationService notificationService;
@@ -46,6 +50,34 @@ public class TaskService {
 		}
 	}
 
+	// Helper method to populate assignees for a single task
+	private void populateAssignees(Task task) {
+		if (task != null) {
+			task.setAssignees(taskAssigneeDao.listByTask(task.getTaskId()));
+		}
+	}
+
+	// Helper method to populate assignees for a list of tasks
+	private void populateAssignees(List<Task> tasks) {
+		if (tasks != null) {
+			for (Task task : tasks) {
+				populateAssignees(task);
+			}
+		}
+	}
+
+	// Helper method to populate all relations (tags + assignees)
+	private void populateRelations(Task task) {
+		populateTags(task);
+		populateAssignees(task);
+	}
+
+	// Helper method to populate all relations for a list of tasks
+	private void populateRelations(List<Task> tasks) {
+		populateTags(tasks);
+		populateAssignees(tasks);
+	}
+
 	public int insert(Task task) {
 		int result = dao.insert(task);
 		if (result == 1) {
@@ -64,31 +96,31 @@ public class TaskService {
 
 	public List<Task> listByColumn(int columnId) {
 		List<Task> tasks = dao.listByColumn(columnId);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
 	public List<Task> listAll() {
 		List<Task> tasks = dao.listAll();
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
 	public List<Task> listByTeam(int teamId) {
 		List<Task> tasks = dao.listByTeam(teamId);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
 	public List<Task> listByProject(int projectId) {
 		List<Task> tasks = dao.listByProject(projectId);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
 	public Task content(int taskId) {
 		Task task = dao.content(taskId);
-		populateTags(task);
+		populateRelations(task);
 		return task;
 	}
 
@@ -168,7 +200,7 @@ public class TaskService {
 
 	public List<Task> listByAssignee(int memberNo) {
 		List<Task> tasks = dao.listByAssignee(memberNo);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
@@ -177,7 +209,7 @@ public class TaskService {
 		params.put("teamId", teamId);
 		params.put("status", status);
 		List<Task> tasks = dao.listByStatusAndTeam(params);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
@@ -277,7 +309,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				populateTags(updated);
+				populateRelations(updated);
 				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
@@ -292,7 +324,7 @@ public class TaskService {
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
-				populateTags(updated);
+				populateRelations(updated);
 				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
@@ -304,7 +336,7 @@ public class TaskService {
 
 	public List<Task> listPendingVerification(int verifierNo) {
 		List<Task> tasks = dao.listPendingVerification(verifierNo);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 
@@ -315,7 +347,7 @@ public class TaskService {
 		params.put("startDate", startDate);
 		params.put("endDate", endDate);
 		List<Task> tasks = dao.listByDateRange(params);
-		populateTags(tasks);
+		populateRelations(tasks);
 		return tasks;
 	}
 }

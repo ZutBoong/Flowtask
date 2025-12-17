@@ -265,3 +265,134 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+/* ===== 다중 담당자 선택 드롭다운 ===== */
+.multi-select-dropdown {
+    position: relative;
+}
+
+.multi-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    min-height: 42px;
+}
+
+.multi-select-trigger:hover {
+    border-color: #bbb;
+}
+
+.multi-select-trigger .placeholder {
+    color: #999;
+}
+
+.multi-select-trigger .dropdown-arrow {
+    font-size: 10px;
+    color: #666;
+    margin-left: 8px;
+}
+
+.multi-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    margin-top: 4px;
+}
+
+.multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.multi-select-option:hover {
+    background: #f5f5f5;
+}
+
+.multi-select-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.multi-select-option .member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.multi-select-option .member-name {
+    font-size: 14px;
+    color: #333;
+}
+
+.multi-select-option .member-userid {
+    font-size: 12px;
+    color: #888;
+}
+
+.multi-select-options .no-options {
+    padding: 12px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 선택된 담당자 칩 */
+.selected-assignees-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.assignee-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #e8f4fc;
+    border: 1px solid #b8daf3;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #2c7bb6;
+}
+
+.assignee-chip .chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    color: #2c7bb6;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.assignee-chip .chip-remove:hover {
+    background: #b8daf3;
+    color: #1a5d8a;
+}
