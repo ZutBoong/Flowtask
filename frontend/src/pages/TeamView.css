@@ -1,7 +1,8 @@
 .team-view-page {
     display: flex;
-    min-height: 100vh;
-    background-color: #f5f5f5;
+    height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    overflow: hidden;
 }
 
 .team-view-layout {
@@ -10,89 +11,110 @@
     flex-direction: column;
     transition: margin-left 0.3s ease;
     min-width: 0;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .team-view-layout.sidebar-open {
-    margin-left: 250px;
+    margin-left: 280px;
 }
 
 .team-view-layout.sidebar-closed {
-    margin-left: 60px;
+    margin-left: 64px;
 }
 
-/* 통합 헤더 */
+/* ===== 통합 헤더 ===== */
 .team-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 56px;
-    padding: 0 20px;
+    height: 64px;
+    padding: 0 24px;
     background: white;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .team-header-left {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
 }
 
 .team-header .team-name {
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
-    white-space: nowrap;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.3px;
 }
 
+/* ===== 헤더 탭 ===== */
 .header-tabs {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
 }
 
 .header-tabs .tab-button {
-    padding: 8px 14px;
+    padding: 10px 16px;
     border: none;
     background: transparent;
-    color: #666;
+    color: #64748b;
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.15s ease;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
 .header-tabs .tab-button:hover {
-    color: #333;
-    background-color: #f0f0f0;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.6);
 }
 
 .header-tabs .tab-button.active {
-    color: #1a73e8;
-    background-color: #e8f0fe;
-    font-weight: 500;
+    color: #667eea;
+    background: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
+.header-tabs .tab-button .tab-icon {
+    margin-right: 6px;
+}
+
+/* ===== 헤더 우측 ===== */
 .team-header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .header-search {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: #f5f5f5;
-    border-radius: 6px;
-    padding: 8px 12px;
-    width: 220px;
+    gap: 10px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    width: 260px;
+    transition: all 0.2s ease;
+}
+
+.header-search:focus-within {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
 .header-search svg {
-    color: #888;
+    color: #94a3b8;
     flex-shrink: 0;
 }
 
@@ -102,130 +124,197 @@
     background: none;
     font-size: 14px;
     outline: none;
+    color: #1e293b;
 }
 
 .header-search input::placeholder {
-    color: #999;
+    color: #94a3b8;
 }
 
 .team-header .logout-btn {
-    padding: 8px 16px;
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 10px 18px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 13px;
-    color: #666;
-    transition: all 0.15s ease;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s ease;
 }
 
 .team-header .logout-btn:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
-    color: #333;
+    background: #e2e8f0;
+    color: #334155;
 }
 
-/* 메인 영역 (뷰 + 멤버 사이드바) */
+/* ===== 메인 영역 ===== */
 .team-view-main {
     flex: 1;
     display: flex;
     overflow: hidden;
 }
 
-/* 뷰 콘텐츠 */
 .team-view-content {
     flex: 1;
     overflow: auto;
     padding: 0;
-    background-color: #f5f5f5;
+    background: transparent;
 }
 
-/* 멤버 사이드바 */
+.team-view-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.team-view-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.team-view-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+.team-view-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ===== 멤버 사이드바 ===== */
 .member-sidebar {
-    width: 240px;
-    background: #fff;
-    border-left: 1px solid #e5e5e5;
+    width: 260px;
+    background: white;
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
 }
 
 .member-sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .member-sidebar-header span:first-child {
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .member-sidebar-header .member-count {
     font-size: 12px;
-    color: #666;
-    background: #f0f0f0;
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-weight: 600;
+    color: #667eea;
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+    padding: 4px 10px;
+    border-radius: 20px;
 }
 
 .member-list {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
+    padding: 12px;
+}
+
+.member-section {
+    margin-bottom: 16px;
+}
+
+.member-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+}
+
+.member-section-title .online-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.member-item.offline {
+    opacity: 0.6;
+}
+
+.member-item.offline .member-avatar {
+    filter: grayscale(30%);
+}
+
+.member-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.member-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.member-list::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 3px;
 }
 
 .member-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 10px;
-    border-radius: 6px;
+    padding: 10px 12px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
 }
 
 .member-item:hover {
-    background: #f5f5f5;
+    background: #f8fafc;
 }
 
 .member-item .member-avatar {
     position: relative;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #1a73e8;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 
 .member-item.leader .member-avatar {
-    background: #f5a623;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 
-.status-dot {
+.member-avatar .status-dot {
     position: absolute;
     bottom: -2px;
     right: -2px;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    border: 3px solid #fff;
-    background: #bbb;
+    border: 3px solid white;
+    background: #cbd5e1;
 }
 
-.status-dot.online {
-    background: #34a853;
+.member-avatar .status-dot.online {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .member-info {
@@ -233,12 +322,13 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .member-info .member-name {
     font-size: 14px;
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: #1e293b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -246,11 +336,13 @@
 
 .member-info .member-role {
     font-size: 11px;
-    color: #f5a623;
-    font-weight: 500;
+    font-weight: 600;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* 로딩 상태 */
+/* ===== 로딩 상태 ===== */
 .team-loading {
     display: flex;
     flex-direction: column;
@@ -258,14 +350,15 @@
     justify-content: center;
     height: 100%;
     min-height: 400px;
-    color: #666;
+    color: #64748b;
+    gap: 16px;
 }
 
 .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e0e0e0;
-    border-top-color: #1a73e8;
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -276,7 +369,7 @@
     }
 }
 
-/* 팀 없음 상태 */
+/* ===== 팀 없음 상태 ===== */
 .team-not-found {
     display: flex;
     flex-direction: column;
@@ -284,30 +377,57 @@
     justify-content: center;
     height: 100%;
     min-height: 400px;
-    color: #666;
+    color: #64748b;
     text-align: center;
-    padding: 20px;
+    padding: 40px;
 }
 
 .team-not-found h2 {
-    margin-bottom: 10px;
-    color: #333;
+    margin-bottom: 12px;
+    color: #1e293b;
+    font-size: 24px;
+    font-weight: 700;
 }
 
-/* WebSocket 상태 */
+.team-not-found p {
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+/* ===== WebSocket 상태 ===== */
 .ws-status {
     font-size: 10px;
+    font-weight: 600;
     margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .ws-status.connected {
-    color: #4caf50;
+    color: #10b981;
+    background: #d1fae5;
 }
 
-/* 반응형 */
+/* ===== 반응형 ===== */
+@media (max-width: 1200px) {
+    .member-sidebar {
+        width: 220px;
+    }
+
+    .header-search {
+        width: 200px;
+    }
+}
+
 @media (max-width: 1024px) {
     .member-sidebar {
         width: 200px;
+    }
+
+    .header-tabs .tab-button {
+        padding: 8px 12px;
     }
 }
 
@@ -316,25 +436,29 @@
         margin-left: 0;
     }
 
+    .team-view-layout.sidebar-closed {
+        margin-left: 0;
+    }
+
     .team-header {
-        padding: 0 12px;
+        padding: 0 16px;
+        height: 56px;
     }
 
     .team-header-left {
-        gap: 12px;
+        gap: 16px;
     }
 
     .team-header .team-name {
         font-size: 16px;
     }
 
-    .header-tabs .tab-button {
-        padding: 6px 10px;
-        font-size: 12px;
+    .header-tabs {
+        display: none;
     }
 
     .header-search {
-        width: 150px;
+        width: 160px;
     }
 
     .member-sidebar {

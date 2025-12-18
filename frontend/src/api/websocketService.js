@@ -111,6 +111,25 @@ class WebSocketService {
     getClient() {
         return this.client;
     }
+
+    // Presence methods for online status tracking
+    joinTeamPresence(teamId, memberNo) {
+        if (this.client && this.connected) {
+            this.client.publish({
+                destination: `/app/presence/join/${teamId}`,
+                body: JSON.stringify({ memberNo })
+            });
+        }
+    }
+
+    leaveTeamPresence(teamId) {
+        if (this.client && this.connected) {
+            this.client.publish({
+                destination: `/app/presence/leave/${teamId}`,
+                body: JSON.stringify({})
+            });
+        }
+    }
 }
 
 const websocketService = new WebSocketService();

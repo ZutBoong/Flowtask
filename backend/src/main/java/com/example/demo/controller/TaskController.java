@@ -107,27 +107,14 @@ public class TaskController {
 		return list;
 	}
 
-	// 상태별 태스크 목록 (팀 내)
-	@GetMapping("tasklist/team/{teamId}/status/{status}")
+	// 워크플로우 상태별 태스크 목록 (팀 내)
+	@GetMapping("tasklist/team/{teamId}/status/{workflowStatus}")
 	public List<Task> tasklistByStatusAndTeam(
 			@PathVariable("teamId") int teamId,
-			@PathVariable("status") String status) {
-		List<Task> list = service.listByStatusAndTeam(teamId, status);
-		System.out.println("tasklist by status: " + list);
+			@PathVariable("workflowStatus") String workflowStatus) {
+		List<Task> list = service.listByStatusAndTeam(teamId, workflowStatus);
+		System.out.println("tasklist by workflow status: " + list);
 		return list;
-	}
-
-	// 태스크 상태만 변경
-	@PutMapping("task/{taskId}/status")
-	public Integer updateTaskStatus(
-			@PathVariable("taskId") int taskId,
-			@RequestBody Task task) {
-		task.setTaskId(taskId);
-		System.out.println("task status update: " + task);
-		int result = service.updateStatus(task);
-		if (result == 1)
-			System.out.println("태스크 상태 변경 성공");
-		return result;
 	}
 
 	// 태스크 담당자만 변경
@@ -150,52 +137,7 @@ public class TaskController {
 		return result;
 	}
 
-	// ========== 검증자(Verifier) 엔드포인트 ==========
-
-	// 검증자 지정
-	@PutMapping("task/{taskId}/verifier")
-	public Integer updateTaskVerifier(
-			@PathVariable("taskId") int taskId,
-			@RequestBody Task task) {
-		task.setTaskId(taskId);
-		System.out.println("task verifier update: " + task);
-		int result = service.updateVerifier(task);
-		if (result == 1)
-			System.out.println("태스크 검증자 지정 성공");
-		return result;
-	}
-
-	// 검증 승인
-	@PutMapping("task/{taskId}/verify/approve")
-	public Integer approveTask(
-			@PathVariable("taskId") int taskId,
-			@RequestBody(required = false) Task task) {
-		if (task == null) task = new Task();
-		task.setTaskId(taskId);
-		task.setVerificationStatus("APPROVED");
-		System.out.println("task verification approve: " + task);
-		int result = service.updateVerification(task);
-		if (result == 1)
-			System.out.println("태스크 검증 승인 성공");
-		return result;
-	}
-
-	// 검증 반려
-	@PutMapping("task/{taskId}/verify/reject")
-	public Integer rejectTask(
-			@PathVariable("taskId") int taskId,
-			@RequestBody(required = false) Task task) {
-		if (task == null) task = new Task();
-		task.setTaskId(taskId);
-		task.setVerificationStatus("REJECTED");
-		System.out.println("task verification reject: " + task);
-		int result = service.updateVerification(task);
-		if (result == 1)
-			System.out.println("태스크 검증 반려 성공");
-		return result;
-	}
-
-	// 내 검증 대기 목록
+	// 내 검증 대기 목록 (검증자로 배정된 REVIEW 상태 태스크)
 	@GetMapping("tasklist/verification/pending/{memberNo}")
 	public List<Task> tasklistPendingVerification(@PathVariable("memberNo") int memberNo) {
 		List<Task> list = service.listPendingVerification(memberNo);

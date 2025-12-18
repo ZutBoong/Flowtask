@@ -14,7 +14,7 @@ const STATUS_COLORS = {
 function TimelineView({
     team,
     tasks: propTasks,
-    sections: propSections,
+    columns: propColumns,
     teamMembers,
     loginMember,
     filters,
@@ -22,7 +22,7 @@ function TimelineView({
     refreshData
 }) {
     const [tasks, setTasks] = useState(propTasks || []);
-    const [sections, setSections] = useState(propSections || []);
+    const [columns, setColumns] = useState(propColumns || []);
     const [viewStartDate, setViewStartDate] = useState(getStartOfWeek(new Date()));
     const [viewRange, setViewRange] = useState(28); // 기본 4주
     const [selectedTask, setSelectedTask] = useState(null);
@@ -37,8 +37,8 @@ function TimelineView({
     }, [propTasks]);
 
     useEffect(() => {
-        setSections(propSections || []);
-    }, [propSections]);
+        setColumns(propColumns || []);
+    }, [propColumns]);
 
     // 주의 시작일 가져오기 (일요일)
     function getStartOfWeek(date) {
@@ -169,15 +169,10 @@ function TimelineView({
         });
     };
 
-    // 섹션별 태스크
-    const getTasksBySection = (sectionId) => {
-        let sectionTasks;
-        if (sectionId === 'unassigned') {
-            sectionTasks = tasks.filter(t => !t.sectionId);
-        } else {
-            sectionTasks = tasks.filter(t => t.sectionId === sectionId);
-        }
-        return applyFilters(sectionTasks);
+    // 컬럼별 태스크
+    const getTasksByColumn = (columnId) => {
+        const columnTasks = tasks.filter(t => t.columnId === columnId);
+        return applyFilters(columnTasks);
     };
 
 
@@ -243,17 +238,6 @@ function TimelineView({
         setDragMode(null);
     };
 
-    // 오늘 표시선 위치
-    const getTodayPosition = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const idx = dateToIndex(today);
-        if (idx === null || idx < 0 || idx >= viewRange) return null;
-        return `${(idx / viewRange) * 100}%`;
-    };
-
-    const todayPosition = getTodayPosition();
-
     // 월 헤더 생성
     const getMonthHeaders = () => {
         const months = [];
@@ -275,18 +259,18 @@ function TimelineView({
         return months;
     };
 
-    // 섹션 렌더링
-    const renderSection = (sectionId, sectionName, isUnassigned = false) => {
-        const sectionTasks = getTasksBySection(sectionId);
+    // 컬럼 렌더링
+    const renderColumn = (column) => {
+        const columnTasks = getTasksByColumn(column.columnId);
 
         return (
-            <div key={sectionId} className="timeline-section">
+            <div key={column.columnId} className="timeline-section">
                 <div className="timeline-section-header">
-                    <span className="section-name">{sectionName}</span>
-                    <span className="task-count">{sectionTasks.length}</span>
+                    <span className="section-name">{column.title}</span>
+                    <span className="task-count">{columnTasks.length}</span>
                 </div>
                 <div className="timeline-section-content">
-                    {sectionTasks.map(task => {
+                    {columnTasks.map(task => {
                         const barStyle = getTaskBarStyle(task);
 
                         return (
@@ -322,7 +306,7 @@ function TimelineView({
                             </div>
                         );
                     })}
-                    {sectionTasks.length === 0 && (
+                    {columnTasks.length === 0 && (
                         <div className="timeline-row empty">
                             <div className="timeline-row-label">
                                 <span className="empty-text">태스크 없음</span>
@@ -414,28 +398,23 @@ function TimelineView({
 
                 {/* 타임라인 콘텐츠 */}
                 <div className="timeline-content">
-                    {/* 오늘 표시선 */}
-                    {todayPosition && (
-                        <div className="today-line" style={{ left: todayPosition }}></div>
-                    )}
-
                     {/* 그리드 라인 */}
                     <div className="grid-lines">
                         {dates.map((date, idx) => {
                             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                            const isToday = date.toDateString() === new Date().toDateString();
                             return (
                                 <div
                                     key={idx}
-                                    className={`grid-line ${isWeekend ? 'weekend' : ''}`}
+                                    className={`grid-line ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}`}
                                     style={{ left: `${(idx / viewRange) * 100}%`, width: `${100 / viewRange}%` }}
                                 />
                             );
                         })}
                     </div>
 
-                    {/* 섹션들 */}
-                    {sections.map(section => renderSection(section.sectionId, section.sectionName))}
-                    {renderSection('unassigned', '미지정', true)}
+                    {/* 컬럼들 */}
+                    {columns.map(column => renderColumn(column))}
                 </div>
             </div>
 

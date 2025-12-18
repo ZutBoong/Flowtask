@@ -13,4 +13,12 @@ public interface TaskAssigneeDao {
     List<TaskAssignee> listByTask(int taskId);
     List<TaskAssignee> listByMember(int memberNo);
     int countByTask(int taskId);
+
+    // 워크플로우 관련 메서드
+    int acceptTask(@Param("taskId") int taskId, @Param("memberNo") int memberNo);
+    int completeTask(@Param("taskId") int taskId, @Param("memberNo") int memberNo);
+    boolean allAssigneesAccepted(int taskId);
+    boolean allAssigneesCompleted(int taskId);
+    int resetAcceptance(int taskId);
+    int resetCompletion(int taskId);
 }

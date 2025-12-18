@@ -1,49 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { taskwrite, taskupdate, taskdelete } from '../../api/boardApi';
-import { createSection, updateSection, deleteSection } from '../../api/sectionApi';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { taskwrite, taskupdate, taskdelete, taskposition, columnposition } from '../../api/boardApi';
 import TaskModal from '../../components/TaskModal';
 import './ListView.css';
 
-// 상태 라벨
-const STATUS_LABELS = {
-    OPEN: '열림',
-    IN_PROGRESS: '진행중',
-    RESOLVED: '해결됨',
-    CLOSED: '닫힘'
+// 워크플로우 상태
+const WORKFLOW_STATUSES = {
+    WAITING: { label: '대기', color: '#94a3b8' },
+    IN_PROGRESS: { label: '진행', color: '#3b82f6' },
+    REVIEW: { label: '검토', color: '#f59e0b' },
+    DONE: { label: '완료', color: '#10b981' },
+    REJECTED: { label: '반려', color: '#ef4444' }
 };
 
-// 상태 색상
-const STATUS_COLORS = {
-    OPEN: '#ff9800',
-    IN_PROGRESS: '#2196f3',
-    RESOLVED: '#4caf50',
-    CLOSED: '#9c27b0'
+// 우선순위 라벨
+const PRIORITY_LABELS = {
+    CRITICAL: '긴급',
+    HIGH: '높음',
+    MEDIUM: '보통',
+    LOW: '낮음'
+};
+
+// 우선순위 색상
+const PRIORITY_COLORS = {
+    CRITICAL: '#dc2626',
+    HIGH: '#f59e0b',
+    MEDIUM: '#3b82f6',
+    LOW: '#6b7280'
 };
 
 function ListView({
     team,
     tasks: propTasks,
-    sections: propSections,
-    columns,
+    columns: propColumns,
     teamMembers,
     loginMember,
     filters,
     addTask,
     updateTask,
     removeTask,
-    addSection,
-    updateSection: updateSectionProp,
-    removeSection,
     refreshData
 }) {
     const [tasks, setTasks] = useState(propTasks || []);
-    const [sections, setSections] = useState(propSections || []);
-    const [expandedSections, setExpandedSections] = useState({});
+    const [columns, setColumns] = useState(propColumns || []);
+    const [expandedColumns, setExpandedColumns] = useState({});
     const [newTaskTitle, setNewTaskTitle] = useState({});
-    const [newSectionName, setNewSectionName] = useState('');
-    const [editingSection, setEditingSection] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
-    const [addingSectionTask, setAddingSectionTask] = useState(null);
+    const [addingColumnTask, setAddingColumnTask] = useState(null);
 
     // props 동기화
     useEffect(() => {
@@ -51,21 +54,20 @@ function ListView({
     }, [propTasks]);
 
     useEffect(() => {
-        setSections(propSections || []);
-        // 기본적으로 모든 섹션 펼침
+        setColumns(propColumns || []);
+        // 기본적으로 모든 칼럼 펼침
         const expanded = {};
-        (propSections || []).forEach(s => {
-            expanded[s.sectionId] = true;
+        (propColumns || []).forEach(c => {
+            expanded[c.columnId] = true;
         });
-        expanded['unassigned'] = true;
-        setExpandedSections(expanded);
-    }, [propSections]);
+        setExpandedColumns(expanded);
+    }, [propColumns]);
 
-    // 섹션 토글
-    const toggleSection = (sectionId) => {
-        setExpandedSections(prev => ({
+    // 칼럼 토글
+    const toggleColumn = (columnId) => {
+        setExpandedColumns(prev => ({
             ...prev,
-            [sectionId]: !prev[sectionId]
+            [columnId]: !prev[columnId]
         }));
     };
 
@@ -82,7 +84,7 @@ function ListView({
             }
 
             if (filters.statuses?.length > 0) {
-                if (!filters.statuses.includes(task.status)) return false;
+                if (!filters.statuses.includes(task.workflowStatus)) return false;
             }
 
             if (filters.tags?.length > 0) {
@@ -129,91 +131,24 @@ function ListView({
         });
     };
 
-    // 섹션별 태스크 가져오기
-    const getTasksBySection = (sectionId) => {
-        let sectionTasks;
-        if (sectionId === 'unassigned') {
-            sectionTasks = tasks.filter(t => !t.sectionId);
-        } else {
-            sectionTasks = tasks.filter(t => t.sectionId === sectionId);
-        }
-        return applyFilters(sectionTasks);
-    };
-
-    // 새 섹션 추가
-    const handleAddSection = async () => {
-        if (!newSectionName.trim() || !team) return;
-
-        try {
-            const section = await createSection({
-                teamId: team.teamId,
-                sectionName: newSectionName.trim(),
-                position: sections.length + 1
-            });
-            setSections(prev => [...prev, section]);
-            setExpandedSections(prev => ({ ...prev, [section.sectionId]: true }));
-            setNewSectionName('');
-            if (addSection) addSection(section);
-        } catch (error) {
-            console.error('섹션 추가 실패:', error);
-            alert('섹션 추가에 실패했습니다.');
-        }
-    };
-
-    // 섹션 이름 수정
-    const handleUpdateSection = async (sectionId, newName) => {
-        if (!newName.trim()) return;
-
-        try {
-            const section = sections.find(s => s.sectionId === sectionId);
-            await updateSection(sectionId, { ...section, sectionName: newName.trim() });
-            setSections(prev => prev.map(s =>
-                s.sectionId === sectionId ? { ...s, sectionName: newName.trim() } : s
-            ));
-            setEditingSection(null);
-            if (updateSectionProp) updateSectionProp({ ...section, sectionName: newName.trim() });
-        } catch (error) {
-            console.error('섹션 수정 실패:', error);
-        }
-    };
-
-    // 섹션 삭제
-    const handleDeleteSection = async (sectionId) => {
-        if (!window.confirm('이 섹션을 삭제하시겠습니까? 태스크는 삭제되지 않습니다.')) return;
-
-        try {
-            await deleteSection(sectionId);
-            setSections(prev => prev.filter(s => s.sectionId !== sectionId));
-            // 해당 섹션의 태스크들 sectionId를 null로 변경
-            setTasks(prev => prev.map(t =>
-                t.sectionId === sectionId ? { ...t, sectionId: null } : t
-            ));
-            if (removeSection) removeSection(sectionId);
-        } catch (error) {
-            console.error('섹션 삭제 실패:', error);
-        }
+    // 칼럼별 태스크 가져오기
+    const getTasksByColumn = (columnId) => {
+        const columnTasks = tasks.filter(t => t.columnId === columnId);
+        return applyFilters(columnTasks);
     };
 
     // 태스크 추가
-    const handleAddTask = async (sectionId) => {
-        const title = newTaskTitle[sectionId];
-        if (!title?.trim() || !team) return;
-
-        // columns가 있으면 첫 번째 컬럼에 추가
-        const columnId = columns?.[0]?.columnId;
-        if (!columnId) {
-            alert('먼저 보드에서 컬럼을 생성해주세요.');
-            return;
-        }
+    const handleAddTask = async (columnId) => {
+        const title = newTaskTitle[columnId];
+        if (!title?.trim()) return;
 
         try {
             await taskwrite({
                 columnId,
-                title: title.trim(),
-                sectionId: sectionId === 'unassigned' ? null : sectionId
+                title: title.trim()
             });
-            setNewTaskTitle(prev => ({ ...prev, [sectionId]: '' }));
-            setAddingSectionTask(null);
+            setNewTaskTitle(prev => ({ ...prev, [columnId]: '' }));
+            setAddingColumnTask(null);
             if (refreshData) refreshData();
         } catch (error) {
             console.error('태스크 추가 실패:', error);
@@ -221,18 +156,9 @@ function ListView({
         }
     };
 
-    // 태스크 완료 토글
-    const handleToggleComplete = async (task) => {
-        const newStatus = task.status === 'CLOSED' ? 'OPEN' : 'CLOSED';
-        try {
-            await taskupdate({ ...task, status: newStatus });
-            setTasks(prev => prev.map(t =>
-                t.taskId === task.taskId ? { ...t, status: newStatus } : t
-            ));
-            if (updateTask) updateTask({ ...task, status: newStatus });
-        } catch (error) {
-            console.error('상태 변경 실패:', error);
-        }
+    // 태스크 완료 여부 확인 (워크플로우 상태 기반)
+    const isTaskDone = (task) => {
+        return task.workflowStatus === 'DONE';
     };
 
     // 태스크 삭제
@@ -245,6 +171,71 @@ function ListView({
             if (removeTask) removeTask(taskId);
         } catch (error) {
             console.error('태스크 삭제 실패:', error);
+        }
+    };
+
+    // 드래그 앤 드롭 핸들러
+    const onDragEnd = async (result) => {
+        const { destination, source, draggableId, type } = result;
+
+        if (!destination) return;
+        if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+        // 컬럼 드래그
+        if (type === 'column') {
+            const newColumns = Array.from(columns);
+            const [removed] = newColumns.splice(source.index, 1);
+            newColumns.splice(destination.index, 0, removed);
+
+            const updatedColumns = newColumns.map((col, idx) => ({
+                ...col,
+                position: idx + 1
+            }));
+
+            setColumns(updatedColumns);
+
+            try {
+                for (const col of updatedColumns) {
+                    await columnposition({ columnId: col.columnId, position: col.position });
+                }
+            } catch (error) {
+                console.error('컬럼 위치 저장 실패:', error);
+                if (refreshData) refreshData();
+            }
+            return;
+        }
+
+        // 태스크 드래그
+        if (type === 'task') {
+            const taskId = parseInt(draggableId.replace('task-', ''));
+            const destColumnId = parseInt(destination.droppableId.replace('column-', ''));
+
+            const newTasks = [...tasks];
+            const taskIndex = newTasks.findIndex(t => t.taskId === taskId);
+            const [movedTask] = newTasks.splice(taskIndex, 1);
+
+            movedTask.columnId = destColumnId;
+
+            // 대상 컬럼의 태스크들 (필터링 전)
+            const destColumnTasks = newTasks.filter(t => t.columnId === destColumnId);
+            destColumnTasks.splice(destination.index, 0, movedTask);
+
+            // position 재계산
+            destColumnTasks.forEach((t, idx) => {
+                t.position = idx + 1;
+            });
+
+            const otherTasks = newTasks.filter(t => t.columnId !== destColumnId);
+            setTasks([...otherTasks, ...destColumnTasks]);
+
+            try {
+                for (const t of destColumnTasks) {
+                    await taskposition({ taskId: t.taskId, columnId: t.columnId, position: t.position });
+                }
+            } catch (error) {
+                console.error('태스크 위치 저장 실패:', error);
+                if (refreshData) refreshData();
+            }
         }
     };
 
@@ -274,195 +265,198 @@ function ListView({
         );
     };
 
-    // 섹션 렌더링
-    const renderSection = (sectionId, sectionName, isUnassigned = false) => {
-        const sectionTasks = getTasksBySection(sectionId);
-        const isExpanded = expandedSections[sectionId];
+    // 칼럼 렌더링
+    const renderColumn = (column, index) => {
+        const columnTasks = getTasksByColumn(column.columnId);
+        const isExpanded = expandedColumns[column.columnId];
 
         return (
-            <div key={sectionId} className="list-section">
-                <div className="section-header" onClick={() => toggleSection(sectionId)}>
-                    <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>▶</span>
-                    {editingSection === sectionId ? (
-                        <input
-                            type="text"
-                            defaultValue={sectionName}
-                            autoFocus
-                            onClick={(e) => e.stopPropagation()}
-                            onBlur={(e) => handleUpdateSection(sectionId, e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleUpdateSection(sectionId, e.target.value);
-                                }
-                            }}
-                        />
-                    ) : (
-                        <span className="section-name">{sectionName}</span>
-                    )}
-                    <span className="task-count">{sectionTasks.length}</span>
-                    {!isUnassigned && (
-                        <div className="section-actions" onClick={(e) => e.stopPropagation()}>
-                            <button
-                                className="section-action-btn"
-                                onClick={() => setEditingSection(sectionId)}
-                                title="이름 수정"
+            <Draggable
+                key={`column-${column.columnId}`}
+                draggableId={`column-${column.columnId}`}
+                index={index}
+            >
+                {(provided, snapshot) => (
+                    <div
+                        className={`list-column ${snapshot.isDragging ? 'dragging' : ''}`}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                    >
+                        <div className="column-header">
+                            <span className="column-drag-handle" {...provided.dragHandleProps}>⋮⋮</span>
+                            <span
+                                className={`expand-icon ${isExpanded ? 'expanded' : ''}`}
+                                onClick={() => toggleColumn(column.columnId)}
                             >
-                                ✎
-                            </button>
-                            <button
-                                className="section-action-btn delete"
-                                onClick={() => handleDeleteSection(sectionId)}
-                                title="삭제"
-                            >
-                                ×
-                            </button>
+                                ▶
+                            </span>
+                            <span className="column-name" onClick={() => toggleColumn(column.columnId)}>{column.title}</span>
+                            <span className="task-count">{columnTasks.length}</span>
                         </div>
-                    )}
-                </div>
 
-                {isExpanded && (
-                    <div className="section-content">
-                        <table className="task-table">
-                            <thead>
-                                <tr>
-                                    <th className="col-check"></th>
-                                    <th className="col-title">제목</th>
-                                    <th className="col-assignee">담당자</th>
-                                    <th className="col-due">마감일</th>
-                                    <th className="col-status">상태</th>
-                                    <th className="col-actions"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sectionTasks.map(task => (
-                                    <tr
-                                        key={task.taskId}
-                                        className={task.status === 'CLOSED' ? 'completed' : ''}
+                        {isExpanded && (
+                            <div className="column-content">
+                                <table className="task-table">
+                                    <thead>
+                                        <tr>
+                                            <th className="col-drag"></th>
+                                            <th className="col-check"></th>
+                                            <th className="col-title">제목</th>
+                                            <th className="col-assignee">담당자</th>
+                                            <th className="col-due">마감일</th>
+                                            <th className="col-status">상태</th>
+                                            <th className="col-priority">우선순위</th>
+                                            <th className="col-actions"></th>
+                                        </tr>
+                                    </thead>
+                                    <Droppable droppableId={`column-${column.columnId}`} type="task">
+                                        {(taskProvided, taskSnapshot) => (
+                                            <tbody
+                                                ref={taskProvided.innerRef}
+                                                {...taskProvided.droppableProps}
+                                                className={taskSnapshot.isDraggingOver ? 'dragging-over' : ''}
+                                            >
+                                                {columnTasks.map((task, taskIndex) => (
+                                                    <Draggable
+                                                        key={`task-${task.taskId}`}
+                                                        draggableId={`task-${task.taskId}`}
+                                                        index={taskIndex}
+                                                    >
+                                                        {(taskDragProvided, taskDragSnapshot) => (
+                                                            <tr
+                                                                ref={taskDragProvided.innerRef}
+                                                                {...taskDragProvided.draggableProps}
+                                                                className={`${isTaskDone(task) ? 'completed' : ''} ${taskDragSnapshot.isDragging ? 'dragging' : ''}`}
+                                                            >
+                                                                <td className="col-drag" {...taskDragProvided.dragHandleProps}>
+                                                                    <span className="drag-handle">⋮⋮</span>
+                                                                </td>
+                                                                <td className="col-check">
+                                                                    <span className={`status-indicator ${isTaskDone(task) ? 'done' : ''}`}>
+                                                                        {isTaskDone(task) ? '✓' : '○'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="col-title">
+                                                                    <span
+                                                                        className="task-title-link"
+                                                                        onClick={() => setSelectedTask(task)}
+                                                                    >
+                                                                        {task.title}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="col-assignee">{getAssigneeName(task)}</td>
+                                                                <td className="col-due">{formatDueDate(task.dueDate)}</td>
+                                                                <td className="col-status">
+                                                                    <span
+                                                                        className="status-badge"
+                                                                        style={{ backgroundColor: WORKFLOW_STATUSES[task.workflowStatus]?.color || '#94a3b8' }}
+                                                                    >
+                                                                        {WORKFLOW_STATUSES[task.workflowStatus]?.label || '대기'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="col-priority">
+                                                                    {task.priority && (
+                                                                        <span
+                                                                            className="priority-badge"
+                                                                            style={{ backgroundColor: PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.MEDIUM }}
+                                                                        >
+                                                                            {PRIORITY_LABELS[task.priority] || '보통'}
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="col-actions">
+                                                                    <button
+                                                                        className="row-delete-btn"
+                                                                        onClick={() => handleDeleteTask(task.taskId)}
+                                                                        title="삭제"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                {taskProvided.placeholder}
+                                            </tbody>
+                                        )}
+                                    </Droppable>
+                                </table>
+
+                                {/* 태스크 추가 */}
+                                {addingColumnTask === column.columnId ? (
+                                    <div className="add-task-inline">
+                                        <input
+                                            type="text"
+                                            placeholder="태스크 제목 입력..."
+                                            value={newTaskTitle[column.columnId] || ''}
+                                            onChange={(e) => setNewTaskTitle(prev => ({
+                                                ...prev,
+                                                [column.columnId]: e.target.value
+                                            }))}
+                                            onKeyPress={(e) => {
+                                                if (e.key === 'Enter') handleAddTask(column.columnId);
+                                            }}
+                                            autoFocus
+                                        />
+                                        <button onClick={() => handleAddTask(column.columnId)}>추가</button>
+                                        <button onClick={() => setAddingColumnTask(null)}>취소</button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        className="add-task-btn"
+                                        onClick={() => setAddingColumnTask(column.columnId)}
                                     >
-                                        <td className="col-check">
-                                            <input
-                                                type="checkbox"
-                                                checked={task.status === 'CLOSED'}
-                                                onChange={() => handleToggleComplete(task)}
-                                            />
-                                        </td>
-                                        <td className="col-title">
-                                            <span
-                                                className="task-title-link"
-                                                onClick={() => setSelectedTask(task)}
-                                            >
-                                                {task.title}
-                                            </span>
-                                            {task.tags?.length > 0 && (
-                                                <div className="task-tags">
-                                                    {task.tags.slice(0, 2).map(tag => (
-                                                        <span
-                                                            key={tag.tagId}
-                                                            className="tag-badge"
-                                                            style={{ backgroundColor: tag.color }}
-                                                        >
-                                                            {tag.tagName}
-                                                        </span>
-                                                    ))}
-                                                    {task.tags.length > 2 && (
-                                                        <span className="tag-more">+{task.tags.length - 2}</span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="col-assignee">{getAssigneeName(task)}</td>
-                                        <td className="col-due">{formatDueDate(task.dueDate)}</td>
-                                        <td className="col-status">
-                                            <span
-                                                className="status-badge"
-                                                style={{ backgroundColor: STATUS_COLORS[task.status] || STATUS_COLORS.OPEN }}
-                                            >
-                                                {STATUS_LABELS[task.status] || '열림'}
-                                            </span>
-                                        </td>
-                                        <td className="col-actions">
-                                            <button
-                                                className="row-delete-btn"
-                                                onClick={() => handleDeleteTask(task.taskId)}
-                                                title="삭제"
-                                            >
-                                                ×
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                        {/* 태스크 추가 */}
-                        {addingSectionTask === sectionId ? (
-                            <div className="add-task-inline">
-                                <input
-                                    type="text"
-                                    placeholder="태스크 제목 입력..."
-                                    value={newTaskTitle[sectionId] || ''}
-                                    onChange={(e) => setNewTaskTitle(prev => ({
-                                        ...prev,
-                                        [sectionId]: e.target.value
-                                    }))}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter') handleAddTask(sectionId);
-                                    }}
-                                    autoFocus
-                                />
-                                <button onClick={() => handleAddTask(sectionId)}>추가</button>
-                                <button onClick={() => setAddingSectionTask(null)}>취소</button>
+                                        + 작업 추가
+                                    </button>
+                                )}
                             </div>
-                        ) : (
-                            <button
-                                className="add-task-btn"
-                                onClick={() => setAddingSectionTask(sectionId)}
-                            >
-                                + 작업 추가
-                            </button>
                         )}
                     </div>
                 )}
-            </div>
+            </Draggable>
         );
     };
 
     return (
-        <div className="list-view">
-            {/* 섹션들 */}
-            {sections.map(section => renderSection(section.sectionId, section.sectionName))}
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className="list-view">
+                {/* 칼럼들 */}
+                <Droppable droppableId="columns" type="column">
+                    {(provided, snapshot) => (
+                        <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className={`columns-droppable ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                        >
+                            {columns.map((column, index) => renderColumn(column, index))}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
 
-            {/* 미지정 섹션 */}
-            {renderSection('unassigned', '미지정', true)}
+                {/* 칼럼이 없을 경우 */}
+                {columns.length === 0 && (
+                    <div className="no-columns">
+                        <p>보드에서 칼럼을 먼저 생성해주세요.</p>
+                    </div>
+                )}
 
-            {/* 새 섹션 추가 */}
-            <div className="add-section">
-                <input
-                    type="text"
-                    placeholder="새 섹션 이름..."
-                    value={newSectionName}
-                    onChange={(e) => setNewSectionName(e.target.value)}
-                    onKeyPress={(e) => {
-                        if (e.key === 'Enter') handleAddSection();
-                    }}
-                />
-                <button onClick={handleAddSection}>+ 섹션 추가</button>
+                {/* 태스크 상세 모달 */}
+                {selectedTask && (
+                    <TaskModal
+                        task={selectedTask}
+                        teamId={team?.teamId}
+                        loginMember={loginMember}
+                        onClose={() => setSelectedTask(null)}
+                        onSave={() => {
+                            if (refreshData) refreshData();
+                            setSelectedTask(null);
+                        }}
+                    />
+                )}
             </div>
-
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        if (refreshData) refreshData();
-                        setSelectedTask(null);
-                    }}
-                />
-            )}
-        </div>
+        </DragDropContext>
     );
 }
 

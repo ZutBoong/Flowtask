@@ -8,7 +8,6 @@ import {
 } from '../api/boardApi';
 import { getTeamMembers } from '../api/teamApi';
 import {
-    getColumnAssignees, setColumnAssignees as setColumnAssigneesApi,
     toggleColumnFavorite, checkColumnFavorite,
     archiveColumn
 } from '../api/columnApi';
@@ -69,10 +68,8 @@ function Board() {
     const [codeCopySuccess, setCodeCopySuccess] = useState(false);
 
     // 컬럼 기능 관련 상태
-    const [columnAssignees, setColumnAssignees] = useState({});  // { columnId: [assignees] }
     const [columnFavorites, setColumnFavoritesState] = useState({});  // { columnId: boolean }
     const [columnMenuOpen, setColumnMenuOpen] = useState(null);  // 열린 컬럼 메뉴의 columnId
-    const [assigneeModalColumn, setAssigneeModalColumn] = useState(null);  // 담당자 모달이 열린 컬럼
     const [archiveModalColumn, setArchiveModalColumn] = useState(null);  // 아카이브 모달이 열린 컬럼
     const [archiveNote, setArchiveNote] = useState('');
 
@@ -263,9 +260,9 @@ function Board() {
             setColumns(columnsData || []);
             setTasks(tasksData || []);
             setTeamMembers(membersData || []);
-            // 컬럼 담당자/즐겨찾기 로드
+            // 컬럼 즐겨찾기 로드
             if (columnsData && columnsData.length > 0) {
-                loadColumnExtras(columnsData);
+                loadColumnFavorites(columnsData);
             }
         } catch (error) {
             console.error('데이터 로드 실패:', error);
@@ -278,28 +275,21 @@ function Board() {
         setCurrentTeam(team);
     };
 
-    // 컬럼 담당자/즐겨찾기 로드
-    const loadColumnExtras = async (columnList) => {
+    // 컬럼 즐겨찾기 로드
+    const loadColumnFavorites = async (columnList) => {
         if (!loginMember) return;
 
-        const assigneesMap = {};
         const favoritesMap = {};
 
         await Promise.all(columnList.map(async (column) => {
             try {
-                const [assignees, favoriteResult] = await Promise.all([
-                    getColumnAssignees(column.columnId),
-                    checkColumnFavorite(column.columnId, loginMember.no)
-                ]);
-                assigneesMap[column.columnId] = assignees || [];
+                const favoriteResult = await checkColumnFavorite(column.columnId, loginMember.no);
                 favoritesMap[column.columnId] = favoriteResult?.isFavorite || false;
             } catch (e) {
-                assigneesMap[column.columnId] = [];
                 favoritesMap[column.columnId] = false;
             }
         }));
 
-        setColumnAssignees(assigneesMap);
         setColumnFavoritesState(favoritesMap);
     };
 
@@ -314,22 +304,6 @@ function Board() {
             }));
         } catch (error) {
             console.error('즐겨찾기 토글 실패:', error);
-        }
-    };
-
-    // 컬럼 담당자 저장
-    const handleSaveAssignees = async (columnId, memberNos) => {
-        try {
-            // loginMember가 있으면 senderNo를 전달하여 알림 발송
-            await setColumnAssigneesApi(columnId, memberNos, loginMember?.no);
-            const assignees = await getColumnAssignees(columnId);
-            setColumnAssignees(prev => ({
-                ...prev,
-                [columnId]: assignees || []
-            }));
-            setAssigneeModalColumn(null);
-        } catch (error) {
-            console.error('담당자 저장 실패:', error);
         }
     };
 
@@ -814,12 +788,6 @@ function Board() {
                                                                                 {columnMenuOpen === column.columnId && (
                                                                                     <div className="column-menu-dropdown">
                                                                                         <button onClick={() => {
-                                                                                            setAssigneeModalColumn(column.columnId);
-                                                                                            setColumnMenuOpen(null);
-                                                                                        }}>
-                                                                                            👥 담당자 설정
-                                                                                        </button>
-                                                                                        <button onClick={() => {
                                                                                             setArchiveModalColumn(column.columnId);
                                                                                             setColumnMenuOpen(null);
                                                                                         }}>
@@ -838,21 +806,6 @@ function Board() {
                                                                                 )}
                                                                             </div>
                                                                         </div>
-                                                                        {/* 컬럼 담당자 표시 */}
-                                                                        {columnAssignees[column.columnId]?.length > 0 && (
-                                                                            <div className="column-assignees">
-                                                                                {columnAssignees[column.columnId].slice(0, 3).map(assignee => (
-                                                                                    <span key={assignee.memberNo} className="column-assignee-badge" title={assignee.memberName}>
-                                                                                        {assignee.memberName?.charAt(0) || '?'}
-                                                                                    </span>
-                                                                                ))}
-                                                                                {columnAssignees[column.columnId].length > 3 && (
-                                                                                    <span className="column-assignee-more">
-                                                                                        +{columnAssignees[column.columnId].length - 3}
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
                                                                     </>
                                                                 )}
                                                             </div>
@@ -1145,63 +1098,6 @@ function Board() {
                         setSelectedTask(null);
                     }}
                 />
-            )}
-
-            {/* 컬럼 담당자 설정 모달 */}
-            {assigneeModalColumn && (
-                <div className="modal-overlay" onClick={() => setAssigneeModalColumn(null)}>
-                    <div className="modal-content assignee-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>컬럼 담당자 설정</h3>
-                            <button className="close-btn" onClick={() => setAssigneeModalColumn(null)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="modal-description">담당자를 선택하세요 (복수 선택 가능)</p>
-                            <div className="assignee-list">
-                                {teamMembers.map(member => {
-                                    const isSelected = columnAssignees[assigneeModalColumn]?.some(
-                                        a => a.memberNo === member.memberNo
-                                    );
-                                    return (
-                                        <label key={member.memberNo} className="assignee-checkbox">
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={(e) => {
-                                                    const currentAssignees = columnAssignees[assigneeModalColumn] || [];
-                                                    let newAssignees;
-                                                    if (e.target.checked) {
-                                                        newAssignees = [...currentAssignees, { memberNo: member.memberNo, memberName: member.memberName }];
-                                                    } else {
-                                                        newAssignees = currentAssignees.filter(a => a.memberNo !== member.memberNo);
-                                                    }
-                                                    setColumnAssignees(prev => ({
-                                                        ...prev,
-                                                        [assigneeModalColumn]: newAssignees
-                                                    }));
-                                                }}
-                                            />
-                                            <span className="assignee-name">{member.memberName}</span>
-                                            <span className="assignee-userid">@{member.memberUserid}</span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="cancel-btn" onClick={() => setAssigneeModalColumn(null)}>취소</button>
-                            <button
-                                className="save-btn"
-                                onClick={() => {
-                                    const memberNos = (columnAssignees[assigneeModalColumn] || []).map(a => a.memberNo);
-                                    handleSaveAssignees(assigneeModalColumn, memberNos);
-                                }}
-                            >
-                                저장
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {/* 컬럼 아카이브 모달 */}

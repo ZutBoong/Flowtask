@@ -2,61 +2,127 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 100px);
+    min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
 }
 
 .home-content {
     text-align: center;
-    padding: 60px 40px;
+    padding: 60px 48px;
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    max-width: 460px;
     width: 90%;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .home-title {
-    font-size: 48px;
-    color: #026aa7;
-    margin-bottom: 10px;
-    font-weight: bold;
+    font-size: 52px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    font-weight: 900;
+    letter-spacing: -1px;
 }
 
 .home-subtitle {
-    color: #666;
-    font-size: 16px;
+    color: #64748b;
+    font-size: 17px;
     margin-bottom: 40px;
+    font-weight: 500;
+    line-height: 1.6;
 }
 
 .home-buttons {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
+    gap: 14px;
+    margin-bottom: 32px;
 }
 
 .btn-large {
-    padding: 15px 30px;
+    padding: 18px 32px;
     font-size: 16px;
+    font-weight: 700;
     width: 100%;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-large.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-large.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.btn-large.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-large.btn-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
 }
 
 .home-links {
-    color: #666;
+    color: #64748b;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .home-links span {
     cursor: pointer;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.15s ease;
 }
 
 .home-links span:hover:not(.divider) {
-    color: #026aa7;
+    color: #764ba2;
     text-decoration: underline;
 }
 
 .home-links .divider {
-    margin: 0 15px;
+    margin: 0 16px;
+    color: #cbd5e1;
     cursor: default;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+    .home-content {
+        padding: 40px 28px;
+    }
+
+    .home-title {
+        font-size: 40px;
+    }
+
+    .home-subtitle {
+        font-size: 15px;
+    }
 }

@@ -5,21 +5,21 @@
 	<!-- 태스크 생성 -->
 	<insert id="insert" parameterType="task">
 		INSERT INTO flowtask_task (task_id, column_id, title, description, position, created_at,
-			assignee_no, priority, due_date, status)
+			assignee_no, priority, start_date, due_date, workflow_status)
 		VALUES (nextval('flowtask_task_seq'), #{columnId}, #{title}, #{description, jdbcType=VARCHAR},
 			#{position}, CURRENT_TIMESTAMP,
 			#{assigneeNo, jdbcType=INTEGER}, #{priority, jdbcType=VARCHAR},
-			#{dueDate, jdbcType=DATE}, COALESCE(#{status, jdbcType=VARCHAR}, 'OPEN'))
+			COALESCE(#{startDate, jdbcType=DATE}, CURRENT_DATE),
+			#{dueDate, jdbcType=DATE}, COALESCE(#{workflowStatus, jdbcType=VARCHAR}, 'WAITING'))
 	</insert>
 
 	<!-- 컬럼별 태스크 목록 -->
 	<select id="listByColumn" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.column_id = #{columnId}
 		ORDER BY t.position ASC
 	</select>
@@ -27,23 +27,21 @@
 	<!-- 전체 태스크 목록 -->
 	<select id="listAll" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		ORDER BY t.column_id, t.position ASC
 	</select>
 
 	<!-- 팀별 태스크 목록 -->
 	<select id="listByTeam" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
 		ORDER BY t.column_id, t.position ASC
 	</select>
@@ -51,12 +49,11 @@
 	<!-- 프로젝트별 태스크 목록 -->
 	<select id="listByProject" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.project_id = #{projectId}
 		ORDER BY t.column_id, t.position ASC
 	</select>
@@ -64,11 +61,10 @@
 	<!-- 태스크 상세 -->
 	<select id="content" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.task_id = #{taskId}
 	</select>
 
@@ -79,8 +75,8 @@
 			description = #{description, jdbcType=VARCHAR},
 			assignee_no = #{assigneeNo, jdbcType=INTEGER},
 			priority = #{priority, jdbcType=VARCHAR},
-			due_date = #{dueDate, jdbcType=DATE},
-			status = #{status, jdbcType=VARCHAR}
+			start_date = #{startDate, jdbcType=DATE},
+			due_date = #{dueDate, jdbcType=DATE}
 		WHERE task_id = #{taskId}
 	</update>
 
@@ -104,11 +100,10 @@
 	<!-- 담당자별 태스크 목록 -->
 	<select id="listByAssignee" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.assignee_no = #{memberNo}
 		ORDER BY
 			CASE t.priority
@@ -120,17 +115,16 @@
 			t.due_date NULLS LAST
 	</select>
 
-	<!-- 상태별 태스크 목록 (팀 내) -->
+	<!-- 워크플로우 상태별 태스크 목록 (팀 내) -->
 	<select id="listByStatusAndTeam" parameterType="map" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
-		AND t.status = #{status}
+		AND t.workflow_status = #{workflowStatus}
 		ORDER BY
 			CASE t.priority
 				WHEN 'CRITICAL' THEN 1
@@ -141,10 +135,20 @@
 			t.due_date NULLS LAST
 	</select>
 
-	<!-- 상태만 변경 -->
-	<update id="updateStatus" parameterType="task">
+	<!-- 워크플로우 상태 변경 -->
+	<update id="updateWorkflowStatus" parameterType="task">
 		UPDATE flowtask_task
-		SET status = #{status}
+		SET workflow_status = #{workflowStatus}
+		WHERE task_id = #{taskId}
+	</update>
+
+	<!-- 반려 처리 -->
+	<update id="updateRejection" parameterType="task">
+		UPDATE flowtask_task
+		SET workflow_status = 'REJECTED',
+			rejection_reason = #{rejectionReason},
+			rejected_at = CURRENT_TIMESTAMP,
+			rejected_by = #{rejectedBy}
 		WHERE task_id = #{taskId}
 	</update>
 
@@ -155,44 +159,17 @@
 		WHERE task_id = #{taskId}
 	</update>
 
-	<!-- 검증자 지정 -->
-	<update id="updateVerifier" parameterType="task">
-		UPDATE flowtask_task
-		SET verifier_no = #{verifierNo, jdbcType=INTEGER},
-			verification_status = CASE
-				WHEN #{verifierNo, jdbcType=INTEGER} IS NOT NULL THEN 'PENDING'
-				ELSE 'NONE'
-			END
-		WHERE task_id = #{taskId}
-	</update>
-
-	<!-- 검증 처리 (승인/반려) -->
-	<update id="updateVerification" parameterType="task">
-		UPDATE flowtask_task
-		SET verification_status = #{verificationStatus},
-			verified_at = CASE
-				WHEN #{verificationStatus} IN ('APPROVED', 'REJECTED') THEN CURRENT_TIMESTAMP
-				ELSE NULL
-			END,
-			verification_notes = #{verificationNotes, jdbcType=VARCHAR},
-			status = CASE
-				WHEN #{verificationStatus} = 'APPROVED' THEN 'CLOSED'
-				WHEN #{verificationStatus} = 'REJECTED' THEN 'IN_PROGRESS'
-				ELSE status
-			END
-		WHERE task_id = #{taskId}
-	</update>
-
-	<!-- 내 검증 대기 목록 -->
+	<!-- 내 검증 대기 목록 (검증자로 배정된 REVIEW 상태 태스크) -->
 	<select id="listPendingVerification" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
-		WHERE t.verifier_no = #{verifierNo}
-		AND t.verification_status = 'PENDING'
+		JOIN flowtask_task_verifier tv ON t.task_id = tv.task_id
+		WHERE tv.member_no = #{memberNo}
+		AND tv.approved = false
+		AND t.workflow_status = 'REVIEW'
 		ORDER BY
 			CASE t.priority
 				WHEN 'CRITICAL' THEN 1
@@ -206,12 +183,11 @@
 	<!-- 캘린더용 날짜 범위 조회 (팀 내, 마감일 기준) -->
 	<select id="listByDateRange" parameterType="map" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date, t.status,
-			t.section_id, t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE c.team_id = #{teamId}
 		AND t.due_date IS NOT NULL
 		AND t.due_date BETWEEN #{startDate} AND #{endDate}
@@ -221,11 +197,10 @@
 	<!-- 섹션별 태스크 목록 -->
 	<select id="listBySection" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date, t.status,
-			t.section_id, t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
 		WHERE t.section_id = #{sectionId}
 		ORDER BY t.position ASC
 	</select>

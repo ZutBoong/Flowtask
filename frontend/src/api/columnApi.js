@@ -1,44 +1,6 @@
 import axiosInstance from './axiosInstance';
 
 // ============================================
-// 컬럼 담당자 API
-// ============================================
-
-// 컬럼 담당자 목록 조회
-export const getColumnAssignees = async (columnId) => {
-    const response = await axiosInstance.get(`/api/column/${columnId}/assignees`);
-    return response.data;
-};
-
-// 컬럼 담당자 추가
-export const addColumnAssignee = async (columnId, memberNo) => {
-    const response = await axiosInstance.post(`/api/column/${columnId}/assignees/${memberNo}`);
-    return response.data;
-};
-
-// 컬럼 담당자 삭제
-export const removeColumnAssignee = async (columnId, memberNo) => {
-    const response = await axiosInstance.delete(`/api/column/${columnId}/assignees/${memberNo}`);
-    return response.data;
-};
-
-// 컬럼 담당자 일괄 설정 (senderNo가 있으면 알림 발송)
-export const setColumnAssignees = async (columnId, memberNos, senderNo = null) => {
-    const body = { memberNos };
-    if (senderNo) {
-        body.senderNo = senderNo;
-    }
-    const response = await axiosInstance.put(`/api/column/${columnId}/assignees`, body);
-    return response.data;
-};
-
-// 멤버별 담당 컬럼 목록
-export const getColumnsByMember = async (memberNo) => {
-    const response = await axiosInstance.get(`/api/column/assignees/member/${memberNo}`);
-    return response.data;
-};
-
-// ============================================
 // 컬럼 즐겨찾기 API
 // ============================================
 

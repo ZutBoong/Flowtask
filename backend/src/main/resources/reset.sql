@@ -1,6 +1,7 @@
 -- 모든 테이블 삭제 후 새로 생성 (schema.sql에서 재생성됨)
 DROP TABLE IF EXISTS flowtask_task_commit CASCADE;
 DROP TABLE IF EXISTS flowtask_task_tag CASCADE;
+DROP TABLE IF EXISTS flowtask_task_verifier CASCADE;
 DROP TABLE IF EXISTS flowtask_task_assignee CASCADE;
 DROP TABLE IF EXISTS flowtask_comment CASCADE;
 DROP TABLE IF EXISTS flowtask_chat_message CASCADE;

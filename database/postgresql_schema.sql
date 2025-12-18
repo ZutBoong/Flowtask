@@ -121,24 +121,21 @@ CREATE TABLE IF NOT EXISTS flowtask_task (
     priority VARCHAR(20) DEFAULT 'MEDIUM',
     start_date TIMESTAMP,
     due_date TIMESTAMP,
-    status VARCHAR(30) DEFAULT 'OPEN',
     -- Section for list/timeline grouping
     section_id INTEGER REFERENCES flowtask_section(section_id) ON DELETE SET NULL,
-    -- Verifier fields
-    verifier_no INTEGER REFERENCES flowtask_member(no) ON DELETE SET NULL,
-    verified_at TIMESTAMP,
-    verification_status VARCHAR(20) DEFAULT 'NONE',
-    verification_notes VARCHAR(1000)
+    -- Workflow fields (NEW)
+    workflow_status VARCHAR(20) DEFAULT 'WAITING',
+    rejection_reason TEXT,
+    rejected_at TIMESTAMP,
+    rejected_by INTEGER REFERENCES flowtask_member(no) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_flowtask_task_column ON flowtask_task(column_id);
 CREATE INDEX IF NOT EXISTS idx_flowtask_task_position ON flowtask_task(column_id, position);
 CREATE INDEX IF NOT EXISTS idx_task_assignee ON flowtask_task(assignee_no);
-CREATE INDEX IF NOT EXISTS idx_task_status ON flowtask_task(status);
+CREATE INDEX IF NOT EXISTS idx_task_workflow_status ON flowtask_task(workflow_status);
 CREATE INDEX IF NOT EXISTS idx_task_priority ON flowtask_task(priority);
 CREATE INDEX IF NOT EXISTS idx_task_due_date ON flowtask_task(due_date);
-CREATE INDEX IF NOT EXISTS idx_task_verifier ON flowtask_task(verifier_no);
-CREATE INDEX IF NOT EXISTS idx_task_verif_status ON flowtask_task(verification_status);
 CREATE INDEX IF NOT EXISTS idx_task_start_date ON flowtask_task(start_date);
 CREATE INDEX IF NOT EXISTS idx_task_section ON flowtask_task(section_id);
 
@@ -229,19 +226,6 @@ CREATE TABLE IF NOT EXISTS flowtask_task_commit (
 CREATE INDEX IF NOT EXISTS idx_taskcommit_task ON flowtask_task_commit(task_id);
 
 -- ========================================
--- 컬럼 담당자 테이블 (M:N)
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_column_assignee (
-    column_id INTEGER NOT NULL REFERENCES flowtask_column(column_id) ON DELETE CASCADE,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (column_id, member_no)
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_assignee_column ON flowtask_column_assignee(column_id);
-CREATE INDEX IF NOT EXISTS idx_column_assignee_member ON flowtask_column_assignee(member_no);
-
--- ========================================
 -- 컬럼 즐겨찾기 테이블
 -- ========================================
 CREATE TABLE IF NOT EXISTS flowtask_column_favorite (
@@ -308,11 +292,32 @@ CREATE TABLE IF NOT EXISTS flowtask_task_assignee (
     member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     assigned_by INTEGER REFERENCES flowtask_member(no) ON DELETE SET NULL,
+    -- Workflow fields (NEW)
+    accepted BOOLEAN DEFAULT FALSE,
+    accepted_at TIMESTAMP,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
     PRIMARY KEY (task_id, member_no)
 );
 
 CREATE INDEX IF NOT EXISTS idx_task_assignee_task ON flowtask_task_assignee(task_id);
 CREATE INDEX IF NOT EXISTS idx_task_assignee_member ON flowtask_task_assignee(member_no);
+
+-- ========================================
+-- 태스크 검증자 테이블 (복수 검증자 지원) - NEW
+-- ========================================
+CREATE TABLE IF NOT EXISTS flowtask_task_verifier (
+    task_id INTEGER NOT NULL REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
+    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved BOOLEAN DEFAULT FALSE,
+    approved_at TIMESTAMP,
+    rejection_reason TEXT,
+    PRIMARY KEY (task_id, member_no)
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_verifier_task ON flowtask_task_verifier(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_verifier_member ON flowtask_task_verifier(member_no);
 
 -- ========================================
 -- 파일 테이블 (프로젝트/태스크 첨부파일)

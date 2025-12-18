@@ -22,13 +22,12 @@ public interface TaskDao {
 	// Issue Tracker 확장 메서드
 	List<Task> listByAssignee(int memberNo);
 	List<Task> listByStatusAndTeam(Map<String, Object> params);
-	int updateStatus(Task task);
 	int updateAssignee(Task task);
 
-	// 검증자 관련 메서드
-	int updateVerifier(Task task);
-	int updateVerification(Task task);
-	List<Task> listPendingVerification(int verifierNo);
+	// 워크플로우 관련 메서드
+	int updateWorkflowStatus(Task task);
+	int updateRejection(Task task);
+	List<Task> listPendingVerification(int memberNo);
 
 	// 캘린더용 날짜 범위 조회
 	List<Task> listByDateRange(Map<String, Object> params);

@@ -4,8 +4,8 @@
 
     <!-- 담당자 추가 -->
     <insert id="insert" parameterType="taskAssignee">
-        INSERT INTO flowtask_task_assignee (task_id, member_no, assigned_at, assigned_by)
-        VALUES (#{taskId}, #{memberNo}, CURRENT_TIMESTAMP, #{assignedBy})
+        INSERT INTO flowtask_task_assignee (task_id, member_no, assigned_at, assigned_by, accepted, completed)
+        VALUES (#{taskId}, #{memberNo}, CURRENT_TIMESTAMP, #{assignedBy}, false, false)
         ON CONFLICT (task_id, member_no) DO NOTHING
     </insert>
 
@@ -24,6 +24,7 @@
     <!-- 태스크별 담당자 목록 -->
     <select id="listByTask" parameterType="int" resultType="taskAssignee">
         SELECT ta.task_id, ta.member_no, ta.assigned_at, ta.assigned_by,
+               ta.accepted, ta.accepted_at, ta.completed, ta.completed_at,
                m.name as member_name, m.userid as member_userid
         FROM flowtask_task_assignee ta
         JOIN flowtask_member m ON ta.member_no = m.no
@@ -34,6 +35,7 @@
     <!-- 멤버별 담당 태스크 목록 -->
     <select id="listByMember" parameterType="int" resultType="taskAssignee">
         SELECT ta.task_id, ta.member_no, ta.assigned_at, ta.assigned_by,
+               ta.accepted, ta.accepted_at, ta.completed, ta.completed_at,
                m.name as member_name, m.userid as member_userid
         FROM flowtask_task_assignee ta
         JOIN flowtask_member m ON ta.member_no = m.no
@@ -46,5 +48,57 @@
         SELECT COUNT(*) FROM flowtask_task_assignee
         WHERE task_id = #{taskId}
     </select>
+
+    <!-- 담당자 수락 -->
+    <update id="acceptTask">
+        UPDATE flowtask_task_assignee
+        SET accepted = true, accepted_at = CURRENT_TIMESTAMP
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </update>
+
+    <!-- 담당자 완료 처리 -->
+    <update id="completeTask">
+        UPDATE flowtask_task_assignee
+        SET completed = true, completed_at = CURRENT_TIMESTAMP
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </update>
+
+    <!-- 모든 담당자 수락 여부 확인 -->
+    <select id="allAssigneesAccepted" parameterType="int" resultType="boolean">
+        SELECT CASE
+            WHEN COUNT(*) = 0 THEN true
+            ELSE NOT EXISTS (
+                SELECT 1 FROM flowtask_task_assignee
+                WHERE task_id = #{taskId} AND accepted = false
+            )
+        END
+        FROM flowtask_task_assignee WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 모든 담당자 완료 여부 확인 -->
+    <select id="allAssigneesCompleted" parameterType="int" resultType="boolean">
+        SELECT CASE
+            WHEN COUNT(*) = 0 THEN true
+            ELSE NOT EXISTS (
+                SELECT 1 FROM flowtask_task_assignee
+                WHERE task_id = #{taskId} AND completed = false
+            )
+        END
+        FROM flowtask_task_assignee WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 수락 상태 초기화 (반려시 재수락 필요) -->
+    <update id="resetAcceptance" parameterType="int">
+        UPDATE flowtask_task_assignee
+        SET accepted = false, accepted_at = NULL
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 완료 상태 초기화 (반려시 재완료 필요) -->
+    <update id="resetCompletion" parameterType="int">
+        UPDATE flowtask_task_assignee
+        SET completed = false, completed_at = NULL
+        WHERE task_id = #{taskId}
+    </update>
 
 </mapper>

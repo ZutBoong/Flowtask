@@ -11,7 +11,6 @@ import BoardView from './views/BoardView';
 import TimelineView from './views/TimelineView';
 import CalendarView from './views/CalendarView';
 import FilesView from './views/FilesView';
-import AdminView from './views/AdminView';
 import './TeamView.css';
 
 // 탭 정의
@@ -21,8 +20,7 @@ const TABS = [
     { id: 'board', label: '보드', icon: '▦' },
     { id: 'timeline', label: '타임라인', icon: '📊' },
     { id: 'calendar', label: '캘린더', icon: '📅' },
-    { id: 'files', label: '파일', icon: '📁' },
-    { id: 'admin', label: '관리자설정', icon: '⚙️' }
+    { id: 'files', label: '파일', icon: '📁' }
 ];
 
 function TeamView() {
@@ -43,6 +41,7 @@ function TeamView() {
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [wsConnected, setWsConnected] = useState(false);
+    const [onlineMembers, setOnlineMembers] = useState([]);
     const [filters, setFilters] = useState({
         searchQuery: '',
         priorities: [],
@@ -149,6 +148,11 @@ function TeamView() {
                 }
                 break;
 
+            // Presence 이벤트
+            case 'PRESENCE_UPDATE':
+                setOnlineMembers(Array.isArray(event.payload) ? event.payload : []);
+                break;
+
             default:
                 console.log('Unhandled event type:', event.eventType);
         }
@@ -183,14 +187,19 @@ function TeamView() {
 
     // 팀 변경 시 WebSocket 구독
     useEffect(() => {
-        if (teamId && wsConnected) {
-            websocketService.subscribeToTeam(parseInt(teamId), handleBoardEvent);
+        if (teamId && wsConnected && loginMember) {
+            const tid = parseInt(teamId);
+            websocketService.subscribeToTeam(tid, handleBoardEvent);
+            // 온라인 상태 알림
+            websocketService.joinTeamPresence(tid, loginMember.no);
 
             return () => {
-                websocketService.unsubscribeFromTeam(parseInt(teamId));
+                websocketService.leaveTeamPresence(tid);
+                websocketService.unsubscribeFromTeam(tid);
+                setOnlineMembers([]);
             };
         }
-    }, [teamId, wsConnected, handleBoardEvent]);
+    }, [teamId, wsConnected, loginMember, handleBoardEvent]);
 
     // 데이터 로드
     useEffect(() => {
@@ -350,8 +359,6 @@ function TeamView() {
                 return <CalendarView {...viewProps} />;
             case 'files':
                 return <FilesView {...viewProps} />;
-            case 'admin':
-                return <AdminView {...viewProps} />;
             default:
                 return <OverviewView {...viewProps} />;
         }
@@ -423,31 +430,47 @@ function TeamView() {
                                 <span className="member-count">{teamMembers.length}</span>
                             </div>
                             <div className="member-list">
-                                {/* 팀장 */}
-                                {teamMembers.filter(m => m.role === 'LEADER').map(member => (
-                                    <div key={member.memberNo} className="member-item leader">
-                                        <div className="member-avatar">
-                                            {member.memberName?.charAt(0) || 'U'}
-                                            <span className="status-dot online"></span>
+                                {/* 온라인 멤버 */}
+                                {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).length > 0 && (
+                                    <div className="member-section">
+                                        <div className="member-section-title">
+                                            <span className="online-indicator"></span>
+                                            온라인 — {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).length}
                                         </div>
-                                        <div className="member-info">
-                                            <span className="member-name">{member.memberName}</span>
-                                            <span className="member-role">팀장</span>
-                                        </div>
+                                        {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).map(member => (
+                                            <div key={member.memberNo} className={`member-item ${member.role === 'LEADER' ? 'leader' : ''}`}>
+                                                <div className="member-avatar">
+                                                    {member.memberName?.charAt(0) || 'U'}
+                                                    <span className="status-dot online"></span>
+                                                </div>
+                                                <div className="member-info">
+                                                    <span className="member-name">{member.memberName}</span>
+                                                    {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                                {/* 멤버 */}
-                                {teamMembers.filter(m => m.role !== 'LEADER').map(member => (
-                                    <div key={member.memberNo} className="member-item">
-                                        <div className="member-avatar">
-                                            {member.memberName?.charAt(0) || 'U'}
-                                            <span className="status-dot online"></span>
+                                )}
+                                {/* 오프라인 멤버 */}
+                                {teamMembers.filter(m => !onlineMembers.includes(m.memberNo)).length > 0 && (
+                                    <div className="member-section">
+                                        <div className="member-section-title">
+                                            오프라인 — {teamMembers.filter(m => !onlineMembers.includes(m.memberNo)).length}
                                         </div>
-                                        <div className="member-info">
-                                            <span className="member-name">{member.memberName}</span>
-                                        </div>
+                                        {teamMembers.filter(m => !onlineMembers.includes(m.memberNo)).map(member => (
+                                            <div key={member.memberNo} className={`member-item offline ${member.role === 'LEADER' ? 'leader' : ''}`}>
+                                                <div className="member-avatar">
+                                                    {member.memberName?.charAt(0) || 'U'}
+                                                    <span className="status-dot"></span>
+                                                </div>
+                                                <div className="member-info">
+                                                    <span className="member-name">{member.memberName}</span>
+                                                    {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </aside>
                     )}

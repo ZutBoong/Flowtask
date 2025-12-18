@@ -28,7 +28,6 @@ public class Notification {
 
     // 알림 타입 상수
     public static final String TYPE_TEAM_INVITE = "TEAM_INVITE";
-    public static final String TYPE_COLUMN_ASSIGNEE = "COLUMN_ASSIGNEE";
     public static final String TYPE_TASK_ASSIGNEE = "TASK_ASSIGNEE";
     public static final String TYPE_COLUMN_UPDATED = "COLUMN_UPDATED";
     public static final String TYPE_TASK_UPDATED = "TASK_UPDATED";

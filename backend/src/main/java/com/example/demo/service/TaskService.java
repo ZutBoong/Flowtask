@@ -9,6 +9,7 @@ import com.example.demo.dao.TaskDao;
 import com.example.demo.dao.FlowtaskColumnDao;
 import com.example.demo.dao.TagDao;
 import com.example.demo.dao.TaskAssigneeDao;
+import com.example.demo.dao.TaskVerifierDao;
 import com.example.demo.model.Task;
 import com.example.demo.model.Tag;
 import com.example.demo.model.FlowtaskColumn;
@@ -27,6 +28,9 @@ public class TaskService {
 
 	@Autowired
 	private TaskAssigneeDao taskAssigneeDao;
+
+	@Autowired
+	private TaskVerifierDao taskVerifierDao;
 
 	@Autowired
 	private BoardNotificationService notificationService;
@@ -66,16 +70,34 @@ public class TaskService {
 		}
 	}
 
-	// Helper method to populate all relations (tags + assignees)
+	// Helper method to populate verifiers for a single task
+	private void populateVerifiers(Task task) {
+		if (task != null) {
+			task.setVerifiers(taskVerifierDao.listByTask(task.getTaskId()));
+		}
+	}
+
+	// Helper method to populate verifiers for a list of tasks
+	private void populateVerifiers(List<Task> tasks) {
+		if (tasks != null) {
+			for (Task task : tasks) {
+				populateVerifiers(task);
+			}
+		}
+	}
+
+	// Helper method to populate all relations (tags + assignees + verifiers)
 	private void populateRelations(Task task) {
 		populateTags(task);
 		populateAssignees(task);
+		populateVerifiers(task);
 	}
 
 	// Helper method to populate all relations for a list of tasks
 	private void populateRelations(List<Task> tasks) {
 		populateTags(tasks);
 		populateAssignees(tasks);
+		populateVerifiers(tasks);
 	}
 
 	public int insert(Task task) {
@@ -204,20 +226,21 @@ public class TaskService {
 		return tasks;
 	}
 
-	public List<Task> listByStatusAndTeam(int teamId, String status) {
+	public List<Task> listByStatusAndTeam(int teamId, String workflowStatus) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("teamId", teamId);
-		params.put("status", status);
+		params.put("workflowStatus", workflowStatus);
 		List<Task> tasks = dao.listByStatusAndTeam(params);
 		populateRelations(tasks);
 		return tasks;
 	}
 
-	public int updateStatus(Task task) {
-		int result = dao.updateStatus(task);
+	public int updateWorkflowStatus(Task task) {
+		int result = dao.updateWorkflowStatus(task);
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
+				populateRelations(updated);
 				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
@@ -227,28 +250,16 @@ public class TaskService {
 		return result;
 	}
 
-	// 상태 변경 + 담당자에게 알림 발송
-	public int updateStatusWithNotification(Task task, int senderNo) {
-		int result = dao.updateStatus(task);
+	// 반려 처리
+	public int updateRejection(Task task) {
+		int result = dao.updateRejection(task);
 		if (result == 1) {
 			Task updated = dao.content(task.getTaskId());
 			if (updated != null) {
+				populateRelations(updated);
 				FlowtaskColumn column = columnDao.content(updated.getColumnId());
 				if (column != null) {
-					// WebSocket 알림
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
-
-					// 담당자에게 영구 알림 (본인 제외)
-					Integer assignee = updated.getAssigneeNo();
-					if (assignee != null && assignee != senderNo) {
-						persistentNotificationService.notifyTaskUpdated(
-							assignee,
-							senderNo,
-							updated.getTaskId(),
-							updated.getTitle(),
-							"상태가 " + updated.getStatus() + "(으)로 변경되었습니다"
-						);
-					}
 				}
 			}
 		}
@@ -302,40 +313,9 @@ public class TaskService {
 		return result;
 	}
 
-	// 검증자 관련 메서드
-
-	public int updateVerifier(Task task) {
-		int result = dao.updateVerifier(task);
-		if (result == 1) {
-			Task updated = dao.content(task.getTaskId());
-			if (updated != null) {
-				populateRelations(updated);
-				FlowtaskColumn column = columnDao.content(updated.getColumnId());
-				if (column != null) {
-					notificationService.notifyTaskUpdated(updated, column.getTeamId());
-				}
-			}
-		}
-		return result;
-	}
-
-	public int updateVerification(Task task) {
-		int result = dao.updateVerification(task);
-		if (result == 1) {
-			Task updated = dao.content(task.getTaskId());
-			if (updated != null) {
-				populateRelations(updated);
-				FlowtaskColumn column = columnDao.content(updated.getColumnId());
-				if (column != null) {
-					notificationService.notifyTaskUpdated(updated, column.getTeamId());
-				}
-			}
-		}
-		return result;
-	}
-
-	public List<Task> listPendingVerification(int verifierNo) {
-		List<Task> tasks = dao.listPendingVerification(verifierNo);
+	// 검증 대기 목록 (내가 검증자로 배정된 REVIEW 상태 태스크)
+	public List<Task> listPendingVerification(int memberNo) {
+		List<Task> tasks = dao.listPendingVerification(memberNo);
 		populateRelations(tasks);
 		return tasks;
 	}

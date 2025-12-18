@@ -29,19 +29,6 @@ public class NotificationService {
         dao.insert(n);
     }
 
-    // 컬럼 담당자 지정 알림
-    public void notifyColumnAssignee(int recipientNo, int senderNo, int columnId, String columnTitle, int teamId) {
-        Notification n = new Notification();
-        n.setRecipientNo(recipientNo);
-        n.setSenderNo(senderNo);
-        n.setNotificationType(Notification.TYPE_COLUMN_ASSIGNEE);
-        n.setTitle("컬럼 담당자 지정");
-        n.setMessage("'" + columnTitle + "' 컬럼의 담당자로 지정되었습니다.");
-        n.setColumnId(columnId);
-        n.setTeamId(teamId);
-        dao.insert(n);
-    }
-
     // 태스크 담당자 지정 알림
     public void notifyTaskAssignee(int recipientNo, int senderNo, int taskId, String taskTitle, int teamId) {
         Notification n = new Notification();
@@ -75,6 +62,20 @@ public class NotificationService {
         n.setNotificationType(Notification.TYPE_TASK_UPDATED);
         n.setTitle("태스크 변경");
         n.setMessage("'" + taskTitle + "' 태스크가 변경되었습니다: " + changeDescription);
+        n.setTaskId(taskId);
+        dao.insert(n);
+    }
+
+    // 범용 알림 발송 (워크플로우용)
+    public void sendNotification(int recipientNo, int senderNo, String type, String title, String message, int teamId, int columnId, int taskId) {
+        Notification n = new Notification();
+        n.setRecipientNo(recipientNo);
+        n.setSenderNo(senderNo);
+        n.setNotificationType(type);
+        n.setTitle(title);
+        n.setMessage(message);
+        n.setTeamId(teamId);
+        n.setColumnId(columnId);
         n.setTaskId(taskId);
         dao.insert(n);
     }

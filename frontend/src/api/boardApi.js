@@ -122,12 +122,6 @@ export const tasklistByStatusAndTeam = async (teamId, status) => {
     return response.data;
 };
 
-// 태스크 상태 변경
-export const updateTaskStatus = async (taskId, status) => {
-    const response = await axiosInstance.put(`${API_PATH}/task/${taskId}/status`, { status });
-    return response.data;
-};
-
 // 태스크 담당자 변경 (senderNo가 있으면 알림 발송)
 export const updateTaskAssignee = async (taskId, assigneeNo, senderNo = null) => {
     const url = senderNo
@@ -137,23 +131,67 @@ export const updateTaskAssignee = async (taskId, assigneeNo, senderNo = null) =>
     return response.data;
 };
 
-// ========== Verifier (검증자) API ==========
+// ========== Task Workflow API (NEW) ==========
 
-// 검증자 지정
-export const updateTaskVerifier = async (taskId, verifierNo) => {
-    const response = await axiosInstance.put(`${API_PATH}/task/${taskId}/verifier`, { verifierNo });
+// 담당자가 태스크 수락
+export const acceptTask = async (taskId, memberNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/accept?memberNo=${memberNo}`);
     return response.data;
 };
 
-// 검증 승인
-export const approveTask = async (taskId, verificationNotes = '') => {
-    const response = await axiosInstance.put(`${API_PATH}/task/${taskId}/verify/approve`, { verificationNotes });
+// 담당자가 태스크 완료 처리
+export const completeTask = async (taskId, memberNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/complete?memberNo=${memberNo}`);
     return response.data;
 };
 
-// 검증 반려
-export const rejectTask = async (taskId, verificationNotes = '') => {
-    const response = await axiosInstance.put(`${API_PATH}/task/${taskId}/verify/reject`, { verificationNotes });
+// 검증자가 태스크 승인
+export const approveTask = async (taskId, memberNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/approve?memberNo=${memberNo}`);
+    return response.data;
+};
+
+// 검증자가 태스크 반려
+export const rejectTask = async (taskId, memberNo, reason) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/reject?memberNo=${memberNo}`, { reason });
+    return response.data;
+};
+
+// 반려된 태스크 재작업 시작
+export const restartTask = async (taskId, memberNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/restart?memberNo=${memberNo}`);
+    return response.data;
+};
+
+// ========== Task Verifiers (복수 검증자) API (NEW) ==========
+
+// 태스크별 검증자 목록 조회
+export const getTaskVerifiers = async (taskId) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/${taskId}/verifiers`);
+    return response.data;
+};
+
+// 검증자 추가
+export const addTaskVerifier = async (taskId, memberNo, senderNo = null) => {
+    const url = senderNo
+        ? `${API_PATH}/task/${taskId}/verifier?senderNo=${senderNo}`
+        : `${API_PATH}/task/${taskId}/verifier`;
+    const response = await axiosInstance.post(url, { memberNo });
+    return response.data;
+};
+
+// 검증자 삭제
+export const removeTaskVerifier = async (taskId, memberNo) => {
+    const response = await axiosInstance.delete(`${API_PATH}/task/${taskId}/verifier/${memberNo}`);
+    return response.data;
+};
+
+// 검증자 일괄 변경
+export const updateTaskVerifiers = async (taskId, memberNos, senderNo = null) => {
+    const url = senderNo
+        ? `${API_PATH}/task/${taskId}/verifiers?senderNo=${senderNo}`
+        : `${API_PATH}/task/${taskId}/verifiers`;
+    const response = await axiosInstance.put(url, { memberNos });
     return response.data;
 };
 

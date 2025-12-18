@@ -2,51 +2,79 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 100px);
+    min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
 }
 
 .auth-box {
     background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    padding: 48px;
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 450px;
+    max-width: 480px;
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .auth-box h2 {
     text-align: center;
-    color: #026aa7;
-    margin-bottom: 30px;
-    font-size: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 36px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .auth-box .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .auth-box .form-group label {
     display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .auth-box .form-group input {
     width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    padding: 14px 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.2s ease;
     box-sizing: border-box;
+    background: #f8fafc;
+}
+
+.auth-box .form-group input:hover {
+    border-color: #cbd5e1;
+    background: white;
 }
 
 .auth-box .form-group input:focus {
     outline: none;
-    border-color: #026aa7;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
 .input-with-button {
@@ -60,86 +88,159 @@
 }
 
 .auth-box .btn-small {
-    padding: 10px 15px;
+    padding: 14px 20px;
     font-size: 13px;
+    font-weight: 700;
     white-space: nowrap;
     flex-shrink: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.auth-box .btn-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .error-msg {
     display: block;
-    color: #dc3545;
+    color: #ef4444;
     font-size: 12px;
-    margin-top: 5px;
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fef2f2;
+    border-radius: 8px;
 }
 
 .success-msg {
     display: block;
-    color: #28a745;
+    color: #10b981;
     font-size: 12px;
-    margin-top: 5px;
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #d1fae5;
+    border-radius: 8px;
 }
 
 .button-group {
     display: flex;
-    gap: 10px;
-    margin-top: 30px;
+    gap: 12px;
+    margin-top: 32px;
 }
 
 .button-group .btn {
     flex: 1;
-    padding: 14px;
+    padding: 16px;
     font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button-group .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.button-group .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.button-group .btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.button-group .btn-secondary:hover {
+    background: #e2e8f0;
 }
 
 .auth-links {
     text-align: center;
-    margin-top: 20px;
-    color: #666;
+    margin-top: 28px;
+    color: #64748b;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .auth-links span {
     cursor: pointer;
-    color: #026aa7;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.15s ease;
 }
 
 .auth-links span:hover {
+    color: #764ba2;
     text-decoration: underline;
 }
 
 .auth-links .divider {
-    margin: 0 10px;
-    color: #ccc;
+    margin: 0 12px;
+    color: #cbd5e1;
     cursor: default;
 }
 
 .result-box {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 24px;
     text-align: center;
 }
 
 .result-box h3 {
-    color: #026aa7;
-    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .result-box p {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 15px;
+    font-size: 16px;
+    color: #475569;
+    margin-bottom: 16px;
 }
 
 .result-box .userid-display {
-    font-size: 24px;
-    font-weight: bold;
-    color: #026aa7;
-    background: #e7f3ff;
-    padding: 15px;
-    border-radius: 8px;
-    margin: 15px 0;
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 20px;
+    margin: 16px 0;
+    border-radius: 12px;
+    background-color: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 32px 24px;
+    }
+
+    .auth-box h2 {
+        font-size: 26px;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
 }

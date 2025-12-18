@@ -1,58 +1,58 @@
 .files-view {
     padding: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 /* 업로드 영역 */
 .upload-zone {
-    border: 2px dashed #ddd;
-    border-radius: 12px;
-    padding: 40px;
+    border: 2px dashed #e2e8f0;
+    border-radius: 16px;
+    padding: 48px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #fafafa;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     margin-bottom: 24px;
 }
 
 .upload-zone:hover {
-    border-color: #1a73e8;
-    background: #f0f7ff;
+    border-color: #667eea;
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
 }
 
 .upload-zone.active {
-    border-color: #1a73e8;
-    background: #e3f2fd;
+    border-color: #667eea;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
 }
 
 .upload-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .upload-icon {
-    font-size: 48px;
+    font-size: 56px;
 }
 
 .upload-content p {
     margin: 0;
-    font-size: 16px;
-    color: #333;
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e293b;
 }
 
 .upload-hint {
-    font-size: 13px;
-    color: #888;
+    font-size: 14px;
+    color: #94a3b8;
 }
 
 .upload-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e0e0e0;
-    border-top-color: #1a73e8;
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -65,52 +65,66 @@
 
 /* 파일 섹션 */
 .files-section {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 2px solid #f1f5f9;
 }
 
 .section-header h2 {
     margin: 0;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-header h2::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
 }
 
 .file-count {
     font-size: 13px;
-    color: #888;
-    background: #f0f0f0;
-    padding: 4px 10px;
-    border-radius: 12px;
+    font-weight: 600;
+    color: #667eea;
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+    padding: 6px 14px;
+    border-radius: 20px;
 }
 
 /* 로딩/빈 상태 */
 .files-loading,
 .files-empty {
-    padding: 60px 20px;
+    padding: 80px 20px;
     text-align: center;
-    color: #888;
+    color: #94a3b8;
 }
 
 .empty-icon {
-    font-size: 48px;
+    font-size: 56px;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 /* 파일 그리드 */
 .files-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
     padding: 20px;
 }
@@ -119,19 +133,23 @@
 .file-card {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    transition: all 0.15s;
+    gap: 14px;
+    padding: 18px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .file-card:hover {
-    background: #f0f0f0;
+    background: white;
+    border-color: rgba(102, 126, 234, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
 .file-icon {
-    font-size: 32px;
+    font-size: 36px;
     flex-shrink: 0;
 }
 
@@ -140,13 +158,13 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .file-name {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 14px;
-    color: #333;
+    color: #1e293b;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -154,52 +172,59 @@
 
 .file-meta {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     font-size: 12px;
-    color: #888;
+    font-weight: 500;
+    color: #94a3b8;
 }
 
 .file-uploader {
     font-size: 11px;
-    color: #999;
+    color: #94a3b8;
 }
 
 .file-actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     flex-shrink: 0;
 }
 
 .download-btn,
 .delete-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
 }
 
 .download-btn {
-    background: #e3f2fd;
-    color: #1a73e8;
+    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+    color: #667eea;
 }
 
 .download-btn:hover {
-    background: #bbdefb;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .delete-btn {
-    background: #ffebee;
-    color: #dc3545;
+    background: #fef2f2;
+    color: #ef4444;
 }
 
 .delete-btn:hover {
-    background: #ffcdd2;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* 반응형 */
@@ -209,7 +234,7 @@
     }
 
     .upload-zone {
-        padding: 30px 20px;
+        padding: 36px 20px;
     }
 
     .files-grid {

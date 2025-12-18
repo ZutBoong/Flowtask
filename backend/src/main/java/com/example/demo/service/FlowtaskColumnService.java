@@ -4,9 +4,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.dao.FlowtaskColumnDao;
-import com.example.demo.dao.ColumnAssigneeDao;
 import com.example.demo.model.FlowtaskColumn;
-import com.example.demo.model.ColumnAssignee;
 
 @Service
 public class FlowtaskColumnService {
@@ -15,13 +13,7 @@ public class FlowtaskColumnService {
 	private FlowtaskColumnDao dao;
 
 	@Autowired
-	private ColumnAssigneeDao assigneeDao;
-
-	@Autowired
 	private BoardNotificationService notificationService;
-
-	@Autowired
-	private NotificationService persistentNotificationService;
 
 	public int insert(FlowtaskColumn column) {
 		int result = dao.insert(column);
@@ -58,33 +50,6 @@ public class FlowtaskColumnService {
 			FlowtaskColumn updated = dao.content(column.getColumnId());
 			if (updated != null) {
 				notificationService.notifyColumnUpdated(updated);
-			}
-		}
-		return result;
-	}
-
-	// 컬럼 업데이트 + 담당자들에게 알림 발송
-	public int updateWithNotification(FlowtaskColumn column, int senderNo, String changeDescription) {
-		int result = dao.update(column);
-		if (result == 1) {
-			FlowtaskColumn updated = dao.content(column.getColumnId());
-			if (updated != null) {
-				// WebSocket 알림
-				notificationService.notifyColumnUpdated(updated);
-
-				// 모든 담당자에게 영구 알림 발송 (본인 제외)
-				List<ColumnAssignee> assignees = assigneeDao.listByColumn(column.getColumnId());
-				for (ColumnAssignee assignee : assignees) {
-					if (assignee.getMemberNo() != senderNo) {
-						persistentNotificationService.notifyColumnUpdated(
-							assignee.getMemberNo(),
-							senderNo,
-							updated.getColumnId(),
-							updated.getTitle(),
-							changeDescription
-						);
-					}
-				}
 			}
 		}
 		return result;

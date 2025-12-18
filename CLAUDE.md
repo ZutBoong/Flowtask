@@ -27,7 +27,7 @@ npm test                        # Run tests
 ```
 
 ### Database
-PostgreSQL running on localhost:5432. Main schema file: `database/postgresql_schema.sql`
+PostgreSQL running on localhost:5432. Schema files in `database/` directory (organized by feature: member, team, board, tag, comment, chat, git, etc.)
 
 Setup from scratch:
 ```sql
@@ -72,12 +72,13 @@ Sample data is auto-generated. All passwords are `1234`.
 - **Config** (`config/`): WebSocket and Security configuration
 - **Security** (`security/`): JWT token provider and authentication filter
 
-Key entities: Member, Team, TeamMember, Project, FlowtaskColumn, Task, Tag, Comment, ChatMessage, GitRepo, TaskCommit
+Key entities: Member, Team, TeamMember, Project, FlowtaskColumn, Task, Tag, Comment, ChatMessage, GitRepo, TaskCommit, Section, Notification, TaskAssignee, ColumnArchive, ColumnAssignee, ColumnFavorite, ProjectFile
 
 ### Frontend Structure (React 18 + React Router)
 - **Pages** (`pages/`): Route components (Board, Login, Register, Calendar, etc.)
-- **Components** (`components/`): Reusable UI (Sidebar, TaskModal, CommentSection, ChatPanel, TagInput, FilterBar, GitRepoSettings, TaskCommits)
-- **API** (`api/`): Axios API client functions for backend communication
+- **Components** (`components/`): Reusable UI (Sidebar, Header, TaskModal, CommentSection, ChatPanel, TagInput, FilterBar, GitRepoSettings, TaskCommits, NotificationBell)
+- **API** (`api/`): Axios API client functions for backend communication (axiosInstance, boardApi, teamApi, memberApi, etc.)
+- **Views** (`pages/views/`): Sub-views for Board page (BoardView, ListView, CalendarView, TimelineView, FilesView, AdminView, OverviewView)
 
 ### Data Flow
 1. Teams contain Projects
@@ -101,11 +102,13 @@ JWT-based authentication with tokens stored client-side. Configured in `Security
 
 ## Key Configuration
 - Backend port: 8081 (application.properties)
-- Frontend dev port: 3000, proxies to 8081 (package.json)
+- Frontend dev port: 3000, proxies to 8081 (package.json proxy setting)
 - Frontend Docker port: 80 via Nginx
 - DB credentials: flow/flow123@localhost:5432/flowtask
 - Java version: 17
 - Node version: 18+
+- MyBatis: Maps underscore to camelCase automatically
+- Database init: Schema loaded from `reset.sql`, `schema.sql`, `data.sql` on startup (local mode)
 
 ## Deployment
 For AWS EC2 deployment, use `docker-compose.aws.yml` with environment file:

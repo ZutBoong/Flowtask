@@ -1,20 +1,9 @@
 -- =============================================
 -- Flowtask - 컬럼 확장 기능 테이블
--- (담당자, 즐겨찾기, 아카이브)
+-- (즐겨찾기, 아카이브)
 -- =============================================
 
 CREATE SEQUENCE IF NOT EXISTS flowtask_column_archive_seq START WITH 1 INCREMENT BY 1;
-
--- 컬럼 담당자 테이블 (M:N)
-CREATE TABLE IF NOT EXISTS flowtask_column_assignee (
-    column_id INTEGER NOT NULL REFERENCES flowtask_column(column_id) ON DELETE CASCADE,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (column_id, member_no)
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_assignee_column ON flowtask_column_assignee(column_id);
-CREATE INDEX IF NOT EXISTS idx_column_assignee_member ON flowtask_column_assignee(member_no);
 
 -- 컬럼 즐겨찾기 테이블
 CREATE TABLE IF NOT EXISTS flowtask_column_favorite (

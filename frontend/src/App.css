@@ -1,153 +1,208 @@
 .App {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
 }
 
 .App-header {
-  text-align: center;
-  padding: 20px;
-  background-color: #026aa7;
-  color: white;
+    text-align: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
 
 .App-header h1 {
-  color: white;
-  margin-bottom: 10px;
+    color: white;
+    margin-bottom: 10px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .App-nav {
-  margin-top: 15px;
+    margin-top: 15px;
 }
 
 .App-nav a {
-  margin: 0 15px;
-  color: white;
-  font-weight: 500;
+    margin: 0 15px;
+    color: white;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
 }
 
 .App-nav a:hover {
-  text-decoration: underline;
+    opacity: 0.8;
+    text-decoration: underline;
 }
 
 main {
-  padding: 0;
+    padding: 0;
 }
 
+/* 테이블 스타일 */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-table th, table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: left;
+table th,
+table td {
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 14px 16px;
+    text-align: left;
 }
 
 table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
 }
 
 table tr:hover {
-  background-color: #f9f9f9;
+    background: #f8fafc;
 }
 
+/* 버튼 스타일 */
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  margin-right: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .btn-primary {
-  background-color: #007bff;
-  color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .btn-secondary {
-  background-color: #6c757d;
-  color: white;
+    background: #f1f5f9;
+    color: #64748b;
 }
 
 .btn-secondary:hover {
-  background-color: #545b62;
+    background: #e2e8f0;
 }
 
 .btn-danger {
-  background-color: #dc3545;
-  color: white;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
 }
 
 .btn-danger:hover {
-  background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
 }
 
+/* 폼 스타일 */
 .form-group {
-  margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-group input,
 .form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.form-group input:hover,
+.form-group textarea:hover {
+    border-color: #cbd5e1;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
 .form-group textarea {
-  min-height: 200px;
-  resize: vertical;
+    min-height: 180px;
+    resize: vertical;
 }
 
+/* 페이지네이션 */
 .pagination {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 24px;
 }
 
 .pagination button {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  background-color: white;
-  cursor: pointer;
+    padding: 10px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s ease;
 }
 
 .pagination button:hover {
-  background-color: #f5f5f5;
+    border-color: #667eea;
+    color: #667eea;
 }
 
 .pagination button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* 콘텐츠 박스 */
 .content-box {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .content-box h2 {
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f1f5f9;
+    font-weight: 700;
+    color: #1e293b;
 }

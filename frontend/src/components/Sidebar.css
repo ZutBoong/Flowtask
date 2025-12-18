@@ -4,19 +4,20 @@
     left: 0;
     top: 0;
     height: 100vh;
-    background: #f8f8f8;
-    border-right: 1px solid #e5e5e5;
-    transition: width 0.2s ease;
+    background: linear-gradient(180deg, #1e1e2e 0%, #2d2d44 100%);
+    border-right: none;
+    transition: width 0.3s ease;
     z-index: 100;
     overflow: hidden;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar.open {
-    width: 260px;
+    width: 280px;
 }
 
 .sidebar-expanded {
-    width: 260px;
+    width: 280px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -27,152 +28,100 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .sidebar-logo {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: white;
+    letter-spacing: -0.5px;
 }
 
 .sidebar-collapse-btn {
-    background: none;
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    padding: 6px;
+    padding: 8px;
     cursor: pointer;
-    border-radius: 6px;
-    color: #666;
+    border-radius: 8px;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .sidebar-collapse-btn:hover {
-    background: #e8e8e8;
-    color: #333;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
 }
 
 /* 액션 버튼들 */
 .sidebar-actions {
     display: flex;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .action-btn {
-    width: 36px;
-    height: 36px;
+    flex: 1;
+    height: 40px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e8e8e8;
-    color: #555;
-    transition: all 0.15s ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
 }
 
 .action-btn:hover {
-    background: #ddd;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateY(-2px);
 }
 
 .action-btn.primary {
-    background: #026aa7;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .action-btn.primary:hover {
-    background: #0079bf;
-}
-
-/* 네비게이션 메뉴 */
-.sidebar-nav {
-    padding: 8px 12px;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #555;
-    transition: all 0.15s ease;
-}
-
-.nav-item:hover {
-    background: #e8e8e8;
-}
-
-.nav-item.active {
-    background: #e0f0ff;
-    color: #0079bf;
-}
-
-.nav-item svg {
-    flex-shrink: 0;
-}
-
-/* 메뉴 */
-.sidebar-menu {
-    padding: 8px 12px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #444;
-    font-size: 14px;
-    transition: background 0.15s ease;
-}
-
-.menu-item:hover {
-    background: #e8e8e8;
-}
-
-.menu-item.active {
-    background: #e0e0e0;
-    color: #026aa7;
-}
-
-.menu-item svg {
-    flex-shrink: 0;
-}
-
-/* 메뉴 아래 팀원 목록 */
-.menu-members {
-    margin-top: 4px;
-    margin-left: 8px;
-    padding-left: 22px;
-    border-left: 2px solid #ddd;
-    max-height: 180px;
-    overflow-y: auto;
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
 }
 
 /* 팀 목록 섹션 */
 .sidebar-section {
     flex: 1;
     overflow-y: auto;
-    padding: 8px 12px;
+    padding: 12px;
+}
+
+.sidebar-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
 }
 
 .section-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #888;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
-    padding: 8px 12px 4px;
-    letter-spacing: 0.5px;
+    padding: 12px 12px 8px;
+    letter-spacing: 1px;
 }
 
 .team-list {
@@ -185,21 +134,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 12px 14px;
+    border-radius: 10px;
     cursor: pointer;
-    color: #333;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
-    transition: background 0.15s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
 }
 
 .team-item:hover {
-    background: #e8e8e8;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .team-item.active {
-    background: #e0e0e0;
-    font-weight: 500;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .team-name {
@@ -209,34 +162,373 @@
     flex: 1;
 }
 
-.team-delete-btn {
+.team-settings-btn {
     display: none;
-    background: none;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    color: #999;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    padding: 2px 6px;
-    font-size: 16px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
 }
 
-.team-item:hover .team-delete-btn {
-    display: block;
+.team-item:hover .team-settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.team-delete-btn:hover {
-    background: #ddd;
-    color: #e74c3c;
+.team-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .no-teams {
     text-align: center;
-    color: #999;
+    color: rgba(255, 255, 255, 0.5);
     font-size: 13px;
-    padding: 20px;
+    padding: 24px;
 }
 
-/* ===== 팀원 목록 ===== */
+/* ===== 하단 사용자 정보 ===== */
+.sidebar-footer-wrapper {
+    position: relative;
+    margin-top: auto;
+}
+
+.sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+
+.sidebar-footer:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-id {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-menu-arrow {
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s ease;
+}
+
+.sidebar-footer:hover .user-menu-arrow {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.user-menu-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 12px;
+    right: 12px;
+    background: #2d2d44;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    z-index: 200;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-menu-popup.collapsed {
+    left: 60px;
+    right: auto;
+    width: 180px;
+    bottom: 0;
+    margin-bottom: 0;
+}
+
+.user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+.user-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.user-menu-item svg {
+    color: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+}
+
+.user-menu-item:first-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== 접힌 사이드바 ===== */
+.sidebar-collapsed {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 64px;
+    height: 100vh;
+    background: linear-gradient(180deg, #1e1e2e 0%, #2d2d44 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    z-index: 100;
+    box-sizing: border-box;
+    overflow: hidden;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-collapsed .icon-btn {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.sidebar-collapsed .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: scale(1.05);
+}
+
+.sidebar-collapsed .icon-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.sidebar-collapsed .icon-btn.primary:hover {
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.collapsed-spacer {
+    flex: 1;
+}
+
+.collapsed-footer-wrapper {
+    position: relative;
+}
+
+.user-avatar-small {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.user-avatar-small:hover {
+    transform: scale(1.05);
+}
+
+/* ===== 모달 ===== */
+.sidebar-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.sidebar-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.sidebar-modal h3 {
+    margin: 0 0 24px 0;
+    color: #1e293b;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.modal-form-group {
+    margin-bottom: 20px;
+}
+
+.modal-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+}
+
+.modal-form-group input:hover {
+    border-color: #d1d5db;
+    background: white;
+}
+
+.modal-form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.modal-error {
+    color: #ef4444;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+    padding: 12px;
+    background: #fef2f2;
+    border-radius: 8px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.modal-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #4b5563;
+    transition: all 0.2s ease;
+}
+
+.modal-btn:hover {
+    background: #e5e7eb;
+}
+
+.modal-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.modal-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+/* ===== 기타 스타일들 ===== */
 .members-list {
     list-style: none;
     padding: 0;
@@ -246,32 +538,33 @@
 .member-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 6px;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
     transition: background 0.15s ease;
+    position: relative;
 }
 
 .member-item:hover {
-    background: #e8e8e8;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .member-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #5aac44;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     flex-shrink: 0;
 }
 
 .member-avatar.leader {
-    background: #f5a623;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .member-info {
@@ -282,7 +575,7 @@
 
 .member-name {
     font-size: 13px;
-    color: #333;
+    color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -290,325 +583,15 @@
 
 .member-role {
     font-size: 11px;
-    color: #888;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .no-members {
     text-align: center;
-    color: #999;
+    color: rgba(255, 255, 255, 0.5);
     font-size: 12px;
-    padding: 12px;
+    padding: 16px;
     margin: 0;
-}
-
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #026aa7;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.user-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user-id {
-    font-size: 12px;
-    color: #888;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ===== 접힌 사이드바 ===== */
-.sidebar-collapsed {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 52px;
-    height: 100vh;
-    background: #f8f8f8;
-    border-right: 1px solid #e5e5e5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    z-index: 100;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.sidebar-collapsed .icon-btn {
-    width: 40px;
-    height: 40px;
-    min-height: 40px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    color: #666;
-    transition: all 0.15s ease;
-    margin-bottom: 8px;
-    flex-shrink: 0;
-}
-
-.sidebar-collapsed .icon-btn:hover {
-    background: #e8e8e8;
-    color: #333;
-}
-
-.sidebar-collapsed .icon-btn.primary {
-    background: #026aa7;
-    color: white;
-}
-
-.sidebar-collapsed .icon-btn.primary:hover {
-    background: #0079bf;
-}
-
-.collapsed-spacer {
-    flex: 1;
-}
-
-.user-avatar-small {
-    width: 32px;
-    height: 32px;
-    min-height: 32px;
-    border-radius: 50%;
-    background: #026aa7;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-/* ===== 모달 ===== */
-.sidebar-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.sidebar-modal {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    width: 90%;
-    max-width: 360px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.sidebar-modal h3 {
-    margin: 0 0 20px 0;
-    color: #1a1a1a;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.modal-form-group {
-    margin-bottom: 16px;
-}
-
-.modal-form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-    font-size: 14px;
-}
-
-.modal-form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease;
-}
-
-.modal-form-group input:focus {
-    outline: none;
-    border-color: #026aa7;
-}
-
-.modal-error {
-    color: #e74c3c;
-    font-size: 13px;
-    margin: 0 0 16px 0;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.modal-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    background: #e8e8e8;
-    color: #333;
-    transition: background 0.15s ease;
-}
-
-.modal-btn:hover {
-    background: #ddd;
-}
-
-.modal-btn.primary {
-    background: #026aa7;
-    color: white;
-}
-
-.modal-btn.primary:hover {
-    background: #0079bf;
-}
-
-/* 팀원 섹션 헤더 */
-.menu-item-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.menu-item-header .menu-item {
-    flex: 1;
-}
-
-.invite-btn-wrapper {
-    width: 48px;
-    display: flex;
-    justify-content: center;
-}
-
-.invite-btn {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    background: #026aa7;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.invite-btn:hover {
-    background: #0079bf;
-}
-
-/* 팀원 초대 모달 */
-.search-input-row {
-    display: flex;
-    gap: 8px;
-}
-
-.search-input-row input {
-    flex: 1;
-}
-
-.search-btn {
-    padding: 10px 16px;
-    background: #026aa7;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.search-btn:hover {
-    background: #0079bf;
-}
-
-.searched-member {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 16px;
-}
-
-.searched-member-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.searched-avatar {
-    width: 40px;
-    height: 40px;
-    background: #026aa7;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.searched-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.searched-name {
-    font-weight: 600;
-    color: #333;
-}
-
-.searched-userid {
-    font-size: 13px;
-    color: #888;
-}
-
-/* 팀원 강퇴 버튼 */
-.member-item {
-    position: relative;
 }
 
 .kick-btn {
@@ -616,18 +599,18 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     padding: 0;
-    background: #dc3545;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
     border: none;
-    border-radius: 50%;
+    border-radius: 6px;
     font-size: 14px;
     line-height: 1;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: all 0.15s ease;
 }
 
 .member-item:hover .kick-btn {
@@ -635,84 +618,5 @@
 }
 
 .kick-btn:hover {
-    background: #c82333;
-}
-
-/* ===== 사용자 메뉴 팝업 ===== */
-.sidebar-footer-wrapper {
-    position: relative;
-    margin-top: auto;
-}
-
-.sidebar-footer {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-top: 1px solid #e5e5e5;
-    transition: background 0.15s ease;
-}
-
-.sidebar-footer:hover {
-    background: #e8e8e8;
-}
-
-.user-menu-arrow {
-    margin-left: auto;
-    color: #888;
-    transition: transform 0.2s ease;
-}
-
-.sidebar-footer:hover .user-menu-arrow {
-    color: #555;
-}
-
-.user-menu-popup {
-    position: absolute;
-    bottom: 100%;
-    left: 12px;
-    right: 12px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    z-index: 200;
-    margin-bottom: 8px;
-}
-
-.user-menu-popup.collapsed {
-    left: 52px;
-    right: auto;
-    width: 160px;
-    bottom: 0;
-    margin-bottom: 0;
-}
-
-.user-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    cursor: pointer;
-    color: #333;
-    font-size: 14px;
-    transition: background 0.15s ease;
-}
-
-.user-menu-item:hover {
-    background: #f0f0f0;
-}
-
-.user-menu-item svg {
-    color: #666;
-    flex-shrink: 0;
-}
-
-.user-menu-item:first-child {
-    border-bottom: 1px solid #e5e5e5;
-}
-
-/* 접힌 사이드바 푸터 */
-.collapsed-footer-wrapper {
-    position: relative;
+    transform: translateY(-50%) scale(1.1);
 }

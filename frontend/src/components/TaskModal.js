@@ -1,51 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { taskupdate, updateTaskVerifier, approveTask, rejectTask, updateTaskAssignees } from '../api/boardApi';
+import { taskupdate, updateTaskAssignees, updateTaskVerifiers, acceptTask, completeTask, approveTask, rejectTask, restartTask } from '../api/boardApi';
 import { getTeamMembers } from '../api/teamApi';
-import { updateTaskTags } from '../api/tagApi';
-import TagInput from './TagInput';
 import CommentSection from './CommentSection';
 import TaskCommits from './TaskCommits';
 import './TaskModal.css';
 
-const VERIFICATION_STATUSES = {
-    NONE: { label: '미지정', color: '#6c757d' },
-    PENDING: { label: '검증 대기', color: '#ffc107' },
-    APPROVED: { label: '승인됨', color: '#198754' },
-    REJECTED: { label: '반려됨', color: '#dc3545' }
+// 워크플로우 상태 상수
+const WORKFLOW_STATUSES = {
+    WAITING: { label: '대기', color: '#94a3b8' },
+    IN_PROGRESS: { label: '진행', color: '#3b82f6' },
+    REVIEW: { label: '검토', color: '#f59e0b' },
+    DONE: { label: '완료', color: '#10b981' },
+    REJECTED: { label: '반려', color: '#ef4444' }
 };
 
-const STATUSES = [
-    { value: 'OPEN', label: '열림' },
-    { value: 'IN_PROGRESS', label: '진행중' },
-    { value: 'RESOLVED', label: '해결됨' },
-    { value: 'CLOSED', label: '닫힘' },
-    { value: 'CANNOT_REPRODUCE', label: '재현불가' },
-    { value: 'DUPLICATE', label: '중복' }
+const PRIORITIES = [
+    { value: 'CRITICAL', label: '긴급', color: '#dc2626' },
+    { value: 'HIGH', label: '높음', color: '#f59e0b' },
+    { value: 'MEDIUM', label: '보통', color: '#3b82f6' },
+    { value: 'LOW', label: '낮음', color: '#6b7280' }
 ];
 
 function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
+    // 오늘 날짜 기본값
+    const today = new Date().toISOString().split('T')[0];
+
     const [form, setForm] = useState({
         taskId: task?.taskId || 0,
         title: task?.title || '',
         description: task?.description || '',
         assigneeNo: task?.assigneeNo || null,
+        priority: task?.priority || 'MEDIUM',
+        startDate: task?.startDate || today,
         dueDate: task?.dueDate || '',
-        status: task?.status || 'OPEN',
-        verifierNo: task?.verifierNo || null,
-        verifierName: task?.verifierName || '',
-        verificationStatus: task?.verificationStatus || 'NONE',
-        verificationNotes: task?.verificationNotes || ''
+        workflowStatus: task?.workflowStatus || 'WAITING',
+        rejectionReason: task?.rejectionReason || ''
     });
-    const [selectedTags, setSelectedTags] = useState(task?.tags || []);
+
     const [selectedAssignees, setSelectedAssignees] = useState(
         task?.assignees?.map(a => a.memberNo) || (task?.assigneeNo ? [task.assigneeNo] : [])
     );
+    const [selectedVerifiers, setSelectedVerifiers] = useState(
+        task?.verifiers?.map(v => v.memberNo) || []
+    );
     const [teamMembers, setTeamMembers] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [verifyNotes, setVerifyNotes] = useState('');
-    const [activeTab, setActiveTab] = useState('details'); // 'details', 'comments', or 'commits'
+    const [rejectReason, setRejectReason] = useState('');
+    const [activeTab, setActiveTab] = useState('details');
     const [assigneeDropdownOpen, setAssigneeDropdownOpen] = useState(false);
+    const [verifierDropdownOpen, setVerifierDropdownOpen] = useState(false);
     const assigneeDropdownRef = useRef(null);
+    const verifierDropdownRef = useRef(null);
 
     useEffect(() => {
         if (teamId) {
@@ -58,6 +63,9 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         const handleClickOutside = (event) => {
             if (assigneeDropdownRef.current && !assigneeDropdownRef.current.contains(event.target)) {
                 setAssigneeDropdownOpen(false);
+            }
+            if (verifierDropdownRef.current && !verifierDropdownRef.current.contains(event.target)) {
+                setVerifierDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -84,10 +92,21 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         });
     };
 
-    // 선택된 담당자 이름 목록 가져오기
-    const getSelectedAssigneeNames = () => {
-        if (selectedAssignees.length === 0) return '담당자 선택';
-        const names = selectedAssignees
+    // 검증자 선택/해제 토글
+    const toggleVerifier = (memberNo) => {
+        setSelectedVerifiers(prev => {
+            if (prev.includes(memberNo)) {
+                return prev.filter(no => no !== memberNo);
+            } else {
+                return [...prev, memberNo];
+            }
+        });
+    };
+
+    // 선택된 멤버 이름 목록 가져오기
+    const getSelectedNames = (selectedNos) => {
+        if (selectedNos.length === 0) return '';
+        const names = selectedNos
             .map(no => teamMembers.find(m => m.memberNo === no))
             .filter(m => m)
             .map(m => m.memberName);
@@ -115,23 +134,16 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
             const taskData = {
                 ...form,
                 assigneeNo: selectedAssignees.length > 0 ? selectedAssignees[0] : null,
+                startDate: form.startDate || null,
                 dueDate: form.dueDate || null
             };
             await taskupdate(taskData);
 
-            // 태그 저장
+            // 복수 담당자 저장
             if (form.taskId) {
-                const tagIds = selectedTags.map(t => t.tagId);
-                await updateTaskTags(form.taskId, tagIds);
-                taskData.tags = selectedTags;
-
-                // 복수 담당자 저장
                 const senderNo = loginMember?.no || null;
                 await updateTaskAssignees(form.taskId, selectedAssignees, senderNo);
-                taskData.assignees = selectedAssignees.map(no => {
-                    const member = teamMembers.find(m => m.memberNo === no);
-                    return { memberNo: no, memberName: member?.memberName || '' };
-                });
+                await updateTaskVerifiers(form.taskId, selectedVerifiers, senderNo);
             }
 
             onSave && onSave(taskData);
@@ -144,10 +156,18 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         }
     };
 
+    const formatDateForInput = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const formatDateTimeForInput = (dateStr) => {
         if (!dateStr) return '';
         const date = new Date(dateStr);
-        // datetime-local 형식: YYYY-MM-DDTHH:MM
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -156,82 +176,104 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
-    // 검증자 변경 핸들러
-    const handleVerifierChange = async (e) => {
-        const verifierNo = e.target.value ? parseInt(e.target.value) : null;
-        setForm(prev => ({ ...prev, verifierNo }));
-
-        if (form.taskId) {
-            try {
-                await updateTaskVerifier(form.taskId, verifierNo);
-                const newStatus = verifierNo ? 'PENDING' : 'NONE';
-                setForm(prev => ({ ...prev, verificationStatus: newStatus }));
-            } catch (error) {
-                console.error('검증자 지정 실패:', error);
-                alert('검증자 지정에 실패했습니다.');
-            }
-        }
-    };
-
-    // 검증 승인 핸들러
-    const handleApprove = async () => {
-        if (!window.confirm('이 이슈를 승인하시겠습니까?')) return;
-
+    // 워크플로우 액션 핸들러들
+    const handleAccept = async () => {
+        if (!window.confirm('이 태스크를 수락하시겠습니까?')) return;
         setLoading(true);
         try {
-            await approveTask(form.taskId, verifyNotes);
-            setForm(prev => ({
-                ...prev,
-                verificationStatus: 'APPROVED',
-                status: 'CLOSED',
-                verificationNotes: verifyNotes
-            }));
+            await acceptTask(form.taskId, loginMember.no);
+            setForm(prev => ({ ...prev, workflowStatus: 'IN_PROGRESS' }));
             onSave && onSave();
-            onClose();
         } catch (error) {
-            console.error('검증 승인 실패:', error);
-            alert('승인 처리에 실패했습니다.');
+            console.error('태스크 수락 실패:', error);
+            alert(error.response?.data?.error || '수락 처리에 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
-    // 검증 반려 핸들러
+    const handleComplete = async () => {
+        if (!window.confirm('이 태스크의 작업을 완료 처리하시겠습니까?')) return;
+        setLoading(true);
+        try {
+            await completeTask(form.taskId, loginMember.no);
+            setForm(prev => ({ ...prev, workflowStatus: selectedVerifiers.length > 0 ? 'REVIEW' : 'DONE' }));
+            onSave && onSave();
+        } catch (error) {
+            console.error('태스크 완료 처리 실패:', error);
+            alert(error.response?.data?.error || '완료 처리에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApprove = async () => {
+        if (!window.confirm('이 태스크를 승인하시겠습니까?')) return;
+        setLoading(true);
+        try {
+            await approveTask(form.taskId, loginMember.no);
+            setForm(prev => ({ ...prev, workflowStatus: 'DONE' }));
+            onSave && onSave();
+        } catch (error) {
+            console.error('태스크 승인 실패:', error);
+            alert(error.response?.data?.error || '승인 처리에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleReject = async () => {
-        if (!verifyNotes.trim()) {
+        if (!rejectReason.trim()) {
             alert('반려 사유를 입력해주세요.');
             return;
         }
-        if (!window.confirm('이 이슈를 반려하시겠습니까?')) return;
-
+        if (!window.confirm('이 태스크를 반려하시겠습니까?')) return;
         setLoading(true);
         try {
-            await rejectTask(form.taskId, verifyNotes);
-            setForm(prev => ({
-                ...prev,
-                verificationStatus: 'REJECTED',
-                status: 'IN_PROGRESS',
-                verificationNotes: verifyNotes
-            }));
+            await rejectTask(form.taskId, loginMember.no, rejectReason);
+            setForm(prev => ({ ...prev, workflowStatus: 'REJECTED', rejectionReason: rejectReason }));
             onSave && onSave();
-            onClose();
         } catch (error) {
-            console.error('검증 반려 실패:', error);
-            alert('반려 처리에 실패했습니다.');
+            console.error('태스크 반려 실패:', error);
+            alert(error.response?.data?.error || '반려 처리에 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
-    // 현재 사용자가 검증자인지 확인
-    const isVerifier = loginMember && form.verifierNo === loginMember.no;
-    const canVerify = isVerifier && form.verificationStatus === 'PENDING';
+    const handleRestart = async () => {
+        if (!window.confirm('이 태스크의 재작업을 시작하시겠습니까?')) return;
+        setLoading(true);
+        try {
+            await restartTask(form.taskId, loginMember.no);
+            setForm(prev => ({ ...prev, workflowStatus: 'IN_PROGRESS' }));
+            onSave && onSave();
+        } catch (error) {
+            console.error('태스크 재작업 시작 실패:', error);
+            alert(error.response?.data?.error || '재작업 시작에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 현재 사용자 역할 확인
+    const isAssignee = loginMember && selectedAssignees.includes(loginMember.no);
+    const isVerifier = loginMember && selectedVerifiers.includes(loginMember.no);
+
+    // 현재 사용자의 수락/완료 상태 확인
+    const currentAssignee = task?.assignees?.find(a => a.memberNo === loginMember?.no);
+    const hasAccepted = currentAssignee?.accepted || false;
+    const hasCompleted = currentAssignee?.completed || false;
+
+    // 현재 사용자의 승인 상태 확인
+    const currentVerifier = task?.verifiers?.find(v => v.memberNo === loginMember?.no);
+    const hasApproved = currentVerifier?.approved || false;
 
     return (
         <div className="task-modal-overlay" onClick={onClose}>
             <div className="task-modal" onClick={e => e.stopPropagation()}>
                 <div className="task-modal-header">
-                    <h3>이슈 상세</h3>
+                    <h3>태스크 상세</h3>
                     <button className="close-btn" onClick={onClose}>&times;</button>
                 </div>
 
@@ -261,6 +303,21 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
 
                 {activeTab === 'details' ? (
                 <form onSubmit={handleSubmit} className="task-modal-body">
+                    {/* 워크플로우 상태 표시 */}
+                    <div className="workflow-status-section">
+                        <span
+                            className="workflow-status-badge"
+                            style={{ backgroundColor: WORKFLOW_STATUSES[form.workflowStatus]?.color }}
+                        >
+                            {WORKFLOW_STATUSES[form.workflowStatus]?.label}
+                        </span>
+                        {form.workflowStatus === 'REJECTED' && form.rejectionReason && (
+                            <div className="rejection-reason">
+                                <strong>반려 사유:</strong> {form.rejectionReason}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="form-group">
                         <label>제목</label>
                         <input
@@ -268,7 +325,7 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                             name="title"
                             value={form.title}
                             onChange={handleChange}
-                            placeholder="이슈 제목"
+                            placeholder="태스크 제목"
                         />
                     </div>
 
@@ -278,11 +335,12 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                             name="description"
                             value={form.description || ''}
                             onChange={handleChange}
-                            placeholder="이슈 설명"
+                            placeholder="태스크 설명"
                             rows={4}
                         />
                     </div>
 
+                    {/* 담당자 선택 */}
                     <div className="form-group">
                         <label>담당자</label>
                         <div className="multi-select-dropdown" ref={assigneeDropdownRef}>
@@ -291,7 +349,7 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                                 onClick={() => setAssigneeDropdownOpen(!assigneeDropdownOpen)}
                             >
                                 <span className={selectedAssignees.length === 0 ? 'placeholder' : ''}>
-                                    {getSelectedAssigneeNames()}
+                                    {selectedAssignees.length === 0 ? '담당자 선택' : getSelectedNames(selectedAssignees)}
                                 </span>
                                 <span className="dropdown-arrow">{assigneeDropdownOpen ? '▲' : '▼'}</span>
                             </div>
@@ -321,9 +379,12 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                             <div className="selected-assignees-chips">
                                 {selectedAssignees.map(no => {
                                     const member = teamMembers.find(m => m.memberNo === no);
+                                    const assignee = task?.assignees?.find(a => a.memberNo === no);
                                     return member ? (
-                                        <span key={no} className="assignee-chip">
+                                        <span key={no} className={`assignee-chip ${assignee?.accepted ? 'accepted' : ''} ${assignee?.completed ? 'completed' : ''}`}>
                                             {member.memberName}
+                                            {assignee?.accepted && <span className="status-icon">✓</span>}
+                                            {assignee?.completed && <span className="status-icon">✓✓</span>}
                                             <button
                                                 type="button"
                                                 className="chip-remove"
@@ -338,7 +399,75 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                         )}
                     </div>
 
+                    {/* 검증자 선택 */}
+                    <div className="form-group">
+                        <label>검증자</label>
+                        <div className="multi-select-dropdown" ref={verifierDropdownRef}>
+                            <div
+                                className="multi-select-trigger"
+                                onClick={() => setVerifierDropdownOpen(!verifierDropdownOpen)}
+                            >
+                                <span className={selectedVerifiers.length === 0 ? 'placeholder' : ''}>
+                                    {selectedVerifiers.length === 0 ? '검증자 선택' : getSelectedNames(selectedVerifiers)}
+                                </span>
+                                <span className="dropdown-arrow">{verifierDropdownOpen ? '▲' : '▼'}</span>
+                            </div>
+                            {verifierDropdownOpen && (
+                                <div className="multi-select-options">
+                                    {teamMembers.length === 0 ? (
+                                        <div className="no-options">팀 멤버가 없습니다</div>
+                                    ) : (
+                                        teamMembers.map(member => (
+                                            <label key={member.memberNo} className="multi-select-option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedVerifiers.includes(member.memberNo)}
+                                                    onChange={() => toggleVerifier(member.memberNo)}
+                                                />
+                                                <span className="member-info">
+                                                    <span className="member-name">{member.memberName}</span>
+                                                    <span className="member-userid">({member.memberUserid})</span>
+                                                </span>
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {selectedVerifiers.length > 0 && (
+                            <div className="selected-assignees-chips">
+                                {selectedVerifiers.map(no => {
+                                    const member = teamMembers.find(m => m.memberNo === no);
+                                    const verifier = task?.verifiers?.find(v => v.memberNo === no);
+                                    return member ? (
+                                        <span key={no} className={`assignee-chip verifier ${verifier?.approved ? 'approved' : ''}`}>
+                                            {member.memberName}
+                                            {verifier?.approved && <span className="status-icon">✓</span>}
+                                            <button
+                                                type="button"
+                                                className="chip-remove"
+                                                onClick={() => toggleVerifier(no)}
+                                            >
+                                                ×
+                                            </button>
+                                        </span>
+                                    ) : null;
+                                })}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="form-row">
+                        <div className="form-group">
+                            <label>시작일</label>
+                            <input
+                                type="date"
+                                name="startDate"
+                                value={formatDateForInput(form.startDate)}
+                                onChange={handleChange}
+                            />
+                        </div>
+
                         <div className="form-group">
                             <label>마감일</label>
                             <input
@@ -348,103 +477,119 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
                                 onChange={handleChange}
                             />
                         </div>
+                    </div>
 
-                        <div className="form-group">
-                            <label>상태</label>
-                            <select
-                                name="status"
-                                value={form.status || 'OPEN'}
-                                onChange={handleChange}
-                            >
-                                {STATUSES.map(s => (
-                                    <option key={s.value} value={s.value}>
-                                        {s.label}
-                                    </option>
-                                ))}
-                            </select>
+                    <div className="form-group">
+                        <label>우선순위</label>
+                        <div className="priority-selector">
+                            {PRIORITIES.map(p => (
+                                <button
+                                    key={p.value}
+                                    type="button"
+                                    className={`priority-option ${form.priority === p.value ? 'selected' : ''}`}
+                                    style={{
+                                        '--priority-color': p.color,
+                                        backgroundColor: form.priority === p.value ? p.color : 'transparent',
+                                        borderColor: p.color,
+                                        color: form.priority === p.value ? 'white' : p.color
+                                    }}
+                                    onClick={() => setForm(prev => ({ ...prev, priority: p.value }))}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {teamId && (
-                        <div className="form-group">
-                            <label>태그</label>
-                            <TagInput
-                                teamId={teamId}
-                                selectedTags={selectedTags}
-                                onChange={setSelectedTags}
-                            />
-                        </div>
-                    )}
+                    {/* 워크플로우 액션 섹션 */}
+                    {form.taskId > 0 && (
+                        <div className="workflow-actions-section">
+                            <h4>워크플로우 액션</h4>
 
-                    {/* 검증자 섹션 */}
-                    <div className="verification-section">
-                        <div className="section-header">
-                            <h4>검증</h4>
-                            {form.verificationStatus && form.verificationStatus !== 'NONE' && (
-                                <span
-                                    className="verification-badge"
-                                    style={{ backgroundColor: VERIFICATION_STATUSES[form.verificationStatus]?.color }}
+                            {/* 담당자 액션: 수락 */}
+                            {isAssignee && form.workflowStatus === 'WAITING' && !hasAccepted && (
+                                <button
+                                    type="button"
+                                    className="btn btn-workflow btn-accept"
+                                    onClick={handleAccept}
+                                    disabled={loading}
                                 >
-                                    {VERIFICATION_STATUSES[form.verificationStatus]?.label}
-                                </span>
+                                    수락
+                                </button>
+                            )}
+
+                            {/* 담당자 액션: 완료 */}
+                            {isAssignee && form.workflowStatus === 'IN_PROGRESS' && !hasCompleted && (
+                                <button
+                                    type="button"
+                                    className="btn btn-workflow btn-complete"
+                                    onClick={handleComplete}
+                                    disabled={loading}
+                                >
+                                    완료
+                                </button>
+                            )}
+
+                            {/* 검증자 액션: 승인/반려 */}
+                            {isVerifier && form.workflowStatus === 'REVIEW' && !hasApproved && (
+                                <div className="verification-actions">
+                                    <div className="form-group">
+                                        <label>반려 사유 (반려 시 필수)</label>
+                                        <textarea
+                                            value={rejectReason}
+                                            onChange={(e) => setRejectReason(e.target.value)}
+                                            placeholder="반려 사유를 입력하세요..."
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className="verification-buttons">
+                                        <button
+                                            type="button"
+                                            className="btn btn-success"
+                                            onClick={handleApprove}
+                                            disabled={loading}
+                                        >
+                                            승인
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger"
+                                            onClick={handleReject}
+                                            disabled={loading}
+                                        >
+                                            반려
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 담당자 액션: 재작업 시작 */}
+                            {isAssignee && form.workflowStatus === 'REJECTED' && (
+                                <button
+                                    type="button"
+                                    className="btn btn-workflow btn-restart"
+                                    onClick={handleRestart}
+                                    disabled={loading}
+                                >
+                                    재작업 시작
+                                </button>
+                            )}
+
+                            {/* 상태 안내 메시지 */}
+                            {form.workflowStatus === 'WAITING' && isAssignee && hasAccepted && (
+                                <p className="workflow-info">다른 담당자의 수락을 기다리고 있습니다.</p>
+                            )}
+                            {form.workflowStatus === 'IN_PROGRESS' && isAssignee && hasCompleted && (
+                                <p className="workflow-info">다른 담당자의 완료를 기다리고 있습니다.</p>
+                            )}
+                            {form.workflowStatus === 'REVIEW' && isVerifier && hasApproved && (
+                                <p className="workflow-info">다른 검증자의 승인을 기다리고 있습니다.</p>
+                            )}
+                            {form.workflowStatus === 'DONE' && (
+                                <p className="workflow-info success">모든 검증자가 승인하여 태스크가 완료되었습니다.</p>
                             )}
                         </div>
-
-                        <div className="form-group">
-                            <label>검증자</label>
-                            <select
-                                value={form.verifierNo || ''}
-                                onChange={handleVerifierChange}
-                                disabled={form.verificationStatus === 'APPROVED'}
-                            >
-                                <option value="">미지정</option>
-                                {teamMembers.map(member => (
-                                    <option key={member.memberNo} value={member.memberNo}>
-                                        {member.memberName} ({member.memberUserid})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {form.verificationNotes && (
-                            <div className="verification-notes-display">
-                                <label>검증 메모</label>
-                                <p>{form.verificationNotes}</p>
-                            </div>
-                        )}
-
-                        {canVerify && (
-                            <div className="verification-actions">
-                                <div className="form-group">
-                                    <label>검증 메모 (반려 시 필수)</label>
-                                    <textarea
-                                        value={verifyNotes}
-                                        onChange={(e) => setVerifyNotes(e.target.value)}
-                                        placeholder="검증 결과에 대한 메모를 입력하세요..."
-                                        rows={2}
-                                    />
-                                </div>
-                                <div className="verification-buttons">
-                                    <button
-                                        type="button"
-                                        className="btn btn-success"
-                                        onClick={handleApprove}
-                                        disabled={loading}
-                                    >
-                                        승인
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-danger"
-                                        onClick={handleReject}
-                                        disabled={loading}
-                                    >
-                                        반려
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    )}
 
                     <div className="task-modal-footer">
                         <button type="button" className="btn btn-secondary" onClick={onClose}>

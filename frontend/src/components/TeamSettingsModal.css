@@ -1,0 +1,467 @@
+/* ===== 오버레이 ===== */
+.team-settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: tsmFadeIn 0.2s ease;
+}
+
+@keyframes tsmFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes tsmSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== 모달 ===== */
+.team-settings-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 94%;
+    max-width: 520px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: tsmSlideUp 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== 헤더 ===== */
+.tsm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    color: white;
+}
+
+.tsm-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.tsm-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tsm-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* ===== 탭 ===== */
+.tsm-tabs {
+    display: flex;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tsm-tab {
+    flex: 1;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tsm-tab:hover {
+    color: #334155;
+    background: #e2e8f0;
+}
+
+.tsm-tab.active {
+    color: #1e3a5f;
+    background: white;
+    border-bottom-color: #1e3a5f;
+}
+
+/* ===== 콘텐츠 ===== */
+.tsm-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.tsm-section {
+    animation: tsmFadeIn 0.2s ease;
+}
+
+/* ===== 필드 ===== */
+.tsm-field {
+    margin-bottom: 24px;
+}
+
+.tsm-field:last-child {
+    margin-bottom: 0;
+}
+
+.tsm-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tsm-display-field {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.tsm-value {
+    font-size: 15px;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.tsm-value.desc {
+    color: #64748b;
+}
+
+.tsm-edit-btn {
+    padding: 6px 14px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tsm-edit-btn:hover {
+    background: #cbd5e1;
+}
+
+/* ===== 편집 필드 ===== */
+.tsm-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tsm-edit-field input,
+.tsm-edit-field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.tsm-edit-field input:focus,
+.tsm-edit-field textarea:focus {
+    outline: none;
+    border-color: #1e3a5f;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1);
+}
+
+.tsm-edit-field textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.tsm-edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ===== 버튼 ===== */
+.tsm-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tsm-btn.primary {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+}
+
+.tsm-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30, 58, 95, 0.4);
+}
+
+.tsm-btn.secondary {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.tsm-btn.secondary:hover {
+    background: #cbd5e1;
+}
+
+.tsm-btn.small {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+.tsm-btn.danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.tsm-btn.danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.tsm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== 초대 코드 ===== */
+.tsm-code-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tsm-code-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.tsm-code {
+    flex: 1;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #1e3a5f;
+}
+
+.tsm-code-btn {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tsm-code-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.tsm-code-btn.primary {
+    background: #1e3a5f;
+    border-color: #1e3a5f;
+    color: white;
+}
+
+.tsm-code-btn.primary:hover {
+    background: #2d5a87;
+}
+
+.tsm-hint {
+    margin: 0;
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* ===== 멤버 목록 ===== */
+.tsm-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tsm-member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.tsm-member-item:hover {
+    background: #f1f5f9;
+}
+
+.tsm-member-avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.tsm-member-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.tsm-member-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.tsm-member-userid {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.tsm-role-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tsm-role-badge.leader {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+}
+
+.tsm-role-badge.member {
+    background: #e2e8f0;
+    color: #64748b;
+}
+
+.tsm-kick-btn {
+    padding: 6px 12px;
+    background: #fee2e2;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dc2626;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tsm-kick-btn:hover {
+    background: #fecaca;
+}
+
+/* ===== 위험 구역 ===== */
+.tsm-danger-zone {
+    text-align: center;
+    padding: 32px 24px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+}
+
+.tsm-danger-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.tsm-danger-zone h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #991b1b;
+}
+
+.tsm-danger-zone p {
+    margin: 0 0 24px 0;
+    font-size: 14px;
+    color: #b91c1c;
+    line-height: 1.6;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 640px) {
+    .team-settings-modal {
+        width: 100%;
+        max-width: none;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .tsm-content {
+        padding: 20px;
+    }
+
+    .tsm-tab {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+}

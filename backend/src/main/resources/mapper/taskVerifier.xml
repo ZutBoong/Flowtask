@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.TaskVerifierDao">
+
+    <!-- 검증자 추가 -->
+    <insert id="insert" parameterType="taskVerifier">
+        INSERT INTO flowtask_task_verifier (task_id, member_no, assigned_at, approved)
+        VALUES (#{taskId}, #{memberNo}, CURRENT_TIMESTAMP, false)
+        ON CONFLICT (task_id, member_no) DO NOTHING
+    </insert>
+
+    <!-- 검증자 삭제 -->
+    <delete id="delete">
+        DELETE FROM flowtask_task_verifier
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </delete>
+
+    <!-- 태스크의 모든 검증자 삭제 -->
+    <delete id="deleteByTask" parameterType="int">
+        DELETE FROM flowtask_task_verifier
+        WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 태스크별 검증자 목록 -->
+    <select id="listByTask" parameterType="int" resultType="taskVerifier">
+        SELECT tv.task_id, tv.member_no, tv.assigned_at,
+               tv.approved, tv.approved_at, tv.rejection_reason,
+               m.name as member_name, m.userid as member_userid
+        FROM flowtask_task_verifier tv
+        JOIN flowtask_member m ON tv.member_no = m.no
+        WHERE tv.task_id = #{taskId}
+        ORDER BY tv.assigned_at ASC
+    </select>
+
+    <!-- 멤버별 검증 태스크 목록 -->
+    <select id="listByMember" parameterType="int" resultType="taskVerifier">
+        SELECT tv.task_id, tv.member_no, tv.assigned_at,
+               tv.approved, tv.approved_at, tv.rejection_reason,
+               m.name as member_name, m.userid as member_userid
+        FROM flowtask_task_verifier tv
+        JOIN flowtask_member m ON tv.member_no = m.no
+        WHERE tv.member_no = #{memberNo}
+        ORDER BY tv.assigned_at DESC
+    </select>
+
+    <!-- 태스크 검증자 수 -->
+    <select id="countByTask" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM flowtask_task_verifier
+        WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 검증자 승인 -->
+    <update id="approveTask">
+        UPDATE flowtask_task_verifier
+        SET approved = true, approved_at = CURRENT_TIMESTAMP, rejection_reason = NULL
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </update>
+
+    <!-- 검증자 반려 -->
+    <update id="rejectTask">
+        UPDATE flowtask_task_verifier
+        SET approved = false, approved_at = CURRENT_TIMESTAMP, rejection_reason = #{reason}
+        WHERE task_id = #{taskId} AND member_no = #{memberNo}
+    </update>
+
+    <!-- 모든 검증자 승인 여부 확인 -->
+    <select id="allVerifiersApproved" parameterType="int" resultType="boolean">
+        SELECT CASE
+            WHEN COUNT(*) = 0 THEN true
+            ELSE NOT EXISTS (
+                SELECT 1 FROM flowtask_task_verifier
+                WHERE task_id = #{taskId} AND approved = false
+            )
+        END
+        FROM flowtask_task_verifier WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 승인 상태 초기화 -->
+    <update id="resetApproval" parameterType="int">
+        UPDATE flowtask_task_verifier
+        SET approved = false, approved_at = NULL, rejection_reason = NULL
+        WHERE task_id = #{taskId}
+    </update>
+
+</mapper>
