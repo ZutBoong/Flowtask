@@ -1,0 +1,283 @@
+.calendar-view {
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+/* 캘린더 헤더 */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.calendar-nav h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    min-width: 160px;
+    text-align: center;
+}
+
+.nav-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.nav-btn:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.today-btn {
+    padding: 8px 16px;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+}
+
+.today-btn:hover {
+    background: #1557b0;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 4px;
+    background: #f5f5f5;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.view-toggle button {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+
+.view-toggle button:hover {
+    background: #e0e0e0;
+}
+
+.view-toggle button.active {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 캘린더 로딩 */
+.calendar-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+/* 캘린더 그리드 */
+.calendar-grid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.weekday {
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+}
+
+.weekday:first-child {
+    color: #dc3545;
+}
+
+.weekday:last-child {
+    color: #0d6efd;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    flex: 1;
+    overflow-y: auto;
+}
+
+.calendar-day {
+    min-height: 100px;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    transition: background 0.15s;
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-day:hover {
+    background: #f9f9f9;
+}
+
+.calendar-day.other-month {
+    background: #f8f9fa;
+}
+
+.calendar-day.other-month .day-number {
+    color: #bbb;
+}
+
+.calendar-day.today {
+    background: #e3f2fd;
+}
+
+.calendar-day.today .day-number {
+    background: #1a73e8;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-header {
+    margin-bottom: 6px;
+}
+
+.day-number {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* 주간 뷰 */
+.calendar-grid.week .calendar-day {
+    min-height: 200px;
+}
+
+/* 태스크 */
+.day-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.task-item {
+    padding: 4px 8px;
+    background: #e3f2fd;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.15s;
+    border-left: 3px solid #1a73e8;
+}
+
+.task-item:hover {
+    background: #bbdefb;
+}
+
+.task-item.status-in-progress {
+    background: #e3f2fd;
+    border-left-color: #0d6efd;
+}
+
+.task-item.status-resolved {
+    background: #e8f5e9;
+    border-left-color: #4caf50;
+}
+
+.task-item.status-closed {
+    background: #f3e5f5;
+    border-left-color: #9c27b0;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.task-item.status-open {
+    background: #fff3e0;
+    border-left-color: #ff9800;
+}
+
+.more-tasks {
+    font-size: 11px;
+    color: #666;
+    padding: 4px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.more-tasks:hover {
+    color: #1a73e8;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .calendar-view {
+        padding: 16px;
+    }
+
+    .calendar-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .calendar-day {
+        min-height: 60px;
+        padding: 4px;
+    }
+
+    .day-number {
+        font-size: 12px;
+    }
+
+    .task-item {
+        font-size: 10px;
+        padding: 2px 4px;
+    }
+}

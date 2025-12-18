@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.dao.FileDao">
+
+    <insert id="insert" parameterType="ProjectFile">
+        <selectKey keyProperty="fileId" resultType="int" order="BEFORE">
+            SELECT nextval('flowtask_file_seq')
+        </selectKey>
+        INSERT INTO flowtask_file (file_id, team_id, task_id, uploader_no, original_name, stored_name, file_path, file_size, mime_type, uploaded_at)
+        VALUES (#{fileId}, #{teamId, jdbcType=INTEGER}, #{taskId, jdbcType=INTEGER}, #{uploaderNo},
+            #{originalName}, #{storedName}, #{filePath}, #{fileSize}, #{mimeType, jdbcType=VARCHAR}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <select id="listByTeam" parameterType="int" resultType="ProjectFile">
+        SELECT f.file_id, f.team_id, f.task_id, f.uploader_no, m.name as uploader_name,
+            f.original_name, f.stored_name, f.file_path, f.file_size, f.mime_type, f.uploaded_at,
+            t.title as task_title
+        FROM flowtask_file f
+        LEFT JOIN flowtask_member m ON f.uploader_no = m.no
+        LEFT JOIN flowtask_task t ON f.task_id = t.task_id
+        WHERE f.team_id = #{teamId}
+        ORDER BY f.uploaded_at DESC
+    </select>
+
+    <select id="listByTask" parameterType="int" resultType="ProjectFile">
+        SELECT f.file_id, f.team_id, f.task_id, f.uploader_no, m.name as uploader_name,
+            f.original_name, f.stored_name, f.file_path, f.file_size, f.mime_type, f.uploaded_at
+        FROM flowtask_file f
+        LEFT JOIN flowtask_member m ON f.uploader_no = m.no
+        WHERE f.task_id = #{taskId}
+        ORDER BY f.uploaded_at DESC
+    </select>
+
+    <select id="getById" parameterType="int" resultType="ProjectFile">
+        SELECT f.file_id, f.team_id, f.task_id, f.uploader_no, m.name as uploader_name,
+            f.original_name, f.stored_name, f.file_path, f.file_size, f.mime_type, f.uploaded_at,
+            t.title as task_title
+        FROM flowtask_file f
+        LEFT JOIN flowtask_member m ON f.uploader_no = m.no
+        LEFT JOIN flowtask_task t ON f.task_id = t.task_id
+        WHERE f.file_id = #{fileId}
+    </select>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM flowtask_file WHERE file_id = #{fileId}
+    </delete>
+
+</mapper>

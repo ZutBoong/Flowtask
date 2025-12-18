@@ -12,5 +12,6 @@ public class Team {
 	private String teamCode;
 	private int leaderNo;
 	private String leaderName; // 조회용
+	private String description; // 팀 설명
 	private Date createdAt;
 }

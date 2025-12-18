@@ -36,4 +36,10 @@ public interface TeamDao {
 	
 	// 팀 정보 수정
 	int updateTeam(Team team);
+
+	// 팀 설명 수정
+	int updateDescription(Team team);
+
+	// 팀 코드 재생성
+	int updateTeamCode(Team team);
 }

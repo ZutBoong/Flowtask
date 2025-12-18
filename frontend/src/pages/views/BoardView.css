@@ -1,0 +1,847 @@
+/* ===== BoardView 전체 레이아웃 ===== */
+.board-view {
+    padding: 20px;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    background-color: #f4f5f7;
+}
+
+/* ===== 컬럼 래퍼 (화살표 + 페이드) ===== */
+.board-view .columns-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+/* 페이드 효과 */
+.board-view .scroll-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.board-view .scroll-fade-left {
+    left: 0;
+    background: linear-gradient(to right, #f4f5f7 0%, transparent 100%);
+}
+
+.board-view .scroll-fade-right {
+    right: 0;
+    background: linear-gradient(to left, #f4f5f7 0%, transparent 100%);
+}
+
+/* 화살표 버튼 */
+.board-view .scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 20px;
+    color: #555;
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.board-view .scroll-arrow:hover {
+    background: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.board-view .scroll-arrow-left {
+    left: 8px;
+}
+
+.board-view .scroll-arrow-right {
+    right: 8px;
+}
+
+/* ===== 컬럼 컨테이너 ===== */
+.board-view .columns-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex: 1;
+    padding: 0 40px 20px 40px;
+    overflow-x: auto;
+    min-height: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.board-view .columns-container::-webkit-scrollbar {
+    display: none;
+}
+
+.board-view .column {
+    background-color: #ebecf0;
+    border-radius: 8px;
+    width: calc(25% - 12px);
+    min-width: 220px;
+    flex-shrink: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.board-view .column-header {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px;
+    margin-bottom: 8px;
+}
+
+.board-view .column-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #172b4d;
+    cursor: pointer;
+    flex: 1;
+}
+
+.board-view .column-header h3:hover {
+    background-color: #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+
+.board-view .column-header input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 2px solid #0079bf;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* 컬럼 타이틀 행 */
+.board-view .column-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.board-view .column-title-row h3 {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.board-view .favorite-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px;
+    color: #999;
+    transition: color 0.15s, transform 0.15s;
+}
+
+.board-view .favorite-btn:hover {
+    transform: scale(1.1);
+}
+
+.board-view .favorite-btn.active {
+    color: #f5a623;
+}
+
+/* 컬럼 메뉴 */
+.board-view .column-menu-wrapper {
+    position: relative;
+}
+
+.board-view .column-menu-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: #666;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.board-view .column-menu-btn:hover {
+    background: #e0e0e0;
+}
+
+.board-view .column-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.board-view .column-menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+
+.board-view .column-menu-dropdown button:hover {
+    background: #f5f5f5;
+}
+
+.board-view .column-menu-dropdown .menu-delete-btn {
+    color: #dc3545;
+}
+
+.board-view .column-menu-dropdown .menu-delete-btn:hover {
+    background: #fff5f5;
+}
+
+/* 컬럼 담당자 */
+.board-view .column-assignees {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.board-view .column-assignee-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #026aa7;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.board-view .column-assignee-more {
+    font-size: 11px;
+    color: #666;
+    margin-left: 4px;
+}
+
+/* ===== 태스크 ===== */
+.board-view .tasks-container {
+    min-height: 50px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.board-view .tasks-container.dragging-over {
+    background-color: #d4d8dc;
+}
+
+.board-view .task-card {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.board-view .task-card:hover {
+    background-color: #f4f5f7;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.board-view .task-card.dragging {
+    transform: rotate(3deg);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.board-view .task-card.closed {
+    opacity: 0.6;
+}
+
+.board-view .task-card.closed .task-card-title {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.board-view .task-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.board-view .task-card-top .delete-btn {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+    margin-top: -2px;
+    background: none;
+    border: none;
+    color: #6b778c;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.board-view .task-card:hover .task-card-top .delete-btn {
+    opacity: 1;
+}
+
+.board-view .task-card-title {
+    font-size: 14px;
+    color: #172b4d;
+    word-break: break-word;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.board-view .task-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #5e6c84;
+}
+
+.board-view .task-card-meta .due-date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.board-view .task-card-meta .due-date.overdue {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.board-view .task-card-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-weight: 500;
+}
+
+.board-view .task-card-status.status-in-progress {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.board-view .task-card-status.status-resolved {
+    background-color: #198754;
+    color: white;
+}
+
+.board-view .task-card-status.status-closed {
+    background-color: #6c757d;
+    color: white;
+}
+
+.board-view .task-card-status.status-cannot-reproduce {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.board-view .task-card-status.status-duplicate {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* 태스크 태그 */
+.board-view .task-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.board-view .task-tag {
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.board-view .task-tag-more {
+    font-size: 10px;
+    color: #666;
+    padding: 2px 4px;
+}
+
+/* 검증 상태 배지 */
+.board-view .task-card-verification {
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* ===== 추가 버튼들 ===== */
+.board-view .add-task {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board-view .add-task input {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.board-view .add-task input:focus {
+    outline: 2px solid #0079bf;
+}
+
+.board-view .add-task button {
+    padding: 8px 12px;
+    background-color: #0079bf;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.board-view .add-task button:hover {
+    background-color: #026aa7;
+}
+
+.board-view .add-column {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    width: calc(25% - 12px);
+    min-width: 220px;
+    flex-shrink: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board-view .add-column input {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.board-view .add-column input:focus {
+    outline: 2px solid #0079bf;
+}
+
+.board-view .add-column button {
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #172b4d;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.board-view .add-column button:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== 확장된 태스크 카드 ===== */
+.board-view .task-card.expanded {
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: default;
+    z-index: 10;
+}
+
+.board-view .task-expanded {
+    animation: expandTask 0.2s ease-out;
+}
+
+@keyframes expandTask {
+    from {
+        opacity: 0.8;
+        transform: scaleY(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.board-view .task-expanded-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.board-view .task-expanded-title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 10px;
+    outline: none;
+}
+
+.board-view .task-expanded-title:focus {
+    border-color: #0079bf;
+}
+
+.board-view .task-expanded-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.board-view .task-expanded-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.board-view .task-expanded-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.board-view .task-expanded-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.board-view .task-expanded-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #5e6c84;
+}
+
+.board-view .task-expanded-field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.board-view .task-expanded-field textarea:focus {
+    outline: none;
+    border-color: #0079bf;
+}
+
+.board-view .task-expanded-field select,
+.board-view .task-expanded-field input[type="datetime-local"] {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+}
+
+.board-view .task-expanded-field select:focus,
+.board-view .task-expanded-field input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #0079bf;
+}
+
+.board-view .task-expanded-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.board-view .task-expanded-assignees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.board-view .assignee-option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    background: #f5f5f5;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.board-view .assignee-option:hover {
+    background: #e8e8e8;
+}
+
+.board-view .assignee-option input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.board-view .task-expanded-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.board-view .task-expanded-footer .btn-cancel {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.board-view .task-expanded-footer .btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.board-view .task-expanded-footer .btn-save {
+    padding: 8px 16px;
+    background: #0079bf;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.board-view .task-expanded-footer .btn-save:hover {
+    background: #026aa7;
+}
+
+/* ===== 모달 공통 스타일 ===== */
+.board-view .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.board-view .modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.board-view .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.board-view .modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.board-view .modal-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.board-view .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.board-view .modal-description {
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.board-view .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.board-view .modal-footer .cancel-btn {
+    padding: 10px 20px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+}
+
+.board-view .modal-footer .cancel-btn:hover {
+    background: #e0e0e0;
+}
+
+.board-view .modal-footer .save-btn {
+    padding: 10px 20px;
+    background: #026aa7;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+}
+
+.board-view .modal-footer .save-btn:hover {
+    background: #0079bf;
+}
+
+.board-view .modal-footer .archive-btn {
+    background: #fd7e14;
+}
+
+.board-view .modal-footer .archive-btn:hover {
+    background: #e76b00;
+}
+
+.board-view .assignee-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board-view .assignee-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.board-view .assignee-checkbox:hover {
+    background: #f9f9f9;
+    border-color: #026aa7;
+}
+
+.board-view .assignee-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.board-view .assignee-name {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.board-view .assignee-userid {
+    font-size: 12px;
+    color: #888;
+}
+
+.board-view .archive-note-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board-view .archive-note-section label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+}
+
+.board-view .archive-note-section textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.board-view .archive-note-section textarea:focus {
+    outline: none;
+    border-color: #026aa7;
+}

@@ -19,8 +19,12 @@ public class Task {
 	private Integer assigneeNo;      // 담당자 (FK to Member.no, nullable)
 	private String assigneeName;     // 담당자 이름 (JOIN으로 조회)
 	private String priority;         // CRITICAL, HIGH, MEDIUM, LOW
+	private Date startDate;          // 시작일 (타임라인용)
 	private Date dueDate;            // 마감일
 	private String status;           // OPEN, IN_PROGRESS, RESOLVED, CLOSED, CANNOT_REPRODUCE, DUPLICATE
+
+	// 섹션 (목록/타임라인 그룹핑용)
+	private Integer sectionId;       // FK to Section.sectionId, nullable
 
 	// 검증자 필드
 	private Integer verifierNo;              // 검증자 (FK to Member.no, nullable)

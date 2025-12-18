@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getMyTeams, createTeam, joinTeam, deleteTeam, leaveTeam } from '../api/teamApi';
-import GitRepoSettings from './GitRepoSettings';
 import './Sidebar.css';
 
 function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
     const navigate = useNavigate();
-    const location = useLocation();
     const [teams, setTeams] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [newTeamName, setNewTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [error, setError] = useState('');
-    const [showGitSettings, setShowGitSettings] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const userMenuRef = useRef(null);
 
@@ -164,53 +161,6 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                             </button>
                         </div>
 
-                        {/* 네비게이션 메뉴 */}
-                        <div className="sidebar-nav">
-                            <div
-                                className={`nav-item ${location.pathname === '/board' ? 'active' : ''}`}
-                                onClick={() => navigate('/board')}
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="3" width="7" height="9" />
-                                    <rect x="14" y="3" width="7" height="5" />
-                                    <rect x="14" y="12" width="7" height="9" />
-                                    <rect x="3" y="16" width="7" height="5" />
-                                </svg>
-                                <span>보드</span>
-                            </div>
-                            <div
-                                className={`nav-item ${location.pathname === '/calendar' ? 'active' : ''}`}
-                                onClick={() => navigate('/calendar')}
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                <span>캘린더</span>
-                            </div>
-                            {currentTeam && (
-                            <div
-                                className="nav-item"
-                                onClick={() => setShowGitSettings(true)}
-                            >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="12" cy="12" r="3" />
-                                    <line x1="12" y1="3" x2="12" y2="9" />
-                                    <line x1="12" y1="15" x2="12" y2="21" />
-                                    <line x1="3" y1="12" x2="9" y2="12" />
-                                    <line x1="15" y1="12" x2="21" y2="12" />
-                                    <line x1="5.6" y1="5.6" x2="9.2" y2="9.2" />
-                                    <line x1="14.8" y1="14.8" x2="18.4" y2="18.4" />
-                                    <line x1="5.6" y1="18.4" x2="9.2" y2="14.8" />
-                                    <line x1="14.8" y1="9.2" x2="18.4" y2="5.6" />
-                                </svg>
-                                <span>Git 연동</span>
-                            </div>
-                            )}
-                        </div>
-
                         {/* 팀 목록 */}
                         <div className="sidebar-section">
                             <div className="section-title">내 팀</div>
@@ -221,7 +171,7 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                                         className={`team-item ${currentTeam?.teamId === team.teamId ? 'active' : ''}`}
                                         onClick={() => {
                                             onSelectTeam(team);
-                                            navigate('/board');
+                                            navigate(`/team/${team.teamId}?view=overview`);
                                         }}
                                     >
                                         <span className="team-name">{team.teamName}</span>
@@ -381,13 +331,6 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                 </div>
             )}
 
-            {/* Git 설정 모달 */}
-            {showGitSettings && currentTeam && (
-                <GitRepoSettings
-                    teamId={currentTeam.teamId}
-                    onClose={() => setShowGitSettings(false)}
-                />
-            )}
         </>
     );
 }

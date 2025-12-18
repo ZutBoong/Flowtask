@@ -19,7 +19,7 @@
 
 	<!-- 팀 코드로 팀 조회 -->
 	<select id="findByCode" parameterType="String" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.created_at,
 			   m.name as leader_name
 		FROM flowtask_team t
 		JOIN flowtask_member m ON t.leader_no = m.no
@@ -28,7 +28,7 @@
 
 	<!-- 팀 ID로 팀 조회 -->
 	<select id="findById" parameterType="int" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.created_at,
 			   m.name as leader_name
 		FROM flowtask_team t
 		JOIN flowtask_member m ON t.leader_no = m.no
@@ -37,7 +37,7 @@
 
 	<!-- 내가 속한 팀 목록 -->
 	<select id="findMyTeams" parameterType="int" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.created_at,
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.created_at,
 			   m.name as leader_name
 		FROM flowtask_team t
 		JOIN flowtask_team_member tm ON t.team_id = tm.team_id
@@ -75,7 +75,23 @@
 
 	<!-- 팀 정보 수정 -->
 	<update id="updateTeam" parameterType="team">
-		UPDATE flowtask_team SET team_name = #{teamName}
+		UPDATE flowtask_team
+		SET team_name = #{teamName},
+			description = #{description, jdbcType=VARCHAR}
+		WHERE team_id = #{teamId}
+	</update>
+
+	<!-- 팀 설명 수정 -->
+	<update id="updateDescription" parameterType="team">
+		UPDATE flowtask_team
+		SET description = #{description, jdbcType=VARCHAR}
+		WHERE team_id = #{teamId}
+	</update>
+
+	<!-- 팀 코드 재생성 -->
+	<update id="updateTeamCode" parameterType="team">
+		UPDATE flowtask_team
+		SET team_code = #{teamCode}
 		WHERE team_id = #{teamId}
 	</update>
 

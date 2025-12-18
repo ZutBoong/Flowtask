@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getTagsByTeam } from '../api/tagApi';
 import './FilterBar.css';
 
@@ -14,25 +14,6 @@ const STATUSES = [
 function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
     const [teamTags, setTeamTags] = useState([]);
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showMembersDropdown, setShowMembersDropdown] = useState(false);
-    const membersDropdownRef = useRef(null);
-
-    // 팀원 드롭다운 외부 클릭 시 닫기
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (membersDropdownRef.current && !membersDropdownRef.current.contains(event.target)) {
-                setShowMembersDropdown(false);
-            }
-        };
-
-        if (showMembersDropdown) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showMembersDropdown]);
 
     useEffect(() => {
         if (teamId) {
@@ -106,7 +87,7 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
                     </svg>
                     <input
                         type="text"
-                        placeholder="이슈 검색..."
+                        placeholder="검색..."
                         value={filters.searchQuery || ''}
                         onChange={handleSearchChange}
                     />
@@ -122,66 +103,6 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
                     필터
                     {hasActiveFilters() && <span className="filter-badge" />}
                 </button>
-
-                {hasActiveFilters() && (
-                    <button className="clear-filters" onClick={clearFilters}>
-                        필터 초기화
-                    </button>
-                )}
-
-                {/* 팀원 목록 */}
-                {teamMembers && teamMembers.length > 0 && (
-                    <div className="team-members-section" ref={membersDropdownRef}>
-                        <div
-                            className={`team-members-trigger ${showMembersDropdown ? 'active' : ''}`}
-                            onClick={() => setShowMembersDropdown(!showMembersDropdown)}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                <circle cx="9" cy="7" r="4" />
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                            </svg>
-                            <span>팀원 ({teamMembers.length})</span>
-                            <svg className="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="6 9 12 15 18 9" />
-                            </svg>
-                        </div>
-
-                        {/* 팀원 상세 드롭다운 */}
-                        {showMembersDropdown && (
-                            <div className="members-dropdown">
-                                <div className="members-dropdown-header">
-                                    <h4>팀원 목록</h4>
-                                    <span className="members-count">{teamMembers.length}명</span>
-                                </div>
-                                <ul className="members-dropdown-list">
-                                    {[...teamMembers].sort((a, b) => {
-                                        if (a.role === 'LEADER') return -1;
-                                        if (b.role === 'LEADER') return 1;
-                                        return 0;
-                                    }).map(member => (
-                                        <li key={member.memberNo} className="members-dropdown-item">
-                                            <div className={`member-avatar ${member.role === 'LEADER' ? 'leader' : ''}`}>
-                                                {member.memberName?.charAt(0) || 'U'}
-                                            </div>
-                                            <div className="member-details">
-                                                <span className="member-name">
-                                                    {member.memberName}
-                                                    {member.role === 'LEADER' && <span className="leader-star">★</span>}
-                                                </span>
-                                                <span className="member-userid">@{member.memberUserid}</span>
-                                            </div>
-                                            <span className={`member-role-badge ${member.role === 'LEADER' ? 'leader' : 'member'}`}>
-                                                {member.role === 'LEADER' ? '팀장' : '멤버'}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
 
             {isExpanded && (

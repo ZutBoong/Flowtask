@@ -89,4 +89,22 @@ public class TeamService {
 	public int updateTeam(Team team) {
 		return dao.updateTeam(team);
 	}
+
+	// 팀 설명 수정
+	public int updateDescription(int teamId, String description) {
+		Team team = new Team();
+		team.setTeamId(teamId);
+		team.setDescription(description);
+		return dao.updateDescription(team);
+	}
+
+	// 팀 코드 재생성
+	public String regenerateTeamCode(int teamId) {
+		String newCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+		Team team = new Team();
+		team.setTeamId(teamId);
+		team.setTeamCode(newCode);
+		dao.updateTeamCode(team);
+		return newCode;
+	}
 }

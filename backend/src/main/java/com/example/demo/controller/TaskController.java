@@ -216,4 +216,40 @@ public class TaskController {
 		System.out.println("calendar tasklist result: " + list.size() + "개");
 		return list;
 	}
+
+	// ========== 섹션/타임라인 엔드포인트 ==========
+
+	// 섹션별 태스크 목록
+	@GetMapping("tasklist/section/{sectionId}")
+	public List<Task> tasklistBySection(@PathVariable("sectionId") int sectionId) {
+		List<Task> list = service.listBySection(sectionId);
+		System.out.println("tasklist by section: " + list);
+		return list;
+	}
+
+	// 태스크 섹션 변경
+	@PutMapping("task/{taskId}/section")
+	public Integer updateTaskSection(
+			@PathVariable("taskId") int taskId,
+			@RequestBody Task task) {
+		task.setTaskId(taskId);
+		System.out.println("task section update: " + task);
+		int result = service.updateSection(task);
+		if (result == 1)
+			System.out.println("태스크 섹션 변경 성공");
+		return result;
+	}
+
+	// 태스크 날짜 변경 (타임라인용)
+	@PutMapping("task/{taskId}/dates")
+	public Integer updateTaskDates(
+			@PathVariable("taskId") int taskId,
+			@RequestBody Task task) {
+		task.setTaskId(taskId);
+		System.out.println("task dates update: " + task);
+		int result = service.updateDates(task);
+		if (result == 1)
+			System.out.println("태스크 날짜 변경 성공");
+		return result;
+	}
 }

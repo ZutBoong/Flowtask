@@ -350,4 +350,41 @@ public class TaskService {
 		populateRelations(tasks);
 		return tasks;
 	}
+
+	// 섹션별 태스크 조회
+	public List<Task> listBySection(int sectionId) {
+		List<Task> tasks = dao.listBySection(sectionId);
+		populateRelations(tasks);
+		return tasks;
+	}
+
+	// 섹션 변경
+	public int updateSection(Task task) {
+		int result = dao.updateSection(task);
+		if (result == 1) {
+			Task updated = dao.content(task.getTaskId());
+			if (updated != null) {
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
+				if (column != null) {
+					notificationService.notifyTaskUpdated(updated, column.getTeamId());
+				}
+			}
+		}
+		return result;
+	}
+
+	// 날짜 변경 (타임라인용)
+	public int updateDates(Task task) {
+		int result = dao.updateDates(task);
+		if (result == 1) {
+			Task updated = dao.content(task.getTaskId());
+			if (updated != null) {
+				FlowtaskColumn column = columnDao.content(updated.getColumnId());
+				if (column != null) {
+					notificationService.notifyTaskDatesChanged(updated, column.getTeamId());
+				}
+			}
+		}
+		return result;
+	}
 }

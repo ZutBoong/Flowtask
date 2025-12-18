@@ -8,6 +8,8 @@ import com.example.demo.dto.BoardEvent;
 import com.example.demo.model.FlowtaskColumn;
 import com.example.demo.model.Task;
 import com.example.demo.model.Comment;
+import com.example.demo.model.Section;
+import com.example.demo.model.ProjectFile;
 
 @Service
 public class BoardNotificationService {
@@ -52,6 +54,33 @@ public class BoardNotificationService {
 	// Comment Events
 	public void notifyCommentEvent(String eventType, Comment comment, int teamId) {
 		sendBoardEvent(teamId, eventType, "comment", comment);
+	}
+
+	// Section Events
+	public void notifySectionCreated(Section section, int teamId) {
+		sendBoardEvent(teamId, "SECTION_CREATED", "section", section);
+	}
+
+	public void notifySectionUpdated(Section section, int teamId) {
+		sendBoardEvent(teamId, "SECTION_UPDATED", "section", section);
+	}
+
+	public void notifySectionDeleted(int sectionId, int teamId) {
+		sendBoardEvent(teamId, "SECTION_DELETED", "section", sectionId);
+	}
+
+	// File Events
+	public void notifyFileUploaded(ProjectFile file, int teamId) {
+		sendBoardEvent(teamId, "FILE_UPLOADED", "file", file);
+	}
+
+	public void notifyFileDeleted(int fileId, int teamId) {
+		sendBoardEvent(teamId, "FILE_DELETED", "file", fileId);
+	}
+
+	// Task Date Events (for Timeline sync)
+	public void notifyTaskDatesChanged(Task task, int teamId) {
+		sendBoardEvent(teamId, "TASK_DATES_CHANGED", "task", task);
 	}
 
 	private void sendBoardEvent(int teamId, String eventType, String entityType, Object payload) {

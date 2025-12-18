@@ -16,6 +16,8 @@ CREATE SEQUENCE IF NOT EXISTS flowtask_comment_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_chat_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_git_repo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_column_archive_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE IF NOT EXISTS flowtask_section_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE IF NOT EXISTS flowtask_file_seq START WITH 1 INCREMENT BY 1;
 
 -- ========================================
 -- 회원 테이블
@@ -41,6 +43,7 @@ CREATE TABLE IF NOT EXISTS flowtask_team (
     team_name VARCHAR(100) NOT NULL,
     team_code VARCHAR(20) NOT NULL UNIQUE,
     leader_no INTEGER NOT NULL REFERENCES flowtask_member(no),
+    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -74,6 +77,21 @@ CREATE TABLE IF NOT EXISTS flowtask_project (
 CREATE INDEX IF NOT EXISTS idx_project_team ON flowtask_project(team_id);
 
 -- ========================================
+-- 섹션 테이블 (목록/타임라인 그룹핑용)
+-- ========================================
+CREATE TABLE IF NOT EXISTS flowtask_section (
+    section_id INTEGER PRIMARY KEY,
+    team_id INTEGER NOT NULL REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
+    section_name VARCHAR(100) NOT NULL,
+    position INTEGER DEFAULT 0,
+    color VARCHAR(7) DEFAULT '#6c757d',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_section_team ON flowtask_section(team_id);
+CREATE INDEX IF NOT EXISTS idx_section_position ON flowtask_section(position);
+
+-- ========================================
 -- 컬럼 테이블
 -- ========================================
 CREATE TABLE IF NOT EXISTS flowtask_column (
@@ -101,8 +119,11 @@ CREATE TABLE IF NOT EXISTS flowtask_task (
     -- Issue tracker fields
     assignee_no INTEGER REFERENCES flowtask_member(no) ON DELETE SET NULL,
     priority VARCHAR(20) DEFAULT 'MEDIUM',
+    start_date TIMESTAMP,
     due_date TIMESTAMP,
     status VARCHAR(30) DEFAULT 'OPEN',
+    -- Section for list/timeline grouping
+    section_id INTEGER REFERENCES flowtask_section(section_id) ON DELETE SET NULL,
     -- Verifier fields
     verifier_no INTEGER REFERENCES flowtask_member(no) ON DELETE SET NULL,
     verified_at TIMESTAMP,
@@ -118,6 +139,8 @@ CREATE INDEX IF NOT EXISTS idx_task_priority ON flowtask_task(priority);
 CREATE INDEX IF NOT EXISTS idx_task_due_date ON flowtask_task(due_date);
 CREATE INDEX IF NOT EXISTS idx_task_verifier ON flowtask_task(verifier_no);
 CREATE INDEX IF NOT EXISTS idx_task_verif_status ON flowtask_task(verification_status);
+CREATE INDEX IF NOT EXISTS idx_task_start_date ON flowtask_task(start_date);
+CREATE INDEX IF NOT EXISTS idx_task_section ON flowtask_task(section_id);
 
 -- ========================================
 -- 태그 테이블
@@ -290,3 +313,46 @@ CREATE TABLE IF NOT EXISTS flowtask_task_assignee (
 
 CREATE INDEX IF NOT EXISTS idx_task_assignee_task ON flowtask_task_assignee(task_id);
 CREATE INDEX IF NOT EXISTS idx_task_assignee_member ON flowtask_task_assignee(member_no);
+
+-- ========================================
+-- 파일 테이블 (프로젝트/태스크 첨부파일)
+-- ========================================
+CREATE TABLE IF NOT EXISTS flowtask_file (
+    file_id INTEGER PRIMARY KEY,
+    team_id INTEGER REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
+    task_id INTEGER REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
+    uploader_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE SET NULL,
+    original_name VARCHAR(255) NOT NULL,
+    stored_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size BIGINT,
+    mime_type VARCHAR(100),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_file_team ON flowtask_file(team_id);
+CREATE INDEX IF NOT EXISTS idx_file_task ON flowtask_file(task_id);
+CREATE INDEX IF NOT EXISTS idx_file_uploader ON flowtask_file(uploader_no);
+CREATE INDEX IF NOT EXISTS idx_file_uploaded ON flowtask_file(uploaded_at DESC);
+
+-- ========================================
+-- 마이그레이션: 기존 테이블에 새 컬럼 추가
+-- (이미 존재하는 DB에서 실행 시 필요)
+-- ========================================
+DO $$
+BEGIN
+    -- flowtask_team에 description 추가
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flowtask_team' AND column_name = 'description') THEN
+        ALTER TABLE flowtask_team ADD COLUMN description TEXT;
+    END IF;
+
+    -- flowtask_task에 start_date 추가
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flowtask_task' AND column_name = 'start_date') THEN
+        ALTER TABLE flowtask_task ADD COLUMN start_date TIMESTAMP;
+    END IF;
+
+    -- flowtask_task에 section_id 추가
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flowtask_task' AND column_name = 'section_id') THEN
+        ALTER TABLE flowtask_task ADD COLUMN section_id INTEGER REFERENCES flowtask_section(section_id) ON DELETE SET NULL;
+    END IF;
+END $$;

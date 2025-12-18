@@ -206,8 +206,8 @@
 	<!-- 캘린더용 날짜 범위 조회 (팀 내, 마감일 기준) -->
 	<select id="listByDateRange" parameterType="map" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.due_date, t.status,
-			t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date, t.status,
+			t.section_id, t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
@@ -217,5 +217,32 @@
 		AND t.due_date BETWEEN #{startDate} AND #{endDate}
 		ORDER BY t.due_date ASC, t.priority ASC
 	</select>
+
+	<!-- 섹션별 태스크 목록 -->
+	<select id="listBySection" parameterType="int" resultType="task">
+		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date, t.status,
+			t.section_id, t.verifier_no, v.name as verifier_name, t.verified_at, t.verification_status, t.verification_notes
+		FROM flowtask_task t
+		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
+		LEFT JOIN flowtask_member v ON t.verifier_no = v.no
+		WHERE t.section_id = #{sectionId}
+		ORDER BY t.position ASC
+	</select>
+
+	<!-- 섹션 변경 -->
+	<update id="updateSection" parameterType="task">
+		UPDATE flowtask_task
+		SET section_id = #{sectionId, jdbcType=INTEGER}
+		WHERE task_id = #{taskId}
+	</update>
+
+	<!-- 날짜 변경 (타임라인용) -->
+	<update id="updateDates" parameterType="task">
+		UPDATE flowtask_task
+		SET start_date = #{startDate, jdbcType=TIMESTAMP},
+			due_date = #{dueDate, jdbcType=TIMESTAMP}
+		WHERE task_id = #{taskId}
+	</update>
 
 </mapper>

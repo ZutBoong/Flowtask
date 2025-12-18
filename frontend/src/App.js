@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -7,6 +7,7 @@ import FindId from './pages/FindId';
 import FindPassword from './pages/FindPassword';
 import Board from './pages/Board';
 import Calendar from './pages/Calendar';
+import TeamView from './pages/TeamView';
 import MyPage from './pages/MyPage';
 import MyActivity from './pages/MyActivity';
 import './App.css';
@@ -15,11 +16,20 @@ function AppContent() {
   const location = useLocation();
   const isBoardPage = location.pathname === '/board';
   const isCalendarPage = location.pathname === '/calendar';
+  const isTeamPage = location.pathname.startsWith('/team/');
   const isMyPage = location.pathname === '/mypage';
   const isMyActivity = location.pathname === '/activity';
   const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password'].includes(location.pathname);
 
-  // Board, Calendar, MyPage, MyActivity 페이지는 독립적인 레이아웃 사용
+  // TeamView, Board, Calendar, MyPage, MyActivity 페이지는 독립적인 레이아웃 사용
+  // TeamView는 Routes 내에서 렌더링 (useParams 사용을 위해)
+  if (isTeamPage) {
+    return (
+      <Routes>
+        <Route path="/team/:teamId" element={<TeamView />} />
+      </Routes>
+    );
+  }
   if (isBoardPage) {
     return <Board />;
   }

@@ -60,3 +60,21 @@ export const inviteMember = async (teamId, memberNo, leaderNo) => {
     });
     return response.data;
 };
+
+// 팀 정보 수정
+export const updateTeam = async (teamId, team) => {
+    const response = await axiosInstance.put(`${API_PATH}/${teamId}`, team);
+    return response.data;
+};
+
+// 팀 설명 수정
+export const updateTeamDescription = async (teamId, description) => {
+    const response = await axiosInstance.put(`${API_PATH}/${teamId}/description`, { description });
+    return response.data;
+};
+
+// 팀 코드 재생성
+export const regenerateTeamCode = async (teamId, leaderNo) => {
+    const response = await axiosInstance.post(`${API_PATH}/${teamId}/regenerate-code`, { leaderNo });
+    return response.data;
+};

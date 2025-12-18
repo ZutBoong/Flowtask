@@ -1,0 +1,344 @@
+.overview-view {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.overview-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.section-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+/* 팀 정보 섹션 */
+.team-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.team-name-display,
+.team-description-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-name-display .label,
+.team-description-display .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.team-name-display .value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.description-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.description-display p {
+    flex: 1;
+    color: #555;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.description-edit textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.edit-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #1a73e8;
+    background: transparent;
+    border: 1px solid #1a73e8;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-btn:hover {
+    background: #e8f0fe;
+}
+
+.cancel-btn,
+.save-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
+
+.cancel-btn {
+    background: #f1f1f1;
+    color: #666;
+}
+
+.save-btn {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.save-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 통계 섹션 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.stat-card {
+    padding: 16px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.stat-card.total {
+    background: #e3f2fd;
+}
+
+.stat-card.completion {
+    background: #e8f5e9;
+    grid-column: span 2;
+}
+
+.stat-card.status-open {
+    background: #fff3e0;
+}
+
+.stat-card.status-in_progress {
+    background: #e3f2fd;
+}
+
+.stat-card.status-resolved {
+    background: #e8f5e9;
+}
+
+.stat-card.status-closed {
+    background: #f3e5f5;
+}
+
+.stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.completion-bar {
+    width: 100%;
+    height: 6px;
+    background: #c8e6c9;
+    border-radius: 3px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.completion-fill {
+    height: 100%;
+    background: #4caf50;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* 팀원 섹션 */
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.member-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1a73e8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.member-userid {
+    font-size: 12px;
+    color: #888;
+}
+
+.leader-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: #ffc107;
+    color: #333;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 2px;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* 하단 2열 레이아웃 */
+.overview-bottom-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* 최근 활동 & 마감 임박 */
+.recent-tasks-list,
+.upcoming-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recent-task-item,
+.upcoming-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot.status-open {
+    background: #ff9800;
+}
+
+.status-dot.status-in_progress {
+    background: #2196f3;
+}
+
+.status-dot.status-resolved {
+    background: #4caf50;
+}
+
+.status-dot.status-closed {
+    background: #9c27b0;
+}
+
+.task-title {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-time,
+.due-date {
+    font-size: 12px;
+    color: #888;
+    flex-shrink: 0;
+}
+
+.no-data {
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .overview-view {
+        padding: 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-card.completion {
+        grid-column: span 2;
+    }
+
+    .overview-bottom-row {
+        grid-template-columns: 1fr;
+    }
+
+    .members-grid {
+        grid-template-columns: 1fr;
+    }
+}

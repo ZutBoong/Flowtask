@@ -1,27 +1,25 @@
 .filter-bar {
     background: white;
-    border-radius: 8px;
-    margin: 0 40px 16px 40px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e5e5e5;
     flex-shrink: 0;
 }
 
 .filter-bar-main {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 10px 16px;
 }
 
 .search-box {
-    flex: 1;
     display: flex;
     align-items: center;
     gap: 8px;
     background: #f5f5f5;
     border-radius: 6px;
     padding: 8px 12px;
-    max-width: 300px;
+    width: 280px;
 }
 
 .search-box svg {
@@ -73,22 +71,6 @@
     height: 8px;
     background: #dc3545;
     border-radius: 50%;
-}
-
-.clear-filters {
-    padding: 8px 14px;
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.clear-filters:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
 }
 
 .filter-bar-expanded {
@@ -162,166 +144,3 @@
     background: var(--chip-color);
 }
 
-/* ===== 팀원 목록 섹션 ===== */
-.team-members-section {
-    position: relative;
-    margin-left: auto;
-    padding-left: 16px;
-    border-left: 1px solid #e5e5e5;
-}
-
-.team-members-trigger {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 14px;
-    color: #555;
-    background: #f5f5f5;
-}
-
-.team-members-trigger:hover {
-    background: #e8e8e8;
-}
-
-.team-members-trigger.active {
-    background: #e8f4fc;
-    color: #0d6efd;
-}
-
-.team-members-trigger svg {
-    color: inherit;
-    flex-shrink: 0;
-}
-
-.dropdown-arrow {
-    transition: transform 0.2s ease;
-    margin-left: 2px;
-}
-
-.team-members-trigger.active .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-/* ===== 팀원 드롭다운 ===== */
-.members-dropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    width: 280px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 100;
-    overflow: hidden;
-}
-
-.members-dropdown-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 16px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.members-dropdown-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.members-count {
-    font-size: 12px;
-    color: #666;
-    background: #e0e0e0;
-    padding: 2px 8px;
-    border-radius: 10px;
-}
-
-.members-dropdown-list {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.members-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    transition: background 0.15s ease;
-}
-
-.members-dropdown-item:hover {
-    background: #f5f5f5;
-}
-
-.members-dropdown-item .member-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #5aac44;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.members-dropdown-item .member-avatar.leader {
-    background: #f5a623;
-}
-
-.member-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.member-details .member-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.leader-star {
-    color: #f5a623;
-    font-size: 12px;
-}
-
-.member-details .member-userid {
-    font-size: 12px;
-    color: #888;
-}
-
-.member-role-badge {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    flex-shrink: 0;
-}
-
-.member-role-badge.leader {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.member-role-badge.member {
-    background: #e7f5ff;
-    color: #0c63e4;
-}

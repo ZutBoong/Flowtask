@@ -1,0 +1,374 @@
+.admin-view {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.no-permission {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-permission h2 {
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.no-permission p {
+    color: #666;
+}
+
+/* 섹션 */
+.admin-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 필드 */
+.admin-field {
+    margin-bottom: 20px;
+}
+
+.admin-field:last-child {
+    margin-bottom: 0;
+}
+
+.admin-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.display-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.display-field .value {
+    flex: 1;
+    font-size: 16px;
+    color: #333;
+}
+
+.display-field .value.description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.edit-btn {
+    padding: 6px 12px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.edit-btn:hover {
+    background: #e0e0e0;
+}
+
+.edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.edit-field input,
+.edit-field textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.edit-field input:focus,
+.edit-field textarea:focus {
+    outline: none;
+    border-color: #1a73e8;
+}
+
+.edit-field textarea {
+    resize: vertical;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.cancel-btn,
+.save-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.cancel-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background: #e0e0e0;
+}
+
+.save-btn {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.save-btn:hover {
+    background: #1557b0;
+}
+
+.save-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 초대 코드 섹션 */
+.invite-code-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.code-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.code {
+    font-family: monospace;
+    font-size: 18px;
+    font-weight: 600;
+    background: #f5f5f5;
+    padding: 12px 16px;
+    border-radius: 6px;
+    letter-spacing: 2px;
+}
+
+.toggle-btn,
+.copy-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.toggle-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.toggle-btn:hover {
+    background: #e0e0e0;
+}
+
+.copy-btn {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.copy-btn:hover {
+    background: #1557b0;
+}
+
+.regenerate-btn {
+    align-self: flex-start;
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.regenerate-btn:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.hint {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+}
+
+/* 멤버 목록 */
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1a73e8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.member-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.member-userid {
+    font-size: 12px;
+    color: #888;
+}
+
+.member-role {
+    flex-shrink: 0;
+}
+
+.role-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.role-badge.leader {
+    background: #ffc107;
+    color: #333;
+}
+
+.role-badge.member {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.kick-btn {
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.kick-btn:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* 위험 구역 */
+.danger-zone {
+    border: 1px solid #dc3545;
+}
+
+.danger-zone h2 {
+    color: #dc3545;
+}
+
+.danger-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.danger-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+}
+
+.danger-info p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.delete-team-btn {
+    padding: 10px 20px;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.delete-team-btn:hover {
+    background: #c82333;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .admin-view {
+        padding: 16px;
+    }
+
+    .admin-section {
+        padding: 16px;
+    }
+
+    .danger-content {
+        flex-direction: column;
+    }
+
+    .delete-team-btn {
+        width: 100%;
+    }
+}

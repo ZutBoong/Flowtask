@@ -230,4 +230,68 @@ public class TeamController {
 		}
 		return result;
 	}
+
+	// 팀 설명 수정
+	@PutMapping("/{teamId}/description")
+	public Map<String, Object> updateDescription(@PathVariable int teamId, @RequestBody Map<String, String> request) {
+		String description = request.get("description");
+		System.out.println("팀 설명 수정: teamId=" + teamId);
+		Map<String, Object> result = new HashMap<>();
+
+		int updateResult = service.updateDescription(teamId, description);
+		if (updateResult == 1) {
+			result.put("success", true);
+			result.put("message", "팀 설명이 수정되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "팀 설명 수정에 실패했습니다.");
+		}
+		return result;
+	}
+
+	// 팀 코드 재생성 (팀장만)
+	@PostMapping("/{teamId}/regenerate-code")
+	public Map<String, Object> regenerateTeamCode(@PathVariable int teamId, @RequestBody Map<String, Integer> request) {
+		int leaderNo = request.get("leaderNo");
+		System.out.println("팀 코드 재생성: teamId=" + teamId + ", leaderNo=" + leaderNo);
+		Map<String, Object> result = new HashMap<>();
+
+		// 팀장 권한 확인
+		Team team = service.findById(teamId);
+		if (team == null) {
+			result.put("success", false);
+			result.put("message", "존재하지 않는 팀입니다.");
+			return result;
+		}
+
+		if (team.getLeaderNo() != leaderNo) {
+			result.put("success", false);
+			result.put("message", "팀장만 팀 코드를 재생성할 수 있습니다.");
+			return result;
+		}
+
+		String newCode = service.regenerateTeamCode(teamId);
+		result.put("success", true);
+		result.put("message", "팀 코드가 재생성되었습니다.");
+		result.put("teamCode", newCode);
+		return result;
+	}
+
+	// 팀 정보 수정 (팀장만)
+	@PutMapping("/{teamId}")
+	public Map<String, Object> updateTeam(@PathVariable int teamId, @RequestBody Team team) {
+		System.out.println("팀 정보 수정: teamId=" + teamId);
+		Map<String, Object> result = new HashMap<>();
+
+		team.setTeamId(teamId);
+		int updateResult = service.updateTeam(team);
+		if (updateResult == 1) {
+			result.put("success", true);
+			result.put("message", "팀 정보가 수정되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "팀 정보 수정에 실패했습니다.");
+		}
+		return result;
+	}
 }
