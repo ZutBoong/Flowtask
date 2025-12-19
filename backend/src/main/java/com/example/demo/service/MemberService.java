@@ -98,4 +98,12 @@ public class MemberService {
 	public Member findByUseridOrEmail(String keyword) {
 		return dao.findByUseridOrEmail(keyword);
 	}
+
+	// 모든 회원 조회 (팀 생성 시 초대용)
+	public java.util.List<Member> findAll() {
+		java.util.List<Member> members = dao.findAll();
+		// 비밀번호 제외
+		members.forEach(member -> member.setPassword(null));
+		return members;
+	}
 }

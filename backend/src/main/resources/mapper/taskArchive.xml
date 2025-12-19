@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.TaskArchiveDao">
+
+    <!-- 아카이브 생성 -->
+    <insert id="insert" parameterType="taskArchive">
+        INSERT INTO flowtask_task_archive (
+            archive_id, member_no, original_task_id,
+            team_id, team_name, column_id, column_title,
+            task_snapshot, archive_note, archived_at
+        ) VALUES (
+            nextval('flowtask_task_archive_seq'), #{memberNo}, #{originalTaskId},
+            #{teamId}, #{teamName}, #{columnId}, #{columnTitle},
+            #{taskSnapshot}::jsonb, #{archiveNote}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 아카이브 삭제 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM flowtask_task_archive
+        WHERE archive_id = #{archiveId}
+    </delete>
+
+    <!-- 아카이브 상세 조회 -->
+    <select id="findById" parameterType="int" resultType="taskArchive">
+        SELECT archive_id, member_no, original_task_id,
+               team_id, team_name, column_id, column_title,
+               task_snapshot::text as task_snapshot,
+               archive_note, archived_at
+        FROM flowtask_task_archive
+        WHERE archive_id = #{archiveId}
+    </select>
+
+    <!-- 멤버별 아카이브 목록 -->
+    <select id="listByMember" parameterType="int" resultType="taskArchive">
+        SELECT archive_id, member_no, original_task_id,
+               team_id, team_name, column_id, column_title,
+               task_snapshot::text as task_snapshot,
+               archive_note, archived_at
+        FROM flowtask_task_archive
+        WHERE member_no = #{memberNo}
+        ORDER BY archived_at DESC
+    </select>
+
+    <!-- 멤버의 아카이브 수 -->
+    <select id="countByMember" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM flowtask_task_archive
+        WHERE member_no = #{memberNo}
+    </select>
+
+</mapper>

@@ -5,23 +5,23 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import FindId from './pages/FindId';
 import FindPassword from './pages/FindPassword';
-import Board from './pages/Board';
 import Calendar from './pages/Calendar';
 import TeamView from './pages/TeamView';
 import MyPage from './pages/MyPage';
 import MyActivity from './pages/MyActivity';
+import CreateTeam from './pages/CreateTeam';
 import './App.css';
 
 function AppContent() {
   const location = useLocation();
-  const isBoardPage = location.pathname === '/board';
   const isCalendarPage = location.pathname === '/calendar';
   const isTeamPage = location.pathname.startsWith('/team/');
   const isMyPage = location.pathname === '/mypage';
   const isMyActivity = location.pathname === '/activity';
+  const isCreateTeam = location.pathname === '/create-team';
   const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password'].includes(location.pathname);
 
-  // TeamView, Board, Calendar, MyPage, MyActivity 페이지는 독립적인 레이아웃 사용
+  // TeamView, Calendar, MyPage, MyActivity, CreateTeam 페이지는 독립적인 레이아웃 사용
   // TeamView는 Routes 내에서 렌더링 (useParams 사용을 위해)
   if (isTeamPage) {
     return (
@@ -29,9 +29,6 @@ function AppContent() {
         <Route path="/team/:teamId" element={<TeamView />} />
       </Routes>
     );
-  }
-  if (isBoardPage) {
-    return <Board />;
   }
   if (isCalendarPage) {
     return <Calendar />;
@@ -42,15 +39,15 @@ function AppContent() {
   if (isMyActivity) {
     return <MyActivity />;
   }
+  if (isCreateTeam) {
+    return <CreateTeam />;
+  }
 
   return (
     <div className="App">
       {!hideHeader && (
         <header className="App-header">
           <h1>Flowtask</h1>
-          <nav className="App-nav">
-            <Link to="/board">Board</Link>
-          </nav>
         </header>
       )}
       <main className={hideHeader ? 'no-header' : ''}>

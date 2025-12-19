@@ -62,8 +62,11 @@ function BoardView({
 
     // 스크롤 관련
     const columnsContainerRef = useRef(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    // 드래그 스크롤 관련
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartX = useRef(0);
+    const dragScrollLeft = useRef(0);
 
     // props 변경 시 로컬 상태 동기화
     useEffect(() => {
@@ -96,38 +99,48 @@ function BoardView({
         }
     };
 
-    // 스크롤 상태 체크
-    const checkScrollState = useCallback(() => {
+    // 드래그 시작
+    const handleMouseDown = (e) => {
         const container = columnsContainerRef.current;
-        if (container) {
-            setCanScrollLeft(container.scrollLeft > 0);
-            setCanScrollRight(
-                container.scrollLeft < container.scrollWidth - container.clientWidth - 1
-            );
-        }
-    }, []);
+        if (!container) return;
 
-    useEffect(() => {
-        const container = columnsContainerRef.current;
-        if (container) {
-            checkScrollState();
-            container.addEventListener('scroll', checkScrollState);
-            window.addEventListener('resize', checkScrollState);
-            return () => {
-                container.removeEventListener('scroll', checkScrollState);
-                window.removeEventListener('resize', checkScrollState);
-            };
+        // 태스크 카드나 버튼 등을 클릭한 경우는 드래그 하지 않음
+        if (e.target.closest('.task-card') ||
+            e.target.closest('.add-task-btn') ||
+            e.target.closest('.add-column') ||
+            e.target.closest('button') ||
+            e.target.closest('input')) {
+            return;
         }
-    }, [checkScrollState, columns]);
 
-    const handleScroll = (direction) => {
+        setIsDragging(true);
+        dragStartX.current = e.pageX - container.offsetLeft;
+        dragScrollLeft.current = container.scrollLeft;
+        container.style.cursor = 'grabbing';
+        container.style.userSelect = 'none';
+    };
+
+    // 드래그 중
+    const handleMouseMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const container = columnsContainerRef.current;
+        if (!container) return;
+
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - dragStartX.current) * 1.5; // 스크롤 속도 조절
+        container.scrollLeft = dragScrollLeft.current - walk;
+    };
+
+    // 드래그 종료
+    const handleMouseUpOrLeave = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
         const container = columnsContainerRef.current;
         if (container) {
-            const scrollAmount = 300;
-            container.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
+            container.style.cursor = 'grab';
+            container.style.userSelect = 'auto';
         }
     };
 
@@ -399,29 +412,6 @@ function BoardView({
         <div className="board-view">
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="columns-wrapper">
-                    {canScrollLeft && (
-                        <>
-                            <div className="scroll-fade scroll-fade-left" />
-                            <button
-                                className="scroll-arrow scroll-arrow-left"
-                                onClick={() => handleScroll('left')}
-                            >
-                                ‹
-                            </button>
-                        </>
-                    )}
-                    {canScrollRight && (
-                        <>
-                            <div className="scroll-fade scroll-fade-right" />
-                            <button
-                                className="scroll-arrow scroll-arrow-right"
-                                onClick={() => handleScroll('right')}
-                            >
-                                ›
-                            </button>
-                        </>
-                    )}
-
                     <Droppable droppableId="board" direction="horizontal" type="column">
                         {(provided) => (
                             <div
@@ -431,6 +421,10 @@ function BoardView({
                                     columnsContainerRef.current = node;
                                 }}
                                 {...provided.droppableProps}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUpOrLeave}
+                                onMouseLeave={handleMouseUpOrLeave}
                             >
                                 {columns.map((column, index) => (
                                     <Draggable

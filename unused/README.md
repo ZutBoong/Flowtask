@@ -9,6 +9,8 @@
 #### Pages
 - `TeamList.js` - App.js의 라우팅에 정의되지 않음
 - `TeamList.css` - TeamList.js의 스타일
+- `Board.js` - `/board` 경로 사용하지 않음 (BoardView로 대체)
+- `Board.css` - Board.js의 스타일
 
 #### API
 - `projectApi.js` - 어떤 컴포넌트에서도 import되지 않음
@@ -42,6 +44,11 @@
 mv unused/frontend/pages/TeamList.js frontend/src/pages/
 mv unused/frontend/pages/TeamList.css frontend/src/pages/
 
+# Board 복구
+mv unused/frontend/pages/Board.js frontend/src/pages/
+mv unused/frontend/pages/Board.css frontend/src/pages/
+# App.js에서 import 및 라우팅도 복구 필요
+
 # projectApi 복구
 mv unused/frontend/api/projectApi.js frontend/src/api/
 ```
@@ -71,3 +78,10 @@ rm -rf unused/
 - AdminView는 구현되어 있지만 TeamView의 탭에 등록되지 않아 접근할 수 없습니다
 - AdminView를 활성화하려면 `TeamView.js`의 TABS 배열에 추가하면 됩니다
 - Project 관련 기능은 전체적으로 구현되지 않은 것으로 보입니다
+- Board.js는 `/board` 경로로 사용되었으나, 현재는 `/team/:teamId`에서 BoardView를 사용하므로 불필요
+
+## 통계
+
+- **프론트엔드**: 5개 파일 (TeamList.js, TeamList.css, Board.js, Board.css, projectApi.js)
+- **백엔드**: 5개 파일 (ProjectController.java, ProjectService.java, ProjectDao.java, Project.java, project.xml)
+- **총 10개 파일**

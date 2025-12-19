@@ -91,9 +91,6 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
         setCurrentDate(newDate);
     };
 
-    const goToToday = () => {
-        setCurrentDate(new Date());
-    };
 
     const generateCalendarDays = () => {
         const days = [];
@@ -176,7 +173,6 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                     <button className="nav-btn" onClick={goToPrevious}>&lt;</button>
                     <h2>{formatMonthYear()}</h2>
                     <button className="nav-btn" onClick={goToNext}>&gt;</button>
-                    <button className="today-btn" onClick={goToToday}>오늘</button>
                 </div>
                 <div className="view-toggle">
                     <button

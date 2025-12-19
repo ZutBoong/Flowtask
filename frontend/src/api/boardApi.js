@@ -294,3 +294,38 @@ export const getTaskFavorites = async (memberNo) => {
     const response = await axiosInstance.get(`${API_PATH}/task/favorites/member/${memberNo}`);
     return response.data;
 };
+
+// ========== Task Archives API ==========
+
+// 태스크 아카이브 생성
+export const archiveTask = async (taskId, memberNo, archiveNote = '') => {
+    const response = await axiosInstance.post(`${API_PATH}/task/${taskId}/archive`, {
+        memberNo,
+        archiveNote
+    });
+    return response.data;
+};
+
+// 아카이브 삭제
+export const deleteTaskArchive = async (archiveId) => {
+    const response = await axiosInstance.delete(`${API_PATH}/task/archive/${archiveId}`);
+    return response.data;
+};
+
+// 아카이브 상세 조회
+export const getTaskArchive = async (archiveId) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/archive/${archiveId}`);
+    return response.data;
+};
+
+// 멤버별 아카이브 목록
+export const getTaskArchives = async (memberNo) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/archives/member/${memberNo}`);
+    return response.data;
+};
+
+// 멤버의 아카이브 수
+export const countTaskArchives = async (memberNo) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/archives/member/${memberNo}/count`);
+    return response.data;
+};

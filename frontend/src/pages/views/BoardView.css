@@ -17,62 +17,6 @@
     display: flex;
 }
 
-/* 페이드 효과 */
-.board-view .scroll-fade {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 80px;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.board-view .scroll-fade-left {
-    left: 0;
-    background: linear-gradient(to right, rgba(245, 247, 250, 1) 0%, transparent 100%);
-}
-
-.board-view .scroll-fade-right {
-    right: 0;
-    background: linear-gradient(to left, rgba(245, 247, 250, 1) 0%, transparent 100%);
-}
-
-/* 화살표 버튼 */
-.board-view .scroll-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    font-size: 20px;
-    color: #64748b;
-    cursor: pointer;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.board-view .scroll-arrow:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    transform: translateY(-50%) scale(1.05);
-}
-
-.board-view .scroll-arrow-left {
-    left: 8px;
-}
-
-.board-view .scroll-arrow-right {
-    right: 8px;
-}
-
 /* ===== 컬럼 컨테이너 ===== */
 .board-view .columns-container {
     display: flex;
@@ -82,12 +26,30 @@
     padding: 0 50px 20px 50px;
     overflow-x: auto;
     min-height: 0;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    cursor: grab;
+
+    /* 스크롤바 스타일링 */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
 }
 
 .board-view .columns-container::-webkit-scrollbar {
-    display: none;
+    height: 8px;
+}
+
+.board-view .columns-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.board-view .columns-container::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.board-view .columns-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
 }
 
 /* ===== 컬럼 ===== */

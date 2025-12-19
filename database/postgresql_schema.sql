@@ -16,6 +16,7 @@ CREATE SEQUENCE IF NOT EXISTS flowtask_comment_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_chat_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_git_repo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_column_archive_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE IF NOT EXISTS flowtask_task_archive_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_section_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_file_seq START WITH 1 INCREMENT BY 1;
 
@@ -272,6 +273,26 @@ CREATE TABLE IF NOT EXISTS flowtask_column_archive (
 CREATE INDEX IF NOT EXISTS idx_column_archive_member ON flowtask_column_archive(member_no);
 CREATE INDEX IF NOT EXISTS idx_column_archive_team ON flowtask_column_archive(team_id);
 CREATE INDEX IF NOT EXISTS idx_column_archive_archived ON flowtask_column_archive(archived_at DESC);
+
+-- ========================================
+-- 태스크 아카이브 테이블 (아카이브된 태스크 스냅샷 저장)
+-- ========================================
+CREATE TABLE IF NOT EXISTS flowtask_task_archive (
+    archive_id INTEGER PRIMARY KEY,
+    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
+    original_task_id INTEGER NOT NULL,
+    team_id INTEGER,
+    team_name VARCHAR(100),
+    column_id INTEGER,
+    column_title VARCHAR(100),
+    task_snapshot JSONB NOT NULL,
+    archive_note VARCHAR(500),
+    archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_archive_member ON flowtask_task_archive(member_no);
+CREATE INDEX IF NOT EXISTS idx_task_archive_team ON flowtask_task_archive(team_id);
+CREATE INDEX IF NOT EXISTS idx_task_archive_archived ON flowtask_task_archive(archived_at DESC);
 
 -- ========================================
 -- 알림 테이블

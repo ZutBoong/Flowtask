@@ -78,3 +78,9 @@ export const regenerateTeamCode = async (teamId, leaderNo) => {
     const response = await axiosInstance.post(`${API_PATH}/${teamId}/regenerate-code`, { leaderNo });
     return response.data;
 };
+
+// 모든 회원 목록 조회 (팀 생성 시 초대용)
+export const getAllMembers = async () => {
+    const response = await axiosInstance.get('/api/member/all');
+    return response.data;
+};

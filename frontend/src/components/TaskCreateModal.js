@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import './TaskCreateModal.css';
 
 function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
+    // 오늘 날짜 기본값
+    const today = new Date().toISOString().split('T')[0];
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         status: 'OPEN',
         priority: 'MEDIUM',
+        startDate: today,
         dueDate: '',
         assignees: [],
         verifiers: []
@@ -14,6 +18,8 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
 
     const [assigneeSearch, setAssigneeSearch] = useState('');
     const [verifierSearch, setVerifierSearch] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [dueTime, setDueTime] = useState('');
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -32,19 +38,37 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
             return;
         }
 
+        // 날짜와 시간 결합
+        const startDateTime = formData.startDate && startTime
+            ? `${formData.startDate}T${startTime}`
+            : formData.startDate;
+        const dueDateTime = formData.dueDate && dueTime
+            ? `${formData.dueDate}T${dueTime}`
+            : formData.dueDate;
+
         const taskData = {
             columnId,
             title: formData.title,
             description: formData.description,
             status: formData.status,
             priority: formData.priority,
-            dueDate: formData.dueDate || null,
+            startDate: startDateTime || null,
+            dueDate: dueDateTime || null,
             assignees: formData.assignees,
             verifiers: formData.verifiers
         };
 
         await onCreate(taskData);
         onClose();
+    };
+
+    const formatDateForInput = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     const formatDateTimeForInput = (dateStr) => {
@@ -56,6 +80,15 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const extractTimeFromDateTime = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        // 시간이 00:00이면 빈 문자열 반환
+        return (hours === '00' && minutes === '00') ? '' : `${hours}:${minutes}`;
     };
 
     return (
@@ -118,13 +151,36 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                         </div>
                     </div>
 
-                    <div className="form-field">
-                        <label>마감일</label>
-                        <input
-                            type="datetime-local"
-                            value={formatDateTimeForInput(formData.dueDate)}
-                            onChange={(e) => handleChange('dueDate', e.target.value)}
-                        />
+                    <div className="form-row">
+                        <div className="form-field">
+                            <label>시작일</label>
+                            <input
+                                type="date"
+                                value={formatDateForInput(formData.startDate)}
+                                onChange={(e) => handleChange('startDate', e.target.value)}
+                            />
+                            <input
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                style={{ marginTop: '8px' }}
+                            />
+                        </div>
+
+                        <div className="form-field">
+                            <label>마감일</label>
+                            <input
+                                type="date"
+                                value={formatDateForInput(formData.dueDate)}
+                                onChange={(e) => handleChange('dueDate', e.target.value)}
+                            />
+                            <input
+                                type="time"
+                                value={dueTime}
+                                onChange={(e) => setDueTime(e.target.value)}
+                                style={{ marginTop: '8px' }}
+                            />
+                        </div>
                     </div>
 
                     <div className="form-row">

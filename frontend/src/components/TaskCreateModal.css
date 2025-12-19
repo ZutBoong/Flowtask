@@ -24,6 +24,8 @@
 .task-create-modal .form-field input[type="text"],
 .task-create-modal .form-field textarea,
 .task-create-modal .form-field select,
+.task-create-modal .form-field input[type="date"],
+.task-create-modal .form-field input[type="time"],
 .task-create-modal .form-field input[type="datetime-local"] {
     width: 100%;
     padding: 10px 12px;
@@ -32,11 +34,14 @@
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
 .task-create-modal .form-field input[type="text"]:focus,
 .task-create-modal .form-field textarea:focus,
 .task-create-modal .form-field select:focus,
+.task-create-modal .form-field input[type="date"]:focus,
+.task-create-modal .form-field input[type="time"]:focus,
 .task-create-modal .form-field input[type="datetime-local"]:focus {
     outline: none;
     border-color: #007bff;

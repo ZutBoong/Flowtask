@@ -67,4 +67,9 @@
 		SELECT * FROM flowtask_member WHERE userid = #{keyword} OR email = #{keyword}
 	</select>
 
+	<!-- 모든 회원 조회 (팀 생성 시 초대용) -->
+	<select id="findAll" resultType="member">
+		SELECT no, userid, name, email, phone, register FROM flowtask_member ORDER BY name
+	</select>
+
 </mapper>

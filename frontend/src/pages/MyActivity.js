@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyTeams } from '../api/teamApi';
 import { getColumnArchives } from '../api/columnApi';
-import { tasklistByAssignee } from '../api/boardApi';
+import { tasklistByAssignee, getTaskArchives } from '../api/boardApi';
 import Sidebar from '../components/Sidebar';
 import './MyActivity.css';
 
@@ -10,6 +10,7 @@ function MyActivity() {
     const navigate = useNavigate();
     const [teams, setTeams] = useState([]);
     const [archives, setArchives] = useState([]);
+    const [taskArchives, setTaskArchives] = useState([]);
     const [myTasks, setMyTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -38,14 +39,16 @@ function MyActivity() {
     const fetchData = async (memberNo) => {
         try {
             setLoading(true);
-            const [teamsRes, archivesRes, tasksRes] = await Promise.all([
+            const [teamsRes, archivesRes, taskArchivesRes, tasksRes] = await Promise.all([
                 getMyTeams(memberNo),
                 getColumnArchives(memberNo).catch(() => []),
+                getTaskArchives(memberNo).catch(() => []),
                 tasklistByAssignee(memberNo).catch(() => [])
             ]);
 
             setTeams(teamsRes || []);
             setArchives(archivesRes || []);
+            setTaskArchives(taskArchivesRes || []);
             setMyTasks(tasksRes || []);
         } catch (error) {
             console.error('데이터 로딩 실패:', error);
@@ -60,38 +63,52 @@ function MyActivity() {
     };
 
     // 캘린더 관련 함수
-    const getDaysInMonth = (date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
+    const generateCalendarDays = () => {
+        const days = [];
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+
+        // 첫날과 마지막날
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startDayOfWeek = firstDay.getDay();
 
-        const days = [];
+        // 시작 날짜 (이전 달 날짜 포함)
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
 
-        // 이전 달 날짜 채우기
-        for (let i = 0; i < startDayOfWeek; i++) {
-            days.push(null);
-        }
+        // 종료 날짜 (다음 달 날짜 포함)
+        const endDate = new Date(lastDay);
+        endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
 
-        // 현재 달 날짜
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push(i);
+        // 날짜 생성
+        const current = new Date(startDate);
+        while (current <= endDate) {
+            days.push(new Date(current));
+            current.setDate(current.getDate() + 1);
         }
 
         return days;
     };
 
-    const getTasksForDate = (day) => {
-        if (!day) return [];
-        const year = currentMonth.getFullYear();
-        const month = currentMonth.getMonth();
-        const dateStr = new Date(year, month, day).toDateString();
-
+    const getTasksForDate = (date) => {
         return myTasks.filter(task => {
             if (!task.dueDate) return false;
-            return new Date(task.dueDate).toDateString() === dateStr;
+            return new Date(task.dueDate).toDateString() === date.toDateString();
+        });
+    };
+
+    const isToday = (date) => {
+        return date.toDateString() === new Date().toDateString();
+    };
+
+    const isCurrentMonth = (date) => {
+        return date.getMonth() === currentMonth.getMonth();
+    };
+
+    const formatMonthYear = () => {
+        return currentMonth.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long'
         });
     };
 
@@ -102,6 +119,7 @@ function MyActivity() {
     const nextMonth = () => {
         setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
     };
+
 
     return (
         <div className="myactivity-page">
@@ -141,50 +159,48 @@ function MyActivity() {
                             {/* 상단: 캘린더 (전체 너비) */}
                             <div className="activity-top-section">
                                 <div className="activity-section calendar-section">
-                                    <div className="section-header">
-                                        <h2>내 일정</h2>
+                                    <div className="calendar-header">
                                         <div className="calendar-nav">
-                                            <button onClick={prevMonth}>‹</button>
-                                            <span className="calendar-month">
-                                                {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
-                                            </span>
-                                            <button onClick={nextMonth}>›</button>
+                                            <button className="nav-btn" onClick={prevMonth}>&lt;</button>
+                                            <h2>{formatMonthYear()}</h2>
+                                            <button className="nav-btn" onClick={nextMonth}>&gt;</button>
                                         </div>
                                     </div>
-                                    <div className="calendar-view">
+                                    <div className="calendar-grid">
                                         <div className="calendar-weekdays">
                                             {['일', '월', '화', '수', '목', '금', '토'].map(day => (
-                                                <div key={day} className="calendar-weekday">{day}</div>
+                                                <div key={day} className="weekday">{day}</div>
                                             ))}
                                         </div>
                                         <div className="calendar-days">
-                                            {getDaysInMonth(currentMonth).map((day, index) => {
-                                                const dayTasks = getTasksForDate(day);
-                                                const isToday = day &&
-                                                    new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
+                                            {generateCalendarDays().map((date, index) => {
+                                                const dayTasks = getTasksForDate(date);
+                                                const isCurrentMonthDay = isCurrentMonth(date);
 
                                                 return (
                                                     <div
                                                         key={index}
-                                                        className={`calendar-day ${!day ? 'empty' : ''} ${isToday ? 'today' : ''}`}
+                                                        className={`calendar-day ${isToday(date) ? 'today' : ''} ${!isCurrentMonthDay ? 'other-month' : ''}`}
                                                     >
-                                                        {day && (
-                                                            <>
-                                                                <span className="day-number">{day}</span>
-                                                                {dayTasks.length > 0 && (
-                                                                    <div className="day-tasks">
-                                                                        {dayTasks.slice(0, 2).map(task => (
-                                                                            <div key={task.taskId} className="day-task" title={task.title}>
-                                                                                {task.title}
-                                                                            </div>
-                                                                        ))}
-                                                                        {dayTasks.length > 2 && (
-                                                                            <div className="day-task-more">+{dayTasks.length - 2}</div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        )}
+                                                        <div className="day-header">
+                                                            <span className="day-number">{date.getDate()}</span>
+                                                        </div>
+                                                        <div className="day-tasks">
+                                                            {dayTasks.slice(0, 3).map(task => (
+                                                                <div
+                                                                    key={task.taskId}
+                                                                    className={`task-item priority-${(task.priority || 'MEDIUM').toLowerCase()}`}
+                                                                    title={task.title}
+                                                                >
+                                                                    {task.title}
+                                                                </div>
+                                                            ))}
+                                                            {dayTasks.length > 3 && (
+                                                                <div className="more-tasks">
+                                                                    +{dayTasks.length - 3}개 더
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -233,26 +249,62 @@ function MyActivity() {
                                 <div className="activity-section archives-section">
                                     <div className="section-header">
                                         <h2>아카이브</h2>
-                                        <span className="count-badge">{archives.length}</span>
+                                        <span className="count-badge">{archives.length + taskArchives.length}</span>
                                     </div>
                                     <div className="archives-list">
-                                        {archives.length > 0 ? (
-                                            archives.slice(0, 10).map(archive => (
-                                                <div key={archive.archiveId} className="archive-item">
-                                                    <div className="archive-header">
-                                                        <span className="archive-title">📦 {archive.columnTitle}</span>
-                                                        <span className="archive-date">
-                                                            {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
-                                                                month: 'short',
-                                                                day: 'numeric'
-                                                            })}
-                                                        </span>
+                                        {archives.length + taskArchives.length > 0 ? (
+                                            <>
+                                                {/* 컬럼 아카이브 */}
+                                                {archives.slice(0, 10).map(archive => (
+                                                    <div key={`col-${archive.archiveId}`} className="archive-item column-archive">
+                                                        <div className="archive-header">
+                                                            <span className="archive-title">📁 {archive.columnTitle}</span>
+                                                            <span className="archive-date">
+                                                                {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                        {archive.archiveNote && (
+                                                            <p className="archive-note">{archive.archiveNote}</p>
+                                                        )}
+                                                        <span className="archive-type-badge">컬럼</span>
                                                     </div>
-                                                    {archive.archiveNote && (
-                                                        <p className="archive-note">{archive.archiveNote}</p>
-                                                    )}
-                                                </div>
-                                            ))
+                                                ))}
+                                                {/* 태스크 아카이브 */}
+                                                {taskArchives.slice(0, 10).map(archive => {
+                                                    const task = JSON.parse(archive.taskSnapshot || '{}');
+                                                    return (
+                                                        <div key={`task-${archive.archiveId}`} className="archive-item task-archive">
+                                                            <div className="archive-header">
+                                                                <span className="archive-title">📝 {task.title || '제목 없음'}</span>
+                                                                <span className="archive-date">
+                                                                    {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
+                                                                        month: 'short',
+                                                                        day: 'numeric'
+                                                                    })}
+                                                                </span>
+                                                            </div>
+                                                            {task.description && (
+                                                                <p className="archive-description">{task.description.substring(0, 50)}{task.description.length > 50 ? '...' : ''}</p>
+                                                            )}
+                                                            {archive.archiveNote && (
+                                                                <p className="archive-note">{archive.archiveNote}</p>
+                                                            )}
+                                                            <div className="archive-meta">
+                                                                <span className="archive-type-badge">태스크</span>
+                                                                {archive.teamName && (
+                                                                    <span className="archive-team">{archive.teamName}</span>
+                                                                )}
+                                                                {archive.columnTitle && (
+                                                                    <span className="archive-column">{archive.columnTitle}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </>
                                         ) : (
                                             <p className="no-data">아카이브된 항목이 없습니다.</p>
                                         )}

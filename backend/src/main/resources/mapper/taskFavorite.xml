@@ -18,7 +18,7 @@
     <!-- 멤버별 즐겨찾기 목록 (태스크 정보 포함) -->
     <select id="listByMember" parameterType="int" resultType="taskFavorite">
         SELECT tf.task_id, tf.member_no, tf.created_at,
-               t.title, t.description, t.status, t.priority, t.due_date,
+               t.title, t.description, t.workflow_status as status, t.priority, t.due_date,
                t.column_id, c.title as column_title,
                c.team_id, tm.team_name
         FROM flowtask_task_favorite tf

@@ -171,22 +171,28 @@ function CommentSection({ taskId, loginMember }) {
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="comment-form">
+            <div className="comment-form">
                 <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="댓글을 입력하세요..."
                     rows={2}
                     disabled={!loginMember}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.ctrlKey && newComment.trim()) {
+                            handleSubmit(e);
+                        }
+                    }}
                 />
                 <button
-                    type="submit"
+                    type="button"
                     className="btn btn-primary"
+                    onClick={handleSubmit}
                     disabled={loading || !newComment.trim() || !loginMember}
                 >
                     {loading ? '작성중...' : '댓글 작성'}
                 </button>
-            </form>
+            </div>
         </div>
     );
 }
