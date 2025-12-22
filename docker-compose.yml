@@ -4,8 +4,8 @@ services:
     container_name: flowtask-db
     environment:
       POSTGRES_DB: flowtask
-      POSTGRES_USER: flow
-      POSTGRES_PASSWORD: flow123
+      POSTGRES_USER: ${DB_USERNAME:-flow}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flow123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/postgresql_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
@@ -13,20 +13,25 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flow -d flowtask"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-flow} -d flowtask"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   backend:
     build: ./backend
     container_name: flowtask-backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flowtask
-      SPRING_DATASOURCE_USERNAME: flow
-      SPRING_DATASOURCE_PASSWORD: flow123
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-flow}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-flow123}
+      JWT_SECRET: ${JWT_SECRET:-FlowtaskProjectSecretKeyForJWTTokenGeneration2024VeryLongSecretKey}
       SPRING_SQL_INIT_MODE: never
-      EMAIL_ENVIRONMENT: dev
+      # 로컬: dev (콘솔 출력), AWS: prod (실제 이메일)
+      EMAIL_ENVIRONMENT: ${EMAIL_ENVIRONMENT:-dev}
+      AWS_SES_REGION: ${AWS_SES_REGION:-ap-northeast-2}
+      AWS_SES_SENDER: ${AWS_SES_SENDER:-noreply@flowtask.com}
     volumes:
       - uploads_data:/app/uploads
     ports:
@@ -34,14 +39,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: ${API_URL:-}
+        REACT_APP_WS_URL: ${WS_URL:-/ws}
     container_name: flowtask-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:
