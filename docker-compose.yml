@@ -28,8 +28,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-flow123}
       JWT_SECRET: ${JWT_SECRET:-FlowtaskProjectSecretKeyForJWTTokenGeneration2024VeryLongSecretKey}
       SPRING_SQL_INIT_MODE: never
-      # 로컬: dev (콘솔 출력), AWS: prod (실제 이메일)
-      EMAIL_ENVIRONMENT: ${EMAIL_ENVIRONMENT:-dev}
+      # Docker는 AWS 전용 = prod 모드 (실제 이메일 발송)
+      EMAIL_ENVIRONMENT: prod
       AWS_SES_REGION: ${AWS_SES_REGION:-ap-northeast-2}
       AWS_SES_SENDER: ${AWS_SES_SENDER:-noreply@flowtask.com}
     volumes:
