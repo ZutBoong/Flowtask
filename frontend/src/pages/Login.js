@@ -75,6 +75,12 @@ function Login() {
                     <div className="button-group">
                         <button type="submit" className="btn btn-primary">로그인</button>
                     </div>
+
+                    {/* 작성자: 홍진기 */}
+                    <div>
+                        <button type= "button" className="btn btn-primary">구글 로그인</button>
+                        <button type= "button" className="btn btn-primary">네이버 로그인</button>
+                    </div>
                 </form>
 
                 <div className="auth-links">
