@@ -28,6 +28,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-flow123}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key}
       SPRING_SQL_INIT_MODE: never
+      # Email Configuration
+      EMAIL_ENVIRONMENT: ${EMAIL_ENVIRONMENT:-prod}
+      AWS_SES_REGION: ${AWS_SES_REGION:-ap-northeast-2}
+      AWS_SES_SENDER: ${AWS_SES_SENDER:-noreply@flowtask.com}
+    volumes:
+      - uploads_data:/app/uploads
     ports:
       - "8081:8081"
     depends_on:
@@ -50,3 +56,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

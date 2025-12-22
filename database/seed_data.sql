@@ -4,12 +4,12 @@
 -- =============================================
 
 -- 1. Sample Members (password: 1234)
-INSERT INTO flowtask_member (no, userid, password, name, email, register)
+INSERT INTO flowtask_member (no, userid, password, name, email, email_verified, register)
 VALUES
-    (nextval('flowtask_member_seq'), 'admin', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Admin', 'admin@flowtask.com', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user1', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'John Doe', 'john@flowtask.com', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user2', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Jane Smith', 'jane@flowtask.com', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user3', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Bob Wilson', 'bob@flowtask.com', CURRENT_TIMESTAMP)
+    (nextval('flowtask_member_seq'), 'admin', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Admin', 'admin@flowtask.com', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user1', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'John Doe', 'john@flowtask.com', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user2', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Jane Smith', 'jane@flowtask.com', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user3', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', 'Bob Wilson', 'bob@flowtask.com', TRUE, CURRENT_TIMESTAMP)
 ON CONFLICT (userid) DO NOTHING;
 
 -- 2. Sample Teams
@@ -57,16 +57,16 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- 7. Sample Tasks
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, priority, status, assignee_no, due_date, created_at)
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, priority, workflow_status, assignee_no, due_date, created_at)
 VALUES
-    (nextval('flowtask_task_seq'), 1, 'Implement Login', 'JWT based login/logout feature', 1, 'HIGH', 'OPEN', 2, CURRENT_DATE + INTERVAL '7 days', CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 1, 'Design Registration Page', 'Improve registration UI/UX', 2, 'MEDIUM', 'OPEN', 3, CURRENT_DATE + INTERVAL '5 days', CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 1, 'Write API Documentation', 'Document APIs with Swagger', 3, 'LOW', 'OPEN', NULL, CURRENT_DATE + INTERVAL '14 days', CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 1, 'Implement Login', 'JWT based login/logout feature', 1, 'HIGH', 'WAITING', 2, CURRENT_DATE + INTERVAL '7 days', CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 1, 'Design Registration Page', 'Improve registration UI/UX', 2, 'MEDIUM', 'WAITING', 3, CURRENT_DATE + INTERVAL '5 days', CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 1, 'Write API Documentation', 'Document APIs with Swagger', 3, 'LOW', 'WAITING', NULL, CURRENT_DATE + INTERVAL '14 days', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 2, 'Implement Drag and Drop', 'Kanban board DnD feature', 1, 'HIGH', 'IN_PROGRESS', 2, CURRENT_DATE + INTERVAL '3 days', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 2, 'Real-time Notifications', 'WebSocket based notifications', 2, 'MEDIUM', 'IN_PROGRESS', 4, CURRENT_DATE + INTERVAL '5 days', CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 3, 'Code Review Request', 'Review Task CRUD API', 1, 'MEDIUM', 'RESOLVED', 3, CURRENT_DATE, CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 4, 'Project Initial Setup', 'Spring Boot + React project structure', 1, 'HIGH', 'CLOSED', 1, CURRENT_DATE - INTERVAL '7 days', CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 4, 'DB Schema Design', 'PostgreSQL table design completed', 2, 'HIGH', 'CLOSED', 1, CURRENT_DATE - INTERVAL '5 days', CURRENT_TIMESTAMP)
+    (nextval('flowtask_task_seq'), 3, 'Code Review Request', 'Review Task CRUD API', 1, 'MEDIUM', 'COMPLETED', 3, CURRENT_DATE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 4, 'Project Initial Setup', 'Spring Boot + React project structure', 1, 'HIGH', 'COMPLETED', 1, CURRENT_DATE - INTERVAL '7 days', CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 4, 'DB Schema Design', 'PostgreSQL table design completed', 2, 'HIGH', 'COMPLETED', 1, CURRENT_DATE - INTERVAL '5 days', CURRENT_TIMESTAMP)
 ON CONFLICT DO NOTHING;
 
 -- 8. Task-Tag Relations

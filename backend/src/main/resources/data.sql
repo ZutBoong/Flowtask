@@ -4,13 +4,13 @@
 -- =============================================
 
 -- 1. 회원 (비밀번호: 1234)
-INSERT INTO flowtask_member (no, userid, password, name, email, phone, register)
+INSERT INTO flowtask_member (no, userid, password, name, email, phone, email_verified, register)
 VALUES
-    (nextval('flowtask_member_seq'), 'admin', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '김팀장', 'admin@flowtask.com', '010-1111-1111', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user1', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '이프론트', 'frontend@flowtask.com', '010-2222-2222', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user2', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '박백엔드', 'backend@flowtask.com', '010-3333-3333', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user3', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '최데브옵스', 'devops@flowtask.com', '010-4444-4444', CURRENT_TIMESTAMP),
-    (nextval('flowtask_member_seq'), 'user4', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '정디자이너', 'designer@flowtask.com', '010-5555-5555', CURRENT_TIMESTAMP);
+    (nextval('flowtask_member_seq'), 'admin', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '김팀장', 'admin@flowtask.com', '010-1111-1111', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user1', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '이프론트', 'frontend@flowtask.com', '010-2222-2222', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user2', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '박백엔드', 'backend@flowtask.com', '010-3333-3333', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user3', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '최데브옵스', 'devops@flowtask.com', '010-4444-4444', TRUE, CURRENT_TIMESTAMP),
+    (nextval('flowtask_member_seq'), 'user4', '$2a$10$yXU9hNrs4xJPAZ/RdnpxzuaXH4aNT7f1RyW7FCJ3GPDVbGksO4u6W', '정디자이너', 'designer@flowtask.com', '010-5555-5555', TRUE, CURRENT_TIMESTAMP);
 
 -- 2. 팀
 INSERT INTO flowtask_team (team_id, team_name, team_code, leader_no, description, created_at)

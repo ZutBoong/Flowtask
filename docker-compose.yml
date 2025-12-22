@@ -26,6 +26,9 @@ services:
       SPRING_DATASOURCE_USERNAME: flow
       SPRING_DATASOURCE_PASSWORD: flow123
       SPRING_SQL_INIT_MODE: never
+      EMAIL_ENVIRONMENT: dev
+    volumes:
+      - uploads_data:/app/uploads
     ports:
       - "8081:8081"
     depends_on:
@@ -42,3 +45,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
