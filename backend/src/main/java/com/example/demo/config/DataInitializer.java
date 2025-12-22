@@ -122,6 +122,7 @@ public class DataInitializer implements CommandLineRunner {
             member.setName(names[i - 1]);
             member.setEmail("user" + i + "@flowtask.com");
             member.setPhone("010-" + String.format("%04d", random.nextInt(10000)) + "-" + String.format("%04d", random.nextInt(10000)));
+            member.setEmailVerified(true);
 
             memberDao.insert(member);
 
