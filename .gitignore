@@ -35,6 +35,7 @@ frontend/.pnp.js
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+nul
 
 # Logs
 *.log
@@ -68,6 +69,7 @@ pgdata/
 # Spring Boot
 *.pid
 .springBeans
+application-local.properties
 
 # Misc
 *.bak
