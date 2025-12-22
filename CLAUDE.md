@@ -141,4 +141,4 @@ For AWS EC2 deployment, use `docker-compose.aws.yml` with environment file:
 cp .env.aws.example .env.aws
 docker-compose -f docker-compose.aws.yml --env-file .env.aws up -d --build
 ```
-See `AWS_DEPLOY.md` for detailed instructions.
+See `README.md` for detailed instructions.

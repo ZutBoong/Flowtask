@@ -11,8 +11,7 @@
 ├── docker-compose.yml       # 로컬 개발용 Docker 구성
 ├── docker-compose.aws.yml   # AWS 배포용 Docker 구성
 ├── CLAUDE.md               # 프로젝트 개발 가이드
-├── AWS_DEPLOY.md           # AWS 배포 가이드
-└── README.md               # 프로젝트 소개
+└── README.md               # 프로젝트 소개 및 배포 가이드
 ```
 
 ### 1.2 백엔드 구조 (`/backend/src/main/java/com/example/demo/`)

@@ -17,6 +17,7 @@
 | Spring Boot | 3.2.0 |
 | Spring Boot Security | 3.2.0 |
 | Spring Boot WebSocket | 3.2.0 |
+| Spring Boot Mail | 3.2.0 |
 | MyBatis Spring Boot Starter | 3.0.3 |
 | JJWT (JWT) | 0.12.3 |
 | Lombok | Spring 관리 |
@@ -43,6 +44,9 @@
 - 캘린더 뷰
 - Git 커밋 연동
 - 실시간 알림
+- 이메일 인증 (회원가입, 비밀번호 찾기)
+
+---
 
 ## 빠른 시작 (Docker)
 
@@ -52,6 +56,10 @@ Docker만 설치되어 있으면 바로 실행할 수 있습니다.
 # 클론
 git clone https://github.com/your-repo/Flowtask.git
 cd Flowtask
+
+# 환경 변수 설정
+cp .env.example .env
+nano .env  # SMTP 설정 입력
 
 # 실행
 docker-compose up --build
@@ -94,6 +102,8 @@ docker-compose down -v
 | user2 | 김철수 | 팀 멤버 |
 | user3 | 이영희 | 팀 멤버 |
 
+---
+
 ## 로컬 개발 환경 (Docker 없이)
 
 ### 필수 요구사항
@@ -116,14 +126,32 @@ GRANT ALL ON SCHEMA public TO flow;
 psql -U flow -d flowtask -f database/postgresql_schema.sql
 ```
 
-### 2. Backend 실행
+### 2. SMTP 설정 (이메일 인증용)
+
+Gmail 앱 비밀번호 발급:
+1. [Google 계정](https://myaccount.google.com/) > 보안 > 2단계 인증 활성화
+2. [앱 비밀번호](https://myaccount.google.com/apppasswords) 생성
+3. `application-local.properties` 파일 생성:
+
+```properties
+# backend/src/main/resources/application-local.properties
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-16-digit-app-password
+```
+
+### 3. Backend 실행
 
 ```bash
 cd backend
-./mvnw spring-boot:run
+
+# Windows PowerShell
+.\mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
+
+# Mac/Linux
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-### 3. Frontend 실행
+### 4. Frontend 실행
 
 ```bash
 cd frontend
@@ -133,32 +161,32 @@ npm start
 
 브라우저에서 http://localhost:3000 접속
 
+---
+
 ## AWS EC2 배포
 
-### 1. EC2 인스턴스 생성
-- AMI: Amazon Linux 2023 또는 Ubuntu 22.04
-- 인스턴스 유형: t3.small 이상
-- 보안 그룹: SSH(22), HTTP(80) 허용
+### 아키텍처
 
-### 2. Docker 설치
-
-**Amazon Linux 2023:**
-```bash
-sudo dnf update -y
-sudo dnf install -y docker git
-sudo systemctl start docker
-sudo systemctl enable docker
-sudo usermod -aG docker ec2-user
-
-# Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# 재로그인
-exit
+```
+[사용자] --> [EC2: nginx (포트 80)] --> [EC2: Spring Boot (포트 8081)] --> [EC2: PostgreSQL (Docker)]
 ```
 
-**Ubuntu:**
+모든 서비스가 EC2 한 대에서 Docker로 실행됩니다.
+
+### 1. EC2 인스턴스 생성
+
+| 설정 | 권장값 |
+|------|--------|
+| AMI | Ubuntu 22.04 |
+| 인스턴스 유형 | t3.small 이상 |
+| 스토리지 | 20GB 이상 |
+
+**보안 그룹 인바운드 규칙:**
+- SSH (22) - 내 IP
+- HTTP (80) - 0.0.0.0/0
+
+### 2. Docker 설치 (Ubuntu)
+
 ```bash
 sudo apt update
 sudo apt install -y docker.io docker-compose git
@@ -176,16 +204,100 @@ git clone https://github.com/your-repo/Flowtask.git
 cd Flowtask
 
 # 환경 변수 설정
-cp .env.aws.example .env.aws
-nano .env.aws
+cp .env.example .env
+nano .env
+```
 
-# 배포
-docker-compose -f docker-compose.aws.yml --env-file .env.aws up -d --build
+`.env` 파일 내용:
+```properties
+# DB 설정
+DB_USERNAME=flow
+DB_PASSWORD=flow123
+
+# JWT 시크릿 (프로덕션용으로 변경)
+JWT_SECRET=your-production-secret-key
+
+# SMTP 설정 (Gmail 앱 비밀번호)
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-16-digit-app-password
+```
+
+```bash
+# 배포 실행
+docker-compose up -d --build
 ```
 
 브라우저에서 `http://EC2-퍼블릭-IP` 접속
 
-자세한 내용은 [AWS_DEPLOY.md](AWS_DEPLOY.md) 참고
+### 4. 유용한 명령어
+
+```bash
+# 컨테이너 상태 확인
+docker-compose ps
+
+# 로그 확인
+docker-compose logs -f
+
+# 백엔드 로그만
+docker logs -f flowtask-backend
+
+# 재시작
+docker-compose restart
+
+# 중지
+docker-compose down
+
+# 이미지 재빌드
+docker-compose up -d --build
+
+# DB 데이터 백업
+docker exec flowtask-db pg_dump -U flow flowtask > backup.sql
+
+# DB 데이터 복원
+cat backup.sql | docker exec -i flowtask-db psql -U flow flowtask
+```
+
+### 5. 도메인 및 HTTPS 설정 (선택)
+
+**Route 53 도메인 연결:**
+1. Route 53 > 호스팅 영역 생성
+2. A 레코드 추가 > EC2 퍼블릭 IP
+
+**Let's Encrypt SSL:**
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d yourdomain.com
+```
+
+### 비용 참고 (서울 리전)
+
+| 서비스 | 사양 | 월 예상 비용 |
+|--------|------|-------------|
+| EC2 | t3.small | ~$15 |
+
+프리 티어 (t2.micro) 적용 시 12개월간 무료
+
+---
+
+## 환경 변수 설정
+
+### 파일 구조
+
+| 파일 | Git | 용도 |
+|------|-----|------|
+| `.env.example` | O | 템플릿 (예시값) |
+| `.env` | X | 실제 설정값 (Docker용) |
+| `application.properties` | O | Spring Boot 기본 설정 |
+| `application-local.properties` | X | 로컬 개발용 민감 정보 |
+
+### 환경별 설정 방법
+
+| 환경 | 설정 방법 |
+|------|----------|
+| 로컬 (mvn) | `application-local.properties` + `-Dspring-boot.run.profiles=local` |
+| Docker / AWS | `.env` 파일에 환경변수 설정 |
+
+---
 
 ## 프로젝트 구조
 
@@ -202,17 +314,7 @@ Flowtask/
 └── database/              # SQL 스키마 파일
 ```
 
-## 설정 변경
-
-### 데이터베이스 연결 정보
-
-`backend/src/main/resources/application.properties`:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/flowtask
-spring.datasource.username=flow
-spring.datasource.password=flow123
-```
+---
 
 ## 라이선스
 
