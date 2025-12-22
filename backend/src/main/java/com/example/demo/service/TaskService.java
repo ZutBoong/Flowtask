@@ -7,11 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.dao.TaskDao;
 import com.example.demo.dao.FlowtaskColumnDao;
-import com.example.demo.dao.TagDao;
 import com.example.demo.dao.TaskAssigneeDao;
 import com.example.demo.dao.TaskVerifierDao;
 import com.example.demo.model.Task;
-import com.example.demo.model.Tag;
 import com.example.demo.model.FlowtaskColumn;
 
 @Service
@@ -24,9 +22,6 @@ public class TaskService {
 	private FlowtaskColumnDao columnDao;
 
 	@Autowired
-	private TagDao tagDao;
-
-	@Autowired
 	private TaskAssigneeDao taskAssigneeDao;
 
 	@Autowired
@@ -37,22 +32,6 @@ public class TaskService {
 
 	@Autowired
 	private NotificationService persistentNotificationService;
-
-	// Helper method to populate tags for a single task
-	private void populateTags(Task task) {
-		if (task != null) {
-			task.setTags(tagDao.listByTask(task.getTaskId()));
-		}
-	}
-
-	// Helper method to populate tags for a list of tasks
-	private void populateTags(List<Task> tasks) {
-		if (tasks != null) {
-			for (Task task : tasks) {
-				populateTags(task);
-			}
-		}
-	}
 
 	// Helper method to populate assignees for a single task
 	private void populateAssignees(Task task) {
@@ -86,16 +65,14 @@ public class TaskService {
 		}
 	}
 
-	// Helper method to populate all relations (tags + assignees + verifiers)
+	// Helper method to populate all relations (assignees + verifiers)
 	private void populateRelations(Task task) {
-		populateTags(task);
 		populateAssignees(task);
 		populateVerifiers(task);
 	}
 
 	// Helper method to populate all relations for a list of tasks
 	private void populateRelations(List<Task> tasks) {
-		populateTags(tasks);
 		populateAssignees(tasks);
 		populateVerifiers(tasks);
 	}
@@ -329,28 +306,6 @@ public class TaskService {
 		List<Task> tasks = dao.listByDateRange(params);
 		populateRelations(tasks);
 		return tasks;
-	}
-
-	// 섹션별 태스크 조회
-	public List<Task> listBySection(int sectionId) {
-		List<Task> tasks = dao.listBySection(sectionId);
-		populateRelations(tasks);
-		return tasks;
-	}
-
-	// 섹션 변경
-	public int updateSection(Task task) {
-		int result = dao.updateSection(task);
-		if (result == 1) {
-			Task updated = dao.content(task.getTaskId());
-			if (updated != null) {
-				FlowtaskColumn column = columnDao.content(updated.getColumnId());
-				if (column != null) {
-					notificationService.notifyTaskUpdated(updated, column.getTeamId());
-				}
-			}
-		}
-		return result;
 	}
 
 	// 날짜 변경 (타임라인용)

@@ -11,13 +11,9 @@ CREATE SEQUENCE IF NOT EXISTS flowtask_team_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_project_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_column_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_task_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_tag_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_comment_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_chat_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_git_repo_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_column_archive_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_task_archive_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_section_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_file_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_email_verification_seq START WITH 1 INCREMENT BY 1;
 
@@ -80,21 +76,6 @@ CREATE TABLE IF NOT EXISTS flowtask_project (
 CREATE INDEX IF NOT EXISTS idx_project_team ON flowtask_project(team_id);
 
 -- ========================================
--- 섹션 테이블 (목록/타임라인 그룹핑용)
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_section (
-    section_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    section_name VARCHAR(100) NOT NULL,
-    position INTEGER DEFAULT 0,
-    color VARCHAR(7) DEFAULT '#6c757d',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_section_team ON flowtask_section(team_id);
-CREATE INDEX IF NOT EXISTS idx_section_position ON flowtask_section(position);
-
--- ========================================
 -- 컬럼 테이블
 -- ========================================
 CREATE TABLE IF NOT EXISTS flowtask_column (
@@ -124,9 +105,7 @@ CREATE TABLE IF NOT EXISTS flowtask_task (
     priority VARCHAR(20) DEFAULT 'MEDIUM',
     start_date TIMESTAMP,
     due_date TIMESTAMP,
-    -- Section for list/timeline grouping
-    section_id INTEGER REFERENCES flowtask_section(section_id) ON DELETE SET NULL,
-    -- Workflow fields (NEW)
+    -- Workflow fields
     workflow_status VARCHAR(20) DEFAULT 'WAITING',
     rejection_reason TEXT,
     rejected_at TIMESTAMP,
@@ -140,33 +119,6 @@ CREATE INDEX IF NOT EXISTS idx_task_workflow_status ON flowtask_task(workflow_st
 CREATE INDEX IF NOT EXISTS idx_task_priority ON flowtask_task(priority);
 CREATE INDEX IF NOT EXISTS idx_task_due_date ON flowtask_task(due_date);
 CREATE INDEX IF NOT EXISTS idx_task_start_date ON flowtask_task(start_date);
-CREATE INDEX IF NOT EXISTS idx_task_section ON flowtask_task(section_id);
-
--- ========================================
--- 태그 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_tag (
-    tag_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    tag_name VARCHAR(50) NOT NULL,
-    color VARCHAR(7) DEFAULT '#6c757d',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (team_id, tag_name)
-);
-
-CREATE INDEX IF NOT EXISTS idx_tag_team ON flowtask_tag(team_id);
-
--- ========================================
--- 태스크-태그 매핑 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_task_tag (
-    task_id INTEGER NOT NULL REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
-    tag_id INTEGER NOT NULL REFERENCES flowtask_tag(tag_id) ON DELETE CASCADE,
-    PRIMARY KEY (task_id, tag_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_tasktag_task ON flowtask_task_tag(task_id);
-CREATE INDEX IF NOT EXISTS idx_tasktag_tag ON flowtask_task_tag(tag_id);
 
 -- ========================================
 -- 댓글 테이블
@@ -197,49 +149,6 @@ CREATE TABLE IF NOT EXISTS flowtask_chat_message (
 CREATE INDEX IF NOT EXISTS idx_chat_team ON flowtask_chat_message(team_id);
 CREATE INDEX IF NOT EXISTS idx_chat_sent ON flowtask_chat_message(sent_at DESC);
 
--- ========================================
--- Git 저장소 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_git_repo (
-    repo_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL UNIQUE REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    provider VARCHAR(20) DEFAULT 'GITHUB',
-    repo_owner VARCHAR(100) NOT NULL,
-    repo_name VARCHAR(100) NOT NULL,
-    access_token VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_gitrepo_team ON flowtask_git_repo(team_id);
-
--- ========================================
--- 태스크-커밋 연결 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_task_commit (
-    task_id INTEGER NOT NULL REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
-    commit_sha VARCHAR(40) NOT NULL,
-    commit_message VARCHAR(500),
-    author_name VARCHAR(100),
-    author_email VARCHAR(200),
-    committed_at TIMESTAMP,
-    commit_url VARCHAR(500),
-    PRIMARY KEY (task_id, commit_sha)
-);
-
-CREATE INDEX IF NOT EXISTS idx_taskcommit_task ON flowtask_task_commit(task_id);
-
--- ========================================
--- 컬럼 즐겨찾기 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_column_favorite (
-    column_id INTEGER NOT NULL REFERENCES flowtask_column(column_id) ON DELETE CASCADE,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (column_id, member_no)
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_favorite_column ON flowtask_column_favorite(column_id);
-CREATE INDEX IF NOT EXISTS idx_column_favorite_member ON flowtask_column_favorite(member_no);
 
 -- ========================================
 -- 태스크 즐겨찾기 테이블
@@ -253,28 +162,6 @@ CREATE TABLE IF NOT EXISTS flowtask_task_favorite (
 
 CREATE INDEX IF NOT EXISTS idx_task_favorite_task ON flowtask_task_favorite(task_id);
 CREATE INDEX IF NOT EXISTS idx_task_favorite_member ON flowtask_task_favorite(member_no);
-
--- ========================================
--- 컬럼 아카이브 테이블 (삭제된 컬럼 스냅샷 저장)
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_column_archive (
-    archive_id INTEGER PRIMARY KEY,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    original_column_id INTEGER NOT NULL,
-    team_id INTEGER,
-    team_name VARCHAR(100),
-    project_id INTEGER,
-    project_name VARCHAR(100),
-    column_title VARCHAR(100) NOT NULL,
-    column_position INTEGER,
-    tasks_snapshot JSONB,
-    archive_note VARCHAR(500),
-    archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_archive_member ON flowtask_column_archive(member_no);
-CREATE INDEX IF NOT EXISTS idx_column_archive_team ON flowtask_column_archive(team_id);
-CREATE INDEX IF NOT EXISTS idx_column_archive_archived ON flowtask_column_archive(archived_at DESC);
 
 -- ========================================
 -- 태스크 아카이브 테이블 (아카이브된 태스크 스냅샷 저장)
@@ -398,20 +285,14 @@ CREATE INDEX IF NOT EXISTS idx_email_verification_expires ON flowtask_email_veri
 -- ========================================
 DELETE FROM flowtask_email_verification;
 DELETE FROM flowtask_task_favorite;
-DELETE FROM flowtask_column_favorite;
-DELETE FROM flowtask_task_commit;
 DELETE FROM flowtask_task_verifier;
 DELETE FROM flowtask_task_assignee;
 DELETE FROM flowtask_comment;
-DELETE FROM flowtask_task_tag;
 DELETE FROM flowtask_task;
-DELETE FROM flowtask_tag;
 DELETE FROM flowtask_column;
 DELETE FROM flowtask_project;
 DELETE FROM flowtask_chat_message;
 DELETE FROM flowtask_team_member;
-DELETE FROM flowtask_git_repo;
-DELETE FROM flowtask_section;
 DELETE FROM flowtask_team;
 DELETE FROM flowtask_member;
 
@@ -421,7 +302,6 @@ ALTER SEQUENCE flowtask_team_seq RESTART WITH 1;
 ALTER SEQUENCE flowtask_project_seq RESTART WITH 1;
 ALTER SEQUENCE flowtask_column_seq RESTART WITH 1;
 ALTER SEQUENCE flowtask_task_seq RESTART WITH 1;
-ALTER SEQUENCE flowtask_tag_seq RESTART WITH 1;
 ALTER SEQUENCE flowtask_comment_seq RESTART WITH 1;
 ALTER SEQUENCE flowtask_chat_seq RESTART WITH 1;
 
@@ -458,15 +338,6 @@ INSERT INTO flowtask_project (project_id, team_id, project_name) VALUES
 (nextval('flowtask_project_seq'), 1, 'Flowtask v1.0');
 
 -- ========================================
--- 샘플 데이터: 섹션
--- ========================================
-INSERT INTO flowtask_section (section_id, team_id, section_name, position, color) VALUES
-(nextval('flowtask_section_seq'), 1, '인증/보안', 0, '#e74c3c'),
-(nextval('flowtask_section_seq'), 1, '핵심 기능', 1, '#3498db'),
-(nextval('flowtask_section_seq'), 1, '부가 기능', 2, '#2ecc71'),
-(nextval('flowtask_section_seq'), 1, '인프라', 3, '#f39c12');
-
--- ========================================
 -- 샘플 데이터: 컬럼 (작업 단위별)
 -- ========================================
 INSERT INTO flowtask_column (column_id, title, position, team_id, project_id) VALUES
@@ -479,73 +350,73 @@ INSERT INTO flowtask_column (column_id, title, position, team_id, project_id) VA
 -- ========================================
 -- 샘플 데이터: 태스크 (프론트엔드)
 -- ========================================
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, section_id, workflow_status) VALUES
-(nextval('flowtask_task_seq'), 1, '로그인 페이지 UI 구현', 'React로 로그인 폼 컴포넌트 개발', 0, 2, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 1, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 1, '회원가입 폼 유효성 검사', '이메일, 비밀번호 형식 검증 로직 추가', 1, 2, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 1, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '칸반 보드 드래그 앤 드롭 구현', 'react-beautiful-dnd 라이브러리 활용', 2, 2, 'HIGH', NOW() - INTERVAL '7 days', NOW() + INTERVAL '1 day', 2, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 1, '태스크 카드 컴포넌트 디자인', '태스크 카드 레이아웃 및 스타일링', 3, 2, 'MEDIUM', NOW() - INTERVAL '4 days', NOW() + INTERVAL '3 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '컬럼 추가/삭제 기능', '컬럼 관리 UI 및 로직 구현', 4, 2, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '태스크 상세 모달 개선', '댓글, 첨부파일 UI 추가', 5, 2, 'LOW', NOW(), NOW() + INTERVAL '7 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '팀 멤버 초대 UI', '멤버 초대 폼 및 팀 코드 입력', 6, 2, 'MEDIUM', NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '알림 센터 구현', '실시간 알림 표시 컴포넌트', 7, 2, 'LOW', NOW(), NOW() + INTERVAL '10 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '다크모드 지원', '테마 전환 기능 추가', 8, 2, 'LOW', NOW(), NOW() + INTERVAL '14 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 1, '반응형 디자인 적용', '모바일 화면 대응', 9, 2, 'MEDIUM', NOW(), NOW() + INTERVAL '8 days', 3, 'WAITING');
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, workflow_status) VALUES
+(nextval('flowtask_task_seq'), 1, '로그인 페이지 UI 구현', 'React로 로그인 폼 컴포넌트 개발', 0, 2, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 1, '회원가입 폼 유효성 검사', '이메일, 비밀번호 형식 검증 로직 추가', 1, 2, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '칸반 보드 드래그 앤 드롭 구현', 'react-beautiful-dnd 라이브러리 활용', 2, 2, 'HIGH', NOW() - INTERVAL '7 days', NOW() + INTERVAL '1 day', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 1, '태스크 카드 컴포넌트 디자인', '태스크 카드 레이아웃 및 스타일링', 3, 2, 'MEDIUM', NOW() - INTERVAL '4 days', NOW() + INTERVAL '3 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '컬럼 추가/삭제 기능', '컬럼 관리 UI 및 로직 구현', 4, 2, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '태스크 상세 모달 개선', '댓글, 첨부파일 UI 추가', 5, 2, 'LOW', NOW(), NOW() + INTERVAL '7 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '팀 멤버 초대 UI', '멤버 초대 폼 및 팀 코드 입력', 6, 2, 'MEDIUM', NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '알림 센터 구현', '실시간 알림 표시 컴포넌트', 7, 2, 'LOW', NOW(), NOW() + INTERVAL '10 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '다크모드 지원', '테마 전환 기능 추가', 8, 2, 'LOW', NOW(), NOW() + INTERVAL '14 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 1, '반응형 디자인 적용', '모바일 화면 대응', 9, 2, 'MEDIUM', NOW(), NOW() + INTERVAL '8 days', 'WAITING');
 
 -- ========================================
 -- 샘플 데이터: 태스크 (백엔드)
 -- ========================================
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, section_id, workflow_status) VALUES
-(nextval('flowtask_task_seq'), 2, 'JWT 인증 시스템 구축', 'Spring Security + JWT 토큰 기반 인증', 0, 3, 'HIGH', NOW() - INTERVAL '6 days', NOW() + INTERVAL '1 day', 1, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 2, '회원가입 API 개발', '회원가입 엔드포인트 및 비밀번호 암호화', 1, 3, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 1, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 2, '권한 관리 시스템', 'ROLE 기반 권한 체크 로직', 2, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 1, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '태스크 CRUD API', '태스크 생성/조회/수정/삭제 엔드포인트', 3, 3, 'HIGH', NOW() - INTERVAL '8 days', NOW(), 2, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 2, '컬럼 관리 API', '컬럼 CRUD 및 순서 변경 API', 4, 3, 'HIGH', NOW() - INTERVAL '4 days', NOW() + INTERVAL '2 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '드래그 앤 드롭 위치 저장', '태스크 위치 업데이트 API', 5, 3, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '댓글 시스템 API', '댓글 작성/수정/삭제 엔드포인트', 6, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '팀 생성 및 관리 API', '팀 CRUD 및 멤버 관리', 7, 3, 'HIGH', NOW() - INTERVAL '7 days', NOW() + INTERVAL '1 day', 2, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 2, 'WebSocket 실시간 통신', 'STOMP 프로토콜로 실시간 업데이트', 8, 3, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 3, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 2, '파일 업로드 API', '이미지 및 파일 첨부 기능', 9, 3, 'MEDIUM', NOW(), NOW() + INTERVAL '6 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '검색 및 필터링 API', '태스크 검색, 필터링 엔드포인트', 10, 3, 'LOW', NOW(), NOW() + INTERVAL '9 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 2, '알림 발송 시스템', '이벤트 기반 알림 생성 및 전송', 11, 3, 'MEDIUM', NOW(), NOW() + INTERVAL '7 days', 3, 'WAITING');
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, workflow_status) VALUES
+(nextval('flowtask_task_seq'), 2, 'JWT 인증 시스템 구축', 'Spring Security + JWT 토큰 기반 인증', 0, 3, 'HIGH', NOW() - INTERVAL '6 days', NOW() + INTERVAL '1 day', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 2, '회원가입 API 개발', '회원가입 엔드포인트 및 비밀번호 암호화', 1, 3, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 2, '권한 관리 시스템', 'ROLE 기반 권한 체크 로직', 2, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '태스크 CRUD API', '태스크 생성/조회/수정/삭제 엔드포인트', 3, 3, 'HIGH', NOW() - INTERVAL '8 days', NOW(), 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 2, '컬럼 관리 API', '컬럼 CRUD 및 순서 변경 API', 4, 3, 'HIGH', NOW() - INTERVAL '4 days', NOW() + INTERVAL '2 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '드래그 앤 드롭 위치 저장', '태스크 위치 업데이트 API', 5, 3, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '댓글 시스템 API', '댓글 작성/수정/삭제 엔드포인트', 6, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '팀 생성 및 관리 API', '팀 CRUD 및 멤버 관리', 7, 3, 'HIGH', NOW() - INTERVAL '7 days', NOW() + INTERVAL '1 day', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 2, 'WebSocket 실시간 통신', 'STOMP 프로토콜로 실시간 업데이트', 8, 3, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 2, '파일 업로드 API', '이미지 및 파일 첨부 기능', 9, 3, 'MEDIUM', NOW(), NOW() + INTERVAL '6 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '검색 및 필터링 API', '태스크 검색, 필터링 엔드포인트', 10, 3, 'LOW', NOW(), NOW() + INTERVAL '9 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 2, '알림 발송 시스템', '이벤트 기반 알림 생성 및 전송', 11, 3, 'MEDIUM', NOW(), NOW() + INTERVAL '7 days', 'WAITING');
 
 -- ========================================
 -- 샘플 데이터: 태스크 (데이터베이스)
 -- ========================================
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, section_id, workflow_status) VALUES
-(nextval('flowtask_task_seq'), 3, 'ERD 설계 및 정규화', '데이터베이스 스키마 설계', 0, 3, 'HIGH', NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days', 1, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 3, '회원 테이블 생성', 'flowtask_member 테이블 및 인덱스', 1, 3, 'HIGH', NOW() - INTERVAL '9 days', NOW() - INTERVAL '4 days', 1, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 3, '팀/프로젝트 테이블 생성', 'flowtask_team, flowtask_project 테이블', 2, 3, 'HIGH', NOW() - INTERVAL '8 days', NOW() - INTERVAL '3 days', 2, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 3, '태스크 관련 테이블 생성', 'flowtask_task, flowtask_column 테이블', 3, 3, 'HIGH', NOW() - INTERVAL '7 days', NOW() - INTERVAL '2 days', 2, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 3, '댓글/태그 테이블 생성', 'flowtask_comment, flowtask_tag 테이블', 4, 3, 'MEDIUM', NOW() - INTERVAL '6 days', NOW() - INTERVAL '1 day', 2, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 3, '인덱스 최적화', '자주 조회되는 컬럼에 인덱스 추가', 5, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 3, '쿼리 성능 튜닝', 'N+1 문제 해결 및 쿼리 최적화', 6, 3, 'LOW', NOW(), NOW() + INTERVAL '8 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 3, '백업 전략 수립', '데이터베이스 자동 백업 설정', 7, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '10 days', 4, 'WAITING');
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, workflow_status) VALUES
+(nextval('flowtask_task_seq'), 3, 'ERD 설계 및 정규화', '데이터베이스 스키마 설계', 0, 3, 'HIGH', NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 3, '회원 테이블 생성', 'flowtask_member 테이블 및 인덱스', 1, 3, 'HIGH', NOW() - INTERVAL '9 days', NOW() - INTERVAL '4 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 3, '팀/프로젝트 테이블 생성', 'flowtask_team, flowtask_project 테이블', 2, 3, 'HIGH', NOW() - INTERVAL '8 days', NOW() - INTERVAL '3 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 3, '태스크 관련 테이블 생성', 'flowtask_task, flowtask_column 테이블', 3, 3, 'HIGH', NOW() - INTERVAL '7 days', NOW() - INTERVAL '2 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 3, '댓글 테이블 생성', 'flowtask_comment 테이블', 4, 3, 'MEDIUM', NOW() - INTERVAL '6 days', NOW() - INTERVAL '1 day', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 3, '인덱스 최적화', '자주 조회되는 컬럼에 인덱스 추가', 5, 3, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 3, '쿼리 성능 튜닝', 'N+1 문제 해결 및 쿼리 최적화', 6, 3, 'LOW', NOW(), NOW() + INTERVAL '8 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 3, '백업 전략 수립', '데이터베이스 자동 백업 설정', 7, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '10 days', 'WAITING');
 
 -- ========================================
 -- 샘플 데이터: 태스크 (DevOps)
 -- ========================================
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, section_id, workflow_status) VALUES
-(nextval('flowtask_task_seq'), 4, 'Docker 컨테이너화', 'Dockerfile 및 docker-compose 설정', 0, 4, 'HIGH', NOW() - INTERVAL '8 days', NOW() - INTERVAL '1 day', 4, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 4, 'AWS EC2 인스턴스 설정', '프로덕션 서버 환경 구축', 1, 4, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 4, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 4, 'Nginx 리버스 프록시 설정', 'SSL 인증서 및 도메인 연결', 2, 4, 'HIGH', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 4, 'WAITING'),
-(nextval('flowtask_task_seq'), 4, 'CI/CD 파이프라인 구축', 'GitHub Actions 자동 배포', 3, 4, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 4, 'WAITING'),
-(nextval('flowtask_task_seq'), 4, '모니터링 시스템 구축', 'Prometheus + Grafana 설정', 4, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '7 days', 4, 'WAITING'),
-(nextval('flowtask_task_seq'), 4, '로그 수집 시스템', 'ELK Stack 구성', 5, 4, 'LOW', NOW(), NOW() + INTERVAL '10 days', 4, 'WAITING'),
-(nextval('flowtask_task_seq'), 4, '부하 테스트 수행', 'JMeter로 성능 테스트', 6, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '8 days', 4, 'WAITING');
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, workflow_status) VALUES
+(nextval('flowtask_task_seq'), 4, 'Docker 컨테이너화', 'Dockerfile 및 docker-compose 설정', 0, 4, 'HIGH', NOW() - INTERVAL '8 days', NOW() - INTERVAL '1 day', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 4, 'AWS EC2 인스턴스 설정', '프로덕션 서버 환경 구축', 1, 4, 'HIGH', NOW() - INTERVAL '5 days', NOW() + INTERVAL '2 days', 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 4, 'Nginx 리버스 프록시 설정', 'SSL 인증서 및 도메인 연결', 2, 4, 'HIGH', NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 4, 'CI/CD 파이프라인 구축', 'GitHub Actions 자동 배포', 3, 4, 'MEDIUM', NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 4, '모니터링 시스템 구축', 'Prometheus + Grafana 설정', 4, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '7 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 4, '로그 수집 시스템', 'ELK Stack 구성', 5, 4, 'LOW', NOW(), NOW() + INTERVAL '10 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 4, '부하 테스트 수행', 'JMeter로 성능 테스트', 6, 4, 'MEDIUM', NOW(), NOW() + INTERVAL '8 days', 'WAITING');
 
 -- ========================================
 -- 샘플 데이터: 태스크 (디자인/UI)
 -- ========================================
-INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, section_id, workflow_status) VALUES
-(nextval('flowtask_task_seq'), 5, '와이어프레임 제작', 'Figma로 전체 화면 와이어프레임', 0, 5, 'HIGH', NOW() - INTERVAL '12 days', NOW() - INTERVAL '5 days', 1, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 5, 'UI/UX 디자인 시스템', '컬러, 타이포그래피, 컴포넌트 정의', 1, 5, 'HIGH', NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days', 1, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 5, '로고 및 브랜딩', 'Flowtask 로고 디자인', 2, 5, 'MEDIUM', NOW() - INTERVAL '8 days', NOW() - INTERVAL '2 days', 1, 'COMPLETED'),
-(nextval('flowtask_task_seq'), 5, '칸반 보드 UI 디자인', '보드 화면 상세 디자인', 3, 5, 'HIGH', NOW() - INTERVAL '6 days', NOW(), 2, 'IN_PROGRESS'),
-(nextval('flowtask_task_seq'), 5, '태스크 카드 디자인', '카드 레이아웃 및 상태 표시', 4, 5, 'HIGH', NOW() - INTERVAL '4 days', NOW() + INTERVAL '2 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 5, '아이콘 세트 제작', 'SVG 아이콘 라이브러리', 5, 5, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 2, 'WAITING'),
-(nextval('flowtask_task_seq'), 5, '모바일 UI 디자인', '반응형 디자인 가이드', 6, 5, 'MEDIUM', NOW(), NOW() + INTERVAL '6 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 5, '인터랙션 프로토타입', 'Figma 인터랙티브 프로토타입', 7, 5, 'LOW', NOW(), NOW() + INTERVAL '9 days', 3, 'WAITING'),
-(nextval('flowtask_task_seq'), 5, '사용성 테스트', '유저 테스트 및 피드백 수집', 8, 5, 'LOW', NOW(), NOW() + INTERVAL '12 days', 3, 'WAITING');
+INSERT INTO flowtask_task (task_id, column_id, title, description, position, assignee_no, priority, start_date, due_date, workflow_status) VALUES
+(nextval('flowtask_task_seq'), 5, '와이어프레임 제작', 'Figma로 전체 화면 와이어프레임', 0, 5, 'HIGH', NOW() - INTERVAL '12 days', NOW() - INTERVAL '5 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 5, 'UI/UX 디자인 시스템', '컬러, 타이포그래피, 컴포넌트 정의', 1, 5, 'HIGH', NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 5, '로고 및 브랜딩', 'Flowtask 로고 디자인', 2, 5, 'MEDIUM', NOW() - INTERVAL '8 days', NOW() - INTERVAL '2 days', 'COMPLETED'),
+(nextval('flowtask_task_seq'), 5, '칸반 보드 UI 디자인', '보드 화면 상세 디자인', 3, 5, 'HIGH', NOW() - INTERVAL '6 days', NOW(), 'IN_PROGRESS'),
+(nextval('flowtask_task_seq'), 5, '태스크 카드 디자인', '카드 레이아웃 및 상태 표시', 4, 5, 'HIGH', NOW() - INTERVAL '4 days', NOW() + INTERVAL '2 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 5, '아이콘 세트 제작', 'SVG 아이콘 라이브러리', 5, 5, 'MEDIUM', NOW() - INTERVAL '3 days', NOW() + INTERVAL '3 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 5, '모바일 UI 디자인', '반응형 디자인 가이드', 6, 5, 'MEDIUM', NOW(), NOW() + INTERVAL '6 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 5, '인터랙션 프로토타입', 'Figma 인터랙티브 프로토타입', 7, 5, 'LOW', NOW(), NOW() + INTERVAL '9 days', 'WAITING'),
+(nextval('flowtask_task_seq'), 5, '사용성 테스트', '유저 테스트 및 피드백 수집', 8, 5, 'LOW', NOW(), NOW() + INTERVAL '12 days', 'WAITING');
 
 -- ========================================
 -- 샘플 데이터: 댓글

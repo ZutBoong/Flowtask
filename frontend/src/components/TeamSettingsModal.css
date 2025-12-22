@@ -448,20 +448,85 @@
 }
 
 /* ===== 반응형 ===== */
-@media (max-width: 640px) {
-    .team-settings-modal {
-        width: 100%;
-        max-width: none;
-        max-height: 100vh;
-        border-radius: 0;
+
+/* 모바일 (max-width: 767px) */
+@media (max-width: 767px) {
+    .team-settings-overlay {
+        align-items: flex-end;
     }
 
-    .tsm-content {
-        padding: 20px;
+    .team-settings-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 16px 16px 0 0;
+        animation: tsmSlideUp 0.3s ease;
+    }
+
+    @keyframes tsmSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tsm-header {
+        padding: 16px 20px;
+    }
+
+    .tsm-header h2 {
+        font-size: 18px;
+    }
+
+    .tsm-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 0 16px;
+    }
+
+    .tsm-tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tsm-tab {
-        padding: 12px 8px;
+        flex-shrink: 0;
+        padding: 12px 12px;
         font-size: 13px;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .tsm-content {
+        padding: 16px 20px;
+        max-height: calc(90vh - 140px);
+        overflow-y: auto;
+    }
+
+    .tsm-code-display {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tsm-code-display .tsm-code {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+    .tsm-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .tsm-danger-zone .tsm-btn {
+        width: 100%;
+    }
+
+    .tsm-member-item {
+        padding: 10px 12px;
     }
 }

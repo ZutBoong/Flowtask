@@ -77,3 +77,39 @@ export const searchMember = async (keyword) => {
     });
     return response.data;
 };
+
+// 회원 탈퇴
+export const deleteMember = async (no) => {
+    const response = await axiosInstance.delete(`/api/member/delete/${no}`);
+    return response.data;
+};
+
+// 이메일 변경 (인증 완료 후)
+export const changeEmail = async (data) => {
+    const response = await axiosInstance.put('/api/member/change-email', data);
+    return response.data;
+};
+
+// 비밀번호 변경 (이메일 인증 완료 후)
+export const changePasswordVerified = async (data) => {
+    const response = await axiosInstance.put('/api/member/change-password-verified', data);
+    return response.data;
+};
+
+// 비밀번호 변경용 인증 코드 발송
+export const sendPasswordChangeCode = async (email) => {
+    const response = await axiosInstance.post('/api/email/send-password-change-code', { email });
+    return response.data;
+};
+
+// 이메일 변경용 인증 코드 발송 (새 이메일로)
+export const sendEmailChangeCode = async (newEmail) => {
+    const response = await axiosInstance.post('/api/email/send-email-change-code', { newEmail });
+    return response.data;
+};
+
+// 인증 코드 확인
+export const verifyCode = async (email, code, type) => {
+    const response = await axiosInstance.post('/api/email/verify-code', { email, code, type });
+    return response.data;
+};

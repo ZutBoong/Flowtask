@@ -303,24 +303,119 @@
     min-height: 200px;
 }
 
-/* ===== 반응형 ===== */
-@media (max-width: 768px) {
-    .calendar-day {
-        min-height: 80px;
-        padding: 4px;
+/* ===== 반응형: 태블릿 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .calendar-layout.sidebar-open,
+    .calendar-layout.sidebar-closed {
+        margin-left: 64px;
     }
 
-    .task-item {
-        font-size: 10px;
-        padding: 2px 4px;
-    }
-
-    .day-number {
-        font-size: 12px;
+    .calendar-header {
+        padding: 0 16px;
     }
 
     .header-left h1 {
         font-size: 16px;
-        min-width: 120px;
+        min-width: 130px;
+    }
+
+    .calendar-day {
+        min-height: 100px;
+    }
+
+    .view-toggle button {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* ===== 반응형: 모바일 (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    .calendar-layout.sidebar-open,
+    .calendar-layout.sidebar-closed {
+        margin-left: 0;
+    }
+
+    .calendar-header {
+        padding: 0 12px;
+        padding-left: 64px; /* 햄버거 버튼 공간 */
+        height: 56px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .header-left {
+        gap: 8px;
+    }
+
+    .header-left h1 {
+        font-size: 14px;
+        min-width: auto;
+    }
+
+    .nav-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .today-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .header-center {
+        display: none;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .view-toggle {
+        display: none;
+    }
+
+    .logout-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .calendar-content {
+        padding: 12px;
+    }
+
+    .calendar-day {
+        min-height: 60px;
+        padding: 4px;
+    }
+
+    .day-number {
+        font-size: 11px;
+    }
+
+    .weekday {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+
+    .task-item {
+        font-size: 9px;
+        padding: 2px 4px;
+    }
+
+    .calendar-day.today .day-number {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+    }
+
+    .more-tasks {
+        font-size: 10px;
+    }
+
+    /* 주간 뷰 모바일 */
+    .calendar-grid.week .calendar-day {
+        min-height: 120px;
     }
 }

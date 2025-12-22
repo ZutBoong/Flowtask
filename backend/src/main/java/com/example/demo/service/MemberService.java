@@ -106,4 +106,14 @@ public class MemberService {
 		members.forEach(member -> member.setPassword(null));
 		return members;
 	}
+
+	// 이메일 변경
+	public int updateEmail(Member member) {
+		return dao.updateEmail(member);
+	}
+
+	// 회원 삭제
+	public int delete(int no) {
+		return dao.delete(no);
+	}
 }

@@ -37,7 +37,6 @@ public class DataInitializer implements CommandLineRunner {
     private final TaskVerifierDao taskVerifierDao;
     private final TaskFavoriteDao taskFavoriteDao;
     private final TaskArchiveDao taskArchiveDao;
-    private final TagDao tagDao;
     private final CommentDao commentDao;
 
     private List<Member> members;
@@ -68,25 +67,18 @@ public class DataInitializer implements CommandLineRunner {
         logger.info("기존 데이터 삭제 중...");
 
         // 외래키 순서 고려하여 삭제
-        jdbcTemplate.execute("DELETE FROM flowtask_task_commit");
         jdbcTemplate.execute("DELETE FROM flowtask_task_archive");
         jdbcTemplate.execute("DELETE FROM flowtask_task_favorite");
         jdbcTemplate.execute("DELETE FROM flowtask_task_verifier");
         jdbcTemplate.execute("DELETE FROM flowtask_task_assignee");
-        jdbcTemplate.execute("DELETE FROM flowtask_task_tag");
         jdbcTemplate.execute("DELETE FROM flowtask_comment");
-        jdbcTemplate.execute("DELETE FROM flowtask_tag");
         jdbcTemplate.execute("DELETE FROM flowtask_task");
-        jdbcTemplate.execute("DELETE FROM flowtask_column_archive");
-        jdbcTemplate.execute("DELETE FROM flowtask_column_favorite");
         jdbcTemplate.execute("DELETE FROM flowtask_column");
-        jdbcTemplate.execute("DELETE FROM flowtask_section");
         jdbcTemplate.execute("DELETE FROM flowtask_chat_message");
         jdbcTemplate.execute("DELETE FROM flowtask_team_member");
         jdbcTemplate.execute("DELETE FROM flowtask_team");
         jdbcTemplate.execute("DELETE FROM flowtask_member");
         jdbcTemplate.execute("DELETE FROM flowtask_notification");
-        jdbcTemplate.execute("DELETE FROM flowtask_git_repo");
         jdbcTemplate.execute("DELETE FROM flowtask_file");
 
         // 시퀀스 초기화
@@ -94,10 +86,8 @@ public class DataInitializer implements CommandLineRunner {
         jdbcTemplate.execute("ALTER SEQUENCE flowtask_team_seq RESTART WITH 1");
         jdbcTemplate.execute("ALTER SEQUENCE flowtask_column_seq RESTART WITH 1");
         jdbcTemplate.execute("ALTER SEQUENCE flowtask_task_seq RESTART WITH 1");
-        jdbcTemplate.execute("ALTER SEQUENCE flowtask_tag_seq RESTART WITH 1");
         jdbcTemplate.execute("ALTER SEQUENCE flowtask_comment_seq RESTART WITH 1");
         jdbcTemplate.execute("ALTER SEQUENCE flowtask_chat_seq RESTART WITH 1");
-        jdbcTemplate.execute("ALTER SEQUENCE flowtask_section_seq RESTART WITH 1");
 
         logger.info("기존 데이터 삭제 완료");
     }

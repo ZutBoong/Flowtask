@@ -49,4 +49,10 @@ public interface MemberDao {
 
 	// 이메일 인증 완료 처리
 	int updateEmailVerified(int no);
+
+	// 이메일 변경
+	int updateEmail(Member member);
+
+	// 회원 삭제
+	int delete(int no);
 }

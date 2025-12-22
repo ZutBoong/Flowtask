@@ -392,19 +392,127 @@
     font-size: 15px;
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
+/* ===== 반응형: 태블릿 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
     .list-view {
-        padding: 16px;
+        padding: 20px;
     }
 
     .task-table th,
     .task-table td {
-        padding: 12px 14px;
+        padding: 12px 16px;
+    }
+
+    .col-assignee {
+        width: 100px;
+    }
+
+    .col-status {
+        width: 80px;
+    }
+
+    .col-priority {
+        width: 80px;
+    }
+}
+
+/* ===== 반응형: 모바일 (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    .list-view {
+        padding: 12px;
+    }
+
+    .list-column {
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .column-header {
+        padding: 12px 16px;
+    }
+
+    .column-name {
+        font-size: 14px;
+    }
+
+    .task-count {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
+
+    .task-table th,
+    .task-table td {
+        padding: 10px 12px;
+    }
+
+    /* 모바일에서 숨길 컬럼 */
+    .col-drag {
+        width: 40px;
+        padding: 10px 8px !important;
     }
 
     .col-assignee,
-    .col-status {
+    .col-status,
+    .col-actions {
         display: none;
+    }
+
+    .col-due {
+        width: 70px;
+        font-size: 12px;
+    }
+
+    .col-priority {
+        width: 60px;
+    }
+
+    .priority-badge,
+    .status-badge {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .task-title-link {
+        font-size: 13px;
+    }
+
+    .add-task-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+
+    .add-task-inline {
+        flex-direction: column;
+        padding: 12px 16px;
+    }
+
+    .add-task-inline input {
+        width: 100%;
+    }
+
+    .add-task-inline button {
+        padding: 12px;
+        width: 100%;
+    }
+
+    /* 드래그 핸들 */
+    .drag-handle {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+
+    .column-drag-handle {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+
+    .no-columns {
+        padding: 60px 16px;
+    }
+
+    .no-columns p {
+        font-size: 14px;
     }
 }

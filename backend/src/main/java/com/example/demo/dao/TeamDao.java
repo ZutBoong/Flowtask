@@ -42,4 +42,7 @@ public interface TeamDao {
 
 	// 팀 코드 재생성
 	int updateTeamCode(Team team);
+
+	// 회원이 리더인 팀 수 조회
+	int countLeaderTeams(int memberNo);
 }

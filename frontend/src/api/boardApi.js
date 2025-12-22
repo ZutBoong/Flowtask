@@ -243,19 +243,7 @@ export const updateTaskAssignees = async (taskId, memberNos, senderNo = null) =>
     return response.data;
 };
 
-// ========== Section/Timeline API ==========
-
-// 섹션별 태스크 목록
-export const tasklistBySection = async (sectionId) => {
-    const response = await axiosInstance.get(`${API_PATH}/tasklist/section/${sectionId}`);
-    return response.data;
-};
-
-// 태스크 섹션 변경
-export const updateTaskSection = async (taskId, sectionId) => {
-    const response = await axiosInstance.put(`${API_PATH}/task/${taskId}/section`, { sectionId });
-    return response.data;
-};
+// ========== Timeline API ==========
 
 // 태스크 날짜 변경 (타임라인용)
 export const updateTaskDates = async (taskId, startDate, dueDate) => {

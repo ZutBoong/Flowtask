@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Flowtask is a team-based Kanban board application with a Spring Boot backend and React frontend, using PostgreSQL database for persistence. Features include JWT authentication, real-time updates via WebSocket, task comments, tags, verification workflow, team chat, and Git integration.
+Flowtask is a team-based Kanban board application with a Spring Boot backend and React frontend, using PostgreSQL database for persistence. Features include JWT authentication, real-time updates via WebSocket, task comments, verification workflow, and team chat.
 
 ## Build and Run Commands
 
@@ -72,7 +72,7 @@ Sample data is auto-generated. All passwords are `1234`.
 - **Config** (`config/`): WebSocket and Security configuration
 - **Security** (`security/`): JWT token provider and authentication filter
 
-Key entities: Member, Team, TeamMember, Project, FlowtaskColumn, Task, Tag, Comment, ChatMessage, GitRepo, TaskCommit, Section, Notification, TaskAssignee, ColumnArchive, ColumnAssignee, ColumnFavorite, ProjectFile
+Key entities: Member, Team, TeamMember, Project, FlowtaskColumn, Task, Comment, ChatMessage, Notification, TaskAssignee, TaskVerifier, TaskFavorite, TaskArchive, ProjectFile
 
 ### MyBatis Mapping Conventions
 - Mapper XMLs in `resources/mapper/` (one per entity, e.g., `task.xml`, `team.xml`)
@@ -89,7 +89,7 @@ Services follow consistent patterns:
 
 ### Frontend Structure (React 18 + React Router)
 - **Pages** (`pages/`): Route components (Board, Login, Register, Calendar, etc.)
-- **Components** (`components/`): Reusable UI (Sidebar, Header, TaskModal, CommentSection, ChatPanel, TagInput, FilterBar, GitRepoSettings, TaskCommits, NotificationBell)
+- **Components** (`components/`): Reusable UI (Sidebar, Header, TaskModal, CommentSection, ChatPanel, FilterBar, NotificationBell)
 - **API** (`api/`): Axios API client functions for backend communication (axiosInstance, boardApi, teamApi, memberApi, etc.)
 - **Views** (`pages/views/`): Sub-views for Board page (BoardView, ListView, CalendarView, TimelineView, FilesView, AdminView, OverviewView)
 
@@ -103,7 +103,7 @@ Services follow consistent patterns:
 1. Teams contain Projects
 2. Projects contain Columns (Kanban columns)
 3. Columns contain Tasks
-4. Tasks can have Tags, Comments, Assignees, Verifiers, and linked Git commits
+4. Tasks can have Comments, Assignees, and Verifiers
 5. Drag-and-drop uses `@hello-pangea/dnd` library
 
 ### Real-Time Communication

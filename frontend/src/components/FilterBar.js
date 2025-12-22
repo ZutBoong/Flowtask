@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { getTagsByTeam } from '../api/tagApi';
+import React, { useState } from 'react';
 import './FilterBar.css';
 
 const STATUSES = [
@@ -12,23 +11,7 @@ const STATUSES = [
 ];
 
 function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
-    const [teamTags, setTeamTags] = useState([]);
     const [isExpanded, setIsExpanded] = useState(false);
-
-    useEffect(() => {
-        if (teamId) {
-            fetchTeamTags();
-        }
-    }, [teamId]);
-
-    const fetchTeamTags = async () => {
-        try {
-            const tags = await getTagsByTeam(teamId);
-            setTeamTags(tags || []);
-        } catch (error) {
-            console.error('태그 목록 조회 실패:', error);
-        }
-    };
 
     const handleSearchChange = (e) => {
         onFilterChange({ ...filters, searchQuery: e.target.value });
@@ -40,14 +23,6 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
             ? current.filter(s => s !== status)
             : [...current, status];
         onFilterChange({ ...filters, statuses: updated });
-    };
-
-    const toggleTag = (tagId) => {
-        const current = filters.tags || [];
-        const updated = current.includes(tagId)
-            ? current.filter(t => t !== tagId)
-            : [...current, tagId];
-        onFilterChange({ ...filters, tags: updated });
     };
 
     const handleAssigneeChange = (e) => {
@@ -63,7 +38,6 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
         onFilterChange({
             searchQuery: '',
             statuses: [],
-            tags: [],
             assigneeNo: null,
             dueDateFilter: ''
         });
@@ -72,7 +46,6 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
     const hasActiveFilters = () => {
         return filters.searchQuery ||
             (filters.statuses && filters.statuses.length > 0) ||
-            (filters.tags && filters.tags.length > 0) ||
             filters.assigneeNo ||
             filters.dueDateFilter;
     };
@@ -121,28 +94,6 @@ function FilterBar({ teamId, teamMembers, filters, onFilterChange }) {
                             ))}
                         </div>
                     </div>
-
-                    {teamTags.length > 0 && (
-                        <div className="filter-section">
-                            <label>태그</label>
-                            <div className="filter-chips">
-                                {teamTags.map(tag => (
-                                    <button
-                                        key={tag.tagId}
-                                        className={`filter-chip tag-chip ${(filters.tags || []).includes(tag.tagId) ? 'active' : ''}`}
-                                        style={{
-                                            '--chip-color': tag.color,
-                                            borderColor: (filters.tags || []).includes(tag.tagId) ? tag.color : undefined,
-                                            backgroundColor: (filters.tags || []).includes(tag.tagId) ? tag.color : undefined
-                                        }}
-                                        onClick={() => toggleTag(tag.tagId)}
-                                    >
-                                        {tag.tagName}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     <div className="filter-section">
                         <label>담당자</label>

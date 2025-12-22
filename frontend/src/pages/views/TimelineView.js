@@ -308,11 +308,6 @@ function TimelineView({
                 if (!filters.statuses.includes(task.status)) return false;
             }
 
-            if (filters.tags?.length > 0) {
-                const taskTagIds = (task.tags || []).map(t => t.tagId);
-                if (!filters.tags.some(tagId => taskTagIds.includes(tagId))) return false;
-            }
-
             if (filters.assigneeNo) {
                 const hasAssignee = task.assignees?.some(a => a.memberNo === filters.assigneeNo)
                     || task.assigneeNo === filters.assigneeNo;

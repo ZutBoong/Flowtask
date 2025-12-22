@@ -112,17 +112,64 @@
     cursor: default;
 }
 
-/* 반응형 */
-@media (max-width: 480px) {
+/* ===== 반응형: 태블릿 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
     .home-content {
-        padding: 40px 28px;
+        max-width: 420px;
+        padding: 50px 40px;
     }
 
     .home-title {
-        font-size: 40px;
+        font-size: 46px;
     }
 
     .home-subtitle {
+        font-size: 16px;
+    }
+}
+
+/* ===== 반응형: 모바일 (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    .home-container {
+        padding: 20px 16px;
+        align-items: flex-start;
+        padding-top: 60px;
+    }
+
+    .home-content {
+        padding: 36px 24px;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .home-title {
+        font-size: 36px;
+        letter-spacing: -0.5px;
+    }
+
+    .home-subtitle {
+        font-size: 14px;
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+
+    .home-buttons {
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+
+    .btn-large {
+        padding: 16px 24px;
         font-size: 15px;
+        border-radius: 12px;
+    }
+
+    .home-links {
+        font-size: 13px;
+    }
+
+    .home-links .divider {
+        margin: 0 10px;
     }
 }

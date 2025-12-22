@@ -1,0 +1,161 @@
+/* ===== Flowtask Responsive CSS Variables & Utilities ===== */
+
+:root {
+    /* Breakpoints (참고용 - CSS에서 직접 사용 불가) */
+    /* --breakpoint-mobile: 767px; */
+    /* --breakpoint-tablet: 1023px; */
+    /* --breakpoint-desktop: 1024px; */
+
+    /* Sidebar 너비 */
+    --sidebar-width-open: 280px;
+    --sidebar-width-closed: 64px;
+
+    /* 칸반 컬럼 너비 */
+    --kanban-column-width: 280px;
+    --kanban-column-mobile-width: 240px;
+    --kanban-column-tablet-width: 260px;
+
+    /* 간격 */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 20px;
+    --spacing-xl: 24px;
+
+    /* 헤더 높이 */
+    --header-height: 64px;
+    --header-height-mobile: 56px;
+
+    /* Z-index 계층 */
+    --z-sidebar: 100;
+    --z-sidebar-overlay: 99;
+    --z-hamburger: 101;
+    --z-modal: 1000;
+    --z-modal-overlay: 999;
+}
+
+/* ===== 반응형 유틸리티 클래스 ===== */
+
+/* 모바일에서만 표시 */
+.mobile-only {
+    display: none !important;
+}
+
+/* 태블릿 이상에서만 표시 */
+.tablet-up {
+    display: block;
+}
+
+/* 데스크톱에서만 표시 */
+.desktop-only {
+    display: block;
+}
+
+/* 모바일에서 숨김 */
+.hide-mobile {
+    display: block;
+}
+
+/* 태블릿에서 숨김 */
+.hide-tablet {
+    display: block;
+}
+
+/* ===== 모바일 (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    :root {
+        --header-height: var(--header-height-mobile);
+        --kanban-column-width: var(--kanban-column-mobile-width);
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .tablet-up,
+    .desktop-only,
+    .hide-mobile {
+        display: none !important;
+    }
+
+    /* 기본 폰트 크기 조정 */
+    html {
+        font-size: 14px;
+    }
+
+    /* iOS 입력 필드 확대 방지 */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* ===== 태블릿 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    :root {
+        --kanban-column-width: var(--kanban-column-tablet-width);
+    }
+
+    .desktop-only,
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* ===== 데스크톱 (1024px 이상) ===== */
+@media (min-width: 1024px) {
+    /* 데스크톱 기본값 유지 */
+}
+
+/* ===== 공통 반응형 헬퍼 ===== */
+
+/* 터치 디바이스용 스크롤 */
+.scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* 가로 스크롤 컨테이너 */
+.horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+/* 전체화면 모달 (모바일) */
+@media (max-width: 767px) {
+    .fullscreen-mobile {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+}
+
+/* 안전 영역 (노치 디스플레이) */
+@supports (padding: env(safe-area-inset-top)) {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}

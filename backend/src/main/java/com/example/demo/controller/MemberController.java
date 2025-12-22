@@ -7,6 +7,7 @@ import com.example.demo.dto.AuthResponse;
 import com.example.demo.model.Member;
 import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.MemberService;
+import com.example.demo.dao.TeamDao;
 
 @RestController
 @RequestMapping("/api")
@@ -14,10 +15,12 @@ public class MemberController {
 
 	private final MemberService service;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final TeamDao teamDao;
 
-	public MemberController(MemberService service, JwtTokenProvider jwtTokenProvider) {
+	public MemberController(MemberService service, JwtTokenProvider jwtTokenProvider, TeamDao teamDao) {
 		this.service = service;
 		this.jwtTokenProvider = jwtTokenProvider;
+		this.teamDao = teamDao;
 	}
 
 	// 회원가입
@@ -252,5 +255,92 @@ public class MemberController {
 	public java.util.List<Member> getAllMembers() {
 		System.out.println("모든 회원 목록 조회");
 		return service.findAll();
+	}
+
+	// 회원 탈퇴
+	@DeleteMapping("member/delete/{no}")
+	public Map<String, Object> deleteMember(@PathVariable int no) {
+		System.out.println("회원 탈퇴 요청 - no: " + no);
+		Map<String, Object> result = new HashMap<>();
+
+		// 팀 리더인지 확인
+		int leaderCount = teamDao.countLeaderTeams(no);
+		if (leaderCount > 0) {
+			result.put("success", false);
+			result.put("message", "팀 리더로 있는 팀이 있습니다. 팀을 삭제하거나 리더를 위임한 후 탈퇴해주세요.");
+			return result;
+		}
+
+		int deleteResult = service.delete(no);
+		if (deleteResult == 1) {
+			result.put("success", true);
+			result.put("message", "회원 탈퇴가 완료되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "회원 탈퇴에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 이메일 변경 (인증 완료 후)
+	@PutMapping("member/change-email")
+	public Map<String, Object> changeEmail(@RequestBody Map<String, Object> request) {
+		int no = (Integer) request.get("no");
+		String newEmail = (String) request.get("newEmail");
+
+		System.out.println("이메일 변경 요청 - no: " + no + ", newEmail: " + newEmail);
+		Map<String, Object> result = new HashMap<>();
+
+		// 이메일 중복 체크
+		int emailCount = service.checkEmail(newEmail);
+		if (emailCount > 0) {
+			result.put("success", false);
+			result.put("message", "이미 사용 중인 이메일입니다.");
+			return result;
+		}
+
+		Member member = new Member();
+		member.setNo(no);
+		member.setEmail(newEmail);
+
+		int updateResult = service.updateEmail(member);
+		if (updateResult == 1) {
+			Member updatedMember = service.findByNo(no);
+			updatedMember.setPassword(null);
+			result.put("success", true);
+			result.put("message", "이메일이 변경되었습니다.");
+			result.put("member", updatedMember);
+		} else {
+			result.put("success", false);
+			result.put("message", "이메일 변경에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 비밀번호 변경 (이메일 인증 완료 후)
+	@PutMapping("member/change-password-verified")
+	public Map<String, Object> changePasswordVerified(@RequestBody Map<String, Object> request) {
+		int no = (Integer) request.get("no");
+		String newPassword = (String) request.get("newPassword");
+
+		System.out.println("비밀번호 변경 요청 (인증 완료) - no: " + no);
+		Map<String, Object> result = new HashMap<>();
+
+		Member member = new Member();
+		member.setNo(no);
+		member.setPassword(newPassword);
+
+		int updateResult = service.updatePassword(member);
+		if (updateResult == 1) {
+			result.put("success", true);
+			result.put("message", "비밀번호가 변경되었습니다.");
+		} else {
+			result.put("success", false);
+			result.put("message", "비밀번호 변경에 실패했습니다.");
+		}
+
+		return result;
 	}
 }

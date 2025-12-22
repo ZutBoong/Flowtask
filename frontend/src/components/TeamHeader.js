@@ -10,7 +10,6 @@ function TeamHeader({ team }) {
                 </div>
                 <div className="team-title-area">
                     <h1 className="team-title">{team?.teamName || '팀 이름'}</h1>
-                    <p className="team-code">팀 코드: {team?.teamCode || 'N/A'}</p>
                 </div>
             </div>
             {team?.description && (

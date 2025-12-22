@@ -85,7 +85,7 @@ VALUES
     (nextval('flowtask_task_seq'), 3, '회원 테이블 생성', 'flowtask_member 테이블 및 인덱스', 1, 3, 'HIGH', CURRENT_DATE - INTERVAL '9 days', CURRENT_DATE - INTERVAL '4 days', 1, 'DONE', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 3, '팀/프로젝트 테이블 생성', 'flowtask_team, flowtask_project 테이블', 2, 3, 'HIGH', CURRENT_DATE - INTERVAL '8 days', CURRENT_DATE - INTERVAL '3 days', 2, 'DONE', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 3, '태스크 관련 테이블 생성', 'flowtask_task, flowtask_column 테이블', 3, 3, 'HIGH', CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '2 days', 2, 'DONE', CURRENT_TIMESTAMP),
-    (nextval('flowtask_task_seq'), 3, '댓글/태그 테이블 생성', 'flowtask_comment, flowtask_tag 테이블', 4, 3, 'MEDIUM', CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE - INTERVAL '1 day', 2, 'DONE', CURRENT_TIMESTAMP),
+    (nextval('flowtask_task_seq'), 3, '댓글 테이블 생성', 'flowtask_comment 테이블', 4, 3, 'MEDIUM', CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE - INTERVAL '1 day', 2, 'DONE', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 3, '인덱스 최적화', '자주 조회되는 컬럼에 인덱스 추가', 5, 3, 'MEDIUM', CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE + INTERVAL '3 days', 2, 'WAITING', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 3, '쿼리 성능 튜닝', 'N+1 문제 해결 및 쿼리 최적화', 6, 3, 'LOW', CURRENT_DATE, CURRENT_DATE + INTERVAL '8 days', 3, 'WAITING', CURRENT_TIMESTAMP),
     (nextval('flowtask_task_seq'), 3, '백업 전략 수립', '데이터베이스 자동 백업 설정', 7, 4, 'MEDIUM', CURRENT_DATE, CURRENT_DATE + INTERVAL '10 days', 4, 'WAITING', CURRENT_TIMESTAMP);

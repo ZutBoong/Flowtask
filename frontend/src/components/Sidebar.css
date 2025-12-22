@@ -116,6 +116,46 @@
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
+.notifications-btn {
+    position: relative;
+    margin-top: 8px;
+}
+
+.notification-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.notifications-icon-btn {
+    position: relative;
+}
+
+.notification-badge-small {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 8px;
+    min-width: 14px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
 /* 액션 버튼들 */
 .sidebar-actions {
     display: flex;
@@ -678,4 +718,124 @@
 
 .kick-btn:hover {
     transform: translateY(-50%) scale(1.1);
+}
+
+/* ===== 모바일 햄버거 버튼 ===== */
+.hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 101;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    transition: all 0.2s ease;
+}
+
+.hamburger-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.hamburger-btn:active {
+    transform: scale(0.95);
+}
+
+/* ===== 모바일 오버레이 ===== */
+.sidebar-mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 99;
+    animation: fadeIn 0.2s ease;
+}
+
+/* ===== 모바일 드로어 사이드바 ===== */
+.sidebar.mobile-drawer {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.mobile-drawer.open {
+    transform: translateX(0);
+}
+
+/* ===== 모바일 반응형 (max-width: 767px) ===== */
+@media (max-width: 767px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
+    .sidebar-mobile-overlay {
+        display: block;
+    }
+
+    /* 데스크톱 사이드바 숨기기 */
+    .sidebar:not(.mobile-drawer),
+    .sidebar-collapsed {
+        display: none !important;
+    }
+
+    /* 모바일 드로어 사이드바 */
+    .sidebar.mobile-drawer {
+        width: 280px;
+        max-width: 85vw;
+    }
+
+    .sidebar.mobile-drawer .sidebar-expanded {
+        width: 100%;
+    }
+
+    /* 팀 설정 버튼 항상 표시 */
+    .sidebar.mobile-drawer .team-settings-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ===== 태블릿 반응형 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* 태블릿에서는 기본 축소 모드 */
+    .sidebar.open {
+        width: 64px;
+    }
+
+    .sidebar.open .sidebar-expanded {
+        display: none;
+    }
+
+    /* 축소 모드 스타일 적용 */
+    .sidebar.open {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+}
+
+/* ===== 데스크톱 (1024px 이상) ===== */
+@media (min-width: 1024px) {
+    /* 현재 동작 유지 */
+    .hamburger-btn {
+        display: none;
+    }
+
+    .sidebar-mobile-overlay {
+        display: none;
+    }
 }

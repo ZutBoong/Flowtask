@@ -10,6 +10,7 @@ import TeamView from './pages/TeamView';
 import MyPage from './pages/MyPage';
 import MyActivity from './pages/MyActivity';
 import CreateTeam from './pages/CreateTeam';
+import NotificationsPage from './pages/NotificationsPage';
 import './App.css';
 
 function AppContent() {
@@ -19,6 +20,7 @@ function AppContent() {
   const isMyPage = location.pathname === '/mypage';
   const isMyActivity = location.pathname === '/activity';
   const isCreateTeam = location.pathname === '/create-team';
+  const isNotifications = location.pathname === '/notifications';
   const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password'].includes(location.pathname);
 
   // TeamView, Calendar, MyPage, MyActivity, CreateTeam 페이지는 독립적인 레이아웃 사용
@@ -41,6 +43,9 @@ function AppContent() {
   }
   if (isCreateTeam) {
     return <CreateTeam />;
+  }
+  if (isNotifications) {
+    return <NotificationsPage />;
   }
 
   return (

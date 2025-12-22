@@ -95,4 +95,9 @@
 		WHERE team_id = #{teamId}
 	</update>
 
+	<!-- 회원이 리더인 팀 수 조회 -->
+	<select id="countLeaderTeams" parameterType="int" resultType="int">
+		SELECT COUNT(*) FROM flowtask_team WHERE leader_no = #{memberNo}
+	</select>
+
 </mapper>

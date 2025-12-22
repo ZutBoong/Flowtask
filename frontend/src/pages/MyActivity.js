@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyTeams } from '../api/teamApi';
-import { getColumnArchives } from '../api/columnApi';
 import { tasklistByAssignee, getTaskArchives } from '../api/boardApi';
 import Sidebar from '../components/Sidebar';
 import './MyActivity.css';
@@ -9,7 +8,6 @@ import './MyActivity.css';
 function MyActivity() {
     const navigate = useNavigate();
     const [teams, setTeams] = useState([]);
-    const [archives, setArchives] = useState([]);
     const [taskArchives, setTaskArchives] = useState([]);
     const [myTasks, setMyTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -39,15 +37,13 @@ function MyActivity() {
     const fetchData = async (memberNo) => {
         try {
             setLoading(true);
-            const [teamsRes, archivesRes, taskArchivesRes, tasksRes] = await Promise.all([
+            const [teamsRes, taskArchivesRes, tasksRes] = await Promise.all([
                 getMyTeams(memberNo),
-                getColumnArchives(memberNo).catch(() => []),
                 getTaskArchives(memberNo).catch(() => []),
                 tasklistByAssignee(memberNo).catch(() => [])
             ]);
 
             setTeams(teamsRes || []);
-            setArchives(archivesRes || []);
             setTaskArchives(taskArchivesRes || []);
             setMyTasks(tasksRes || []);
         } catch (error) {
@@ -249,16 +245,16 @@ function MyActivity() {
                                 <div className="activity-section archives-section">
                                     <div className="section-header">
                                         <h2>아카이브</h2>
-                                        <span className="count-badge">{archives.length + taskArchives.length}</span>
+                                        <span className="count-badge">{taskArchives.length}</span>
                                     </div>
                                     <div className="archives-list">
-                                        {archives.length + taskArchives.length > 0 ? (
-                                            <>
-                                                {/* 컬럼 아카이브 */}
-                                                {archives.slice(0, 10).map(archive => (
-                                                    <div key={`col-${archive.archiveId}`} className="archive-item column-archive">
+                                        {taskArchives.length > 0 ? (
+                                            taskArchives.slice(0, 10).map(archive => {
+                                                const task = JSON.parse(archive.taskSnapshot || '{}');
+                                                return (
+                                                    <div key={`task-${archive.archiveId}`} className="archive-item task-archive">
                                                         <div className="archive-header">
-                                                            <span className="archive-title">📁 {archive.columnTitle}</span>
+                                                            <span className="archive-title">📝 {task.title || '제목 없음'}</span>
                                                             <span className="archive-date">
                                                                 {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
                                                                     month: 'short',
@@ -266,45 +262,23 @@ function MyActivity() {
                                                                 })}
                                                             </span>
                                                         </div>
+                                                        {task.description && (
+                                                            <p className="archive-description">{task.description.substring(0, 50)}{task.description.length > 50 ? '...' : ''}</p>
+                                                        )}
                                                         {archive.archiveNote && (
                                                             <p className="archive-note">{archive.archiveNote}</p>
                                                         )}
-                                                        <span className="archive-type-badge">컬럼</span>
-                                                    </div>
-                                                ))}
-                                                {/* 태스크 아카이브 */}
-                                                {taskArchives.slice(0, 10).map(archive => {
-                                                    const task = JSON.parse(archive.taskSnapshot || '{}');
-                                                    return (
-                                                        <div key={`task-${archive.archiveId}`} className="archive-item task-archive">
-                                                            <div className="archive-header">
-                                                                <span className="archive-title">📝 {task.title || '제목 없음'}</span>
-                                                                <span className="archive-date">
-                                                                    {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
-                                                                        month: 'short',
-                                                                        day: 'numeric'
-                                                                    })}
-                                                                </span>
-                                                            </div>
-                                                            {task.description && (
-                                                                <p className="archive-description">{task.description.substring(0, 50)}{task.description.length > 50 ? '...' : ''}</p>
+                                                        <div className="archive-meta">
+                                                            {archive.teamName && (
+                                                                <span className="archive-team">{archive.teamName}</span>
                                                             )}
-                                                            {archive.archiveNote && (
-                                                                <p className="archive-note">{archive.archiveNote}</p>
+                                                            {archive.columnTitle && (
+                                                                <span className="archive-column">{archive.columnTitle}</span>
                                                             )}
-                                                            <div className="archive-meta">
-                                                                <span className="archive-type-badge">태스크</span>
-                                                                {archive.teamName && (
-                                                                    <span className="archive-team">{archive.teamName}</span>
-                                                                )}
-                                                                {archive.columnTitle && (
-                                                                    <span className="archive-column">{archive.columnTitle}</span>
-                                                                )}
-                                                            </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </>
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
                                             <p className="no-data">아카이브된 항목이 없습니다.</p>
                                         )}

@@ -23,17 +23,11 @@ public class Task {
 	private Date startDate;          // 시작일 (타임라인용)
 	private Date dueDate;            // 마감일
 
-	// 섹션 (목록/타임라인 그룹핑용)
-	private Integer sectionId;       // FK to Section.sectionId, nullable
-
-	// 워크플로우 필드 (NEW)
+	// 워크플로우 필드
 	private String workflowStatus;   // WAITING, IN_PROGRESS, REVIEW, DONE, REJECTED
 	private String rejectionReason;  // 반려 사유
 	private LocalDateTime rejectedAt; // 반려 시간
 	private Integer rejectedBy;      // 반려자 (FK to Member.no)
-
-	// 태그 목록
-	private List<Tag> tags;
 
 	// 복수 담당자 목록
 	private List<TaskAssignee> assignees;

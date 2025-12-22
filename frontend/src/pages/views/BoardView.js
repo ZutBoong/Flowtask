@@ -5,7 +5,6 @@ import {
     taskwrite, taskdelete, taskposition,
     tasklistByTeam, columnlistByTeam
 } from '../../api/boardApi';
-import { archiveColumn } from '../../api/columnApi';
 import { addTaskFavorite, removeTaskFavorite, checkTaskFavorite, getTaskFavorites } from '../../api/boardApi';
 import TaskModal from '../../components/TaskModal';
 import TaskCreateModal from '../../components/TaskCreateModal';
@@ -53,8 +52,6 @@ function BoardView({
 
     // 컬럼 기능 관련 상태
     const [columnMenuOpen, setColumnMenuOpen] = useState(null);
-    const [archiveModalColumn, setArchiveModalColumn] = useState(null);
-    const [archiveNote, setArchiveNote] = useState('');
 
     // 태스크 즐겨찾기 관련 상태
     const [taskFavorites, setTaskFavorites] = useState({});  // { taskId: boolean }
@@ -163,20 +160,6 @@ function BoardView({
             }));
         } catch (error) {
             console.error('즐겨찾기 토글 실패:', error);
-        }
-    };
-
-    // 컬럼 아카이브
-    const handleArchiveColumn = async (columnId) => {
-        if (!loginMember) return;
-        try {
-            await archiveColumn(columnId, loginMember.no, archiveNote);
-            alert('컬럼이 아카이브되었습니다.');
-            setArchiveModalColumn(null);
-            setArchiveNote('');
-        } catch (error) {
-            console.error('아카이브 실패:', error);
-            alert('아카이브에 실패했습니다.');
         }
     };
 
@@ -469,12 +452,6 @@ function BoardView({
                                                                     </button>
                                                                     {columnMenuOpen === column.columnId && (
                                                                         <div className="column-menu-dropdown">
-                                                                            <button onClick={() => {
-                                                                                setArchiveModalColumn(column.columnId);
-                                                                                setColumnMenuOpen(null);
-                                                                            }}>
-                                                                                아카이브
-                                                                            </button>
                                                                             <button
                                                                                 className="menu-delete-btn"
                                                                                 onClick={() => {
@@ -616,44 +593,6 @@ function BoardView({
                         setSelectedTask(null);
                     }}
                 />
-            )}
-
-            {/* 컬럼 아카이브 모달 */}
-            {archiveModalColumn && (
-                <div className="modal-overlay" onClick={() => setArchiveModalColumn(null)}>
-                    <div className="modal-content archive-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>컬럼 아카이브</h3>
-                            <button className="close-btn" onClick={() => setArchiveModalColumn(null)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="modal-description">
-                                이 컬럼과 모든 태스크를 아카이브합니다.
-                            </p>
-                            <div className="archive-note-section">
-                                <label>메모 (선택사항)</label>
-                                <textarea
-                                    value={archiveNote}
-                                    onChange={(e) => setArchiveNote(e.target.value)}
-                                    placeholder="이 컬럼을 아카이브하는 이유나 목적을 기록하세요..."
-                                    rows={3}
-                                />
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="cancel-btn" onClick={() => {
-                                setArchiveModalColumn(null);
-                                setArchiveNote('');
-                            }}>취소</button>
-                            <button
-                                className="save-btn archive-btn"
-                                onClick={() => handleArchiveColumn(archiveModalColumn)}
-                            >
-                                아카이브
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {/* 태스크 생성 모달 */}

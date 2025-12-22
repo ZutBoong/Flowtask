@@ -1,8 +1,8 @@
-/* ===== 마이페이지 레이아웃 (사이드바 포함) ===== */
+/* ===== MyPage Layout ===== */
 .mypage-page {
     display: flex;
     height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    background: #f8fafc;
     overflow: hidden;
 }
 
@@ -24,8 +24,8 @@
     margin-left: 64px;
 }
 
-/* ===== 통합 헤더 ===== */
-.team-header {
+/* ===== Header ===== */
+.mypage-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -37,13 +37,12 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.team-header-left {
+.mypage-header-left {
     display: flex;
     align-items: center;
-    gap: 32px;
 }
 
-.team-header .team-name {
+.mypage-title {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
@@ -51,13 +50,13 @@
     letter-spacing: -0.3px;
 }
 
-.team-header-right {
+.mypage-header-right {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.team-header .logout-btn {
+.mypage-header .logout-btn {
     padding: 10px 18px;
     background: #f1f5f9;
     border: none;
@@ -69,175 +68,605 @@
     transition: all 0.2s ease;
 }
 
-.team-header .logout-btn:hover {
+.mypage-header .logout-btn:hover {
     background: #e2e8f0;
     color: #334155;
 }
 
-/* 메인 콘텐츠 */
-.mypage-content {
+/* ===== Main Content ===== */
+.mypage-main {
     flex: 1;
-    padding: 24px;
+    padding: 32px;
     overflow-y: auto;
 }
 
-.mypage-box {
-    background: white;
-    padding: 32px;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
+.mypage-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #64748b;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== Container ===== */
+.mypage-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
-/* 탭 스타일 */
-.mypage-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 12px;
+/* ===== Sidebar Card ===== */
+.mypage-sidebar-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    height: fit-content;
 }
 
-.tab-btn {
-    padding: 10px 20px;
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 32px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.profile-name {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.profile-userid {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.profile-email {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: #94a3b8;
+    word-break: break-all;
+}
+
+/* ===== Navigation ===== */
+.mypage-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 24px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
     border: none;
-    background: #f5f5f5;
-    color: #666;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
+    color: #64748b;
+    text-align: left;
     transition: all 0.2s;
 }
 
-.tab-btn:hover {
-    background: #e0e0e0;
+.nav-item:hover {
+    background: #f1f5f9;
+    color: #334155;
 }
 
-.tab-btn.active {
-    background: #026aa7;
+.nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
 
-/* 탭 콘텐츠 */
-.mypage-tab-content {
-    min-height: 300px;
+.nav-item.danger {
+    color: #ef4444;
 }
 
-.mypage-tab-content .form-group {
-    margin-bottom: 20px;
+.nav-item.danger:hover {
+    background: #fef2f2;
 }
 
-.mypage-tab-content .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
+.nav-item.danger.active {
+    background: #ef4444;
+    color: white;
 }
 
-.mypage-tab-content .form-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+.nav-icon {
+    font-size: 16px;
+}
+
+.nav-label {
+    flex: 1;
+}
+
+/* ===== Content Card ===== */
+.mypage-content-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.section-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.section-title.danger-text {
+    color: #ef4444;
+}
+
+.section-desc {
+    margin: 0 0 24px;
     font-size: 14px;
-    transition: border-color 0.3s;
-    box-sizing: border-box;
+    color: #64748b;
 }
 
-.mypage-tab-content .form-group input:focus {
+/* ===== Form Styles ===== */
+.mypage-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.form-group input {
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.form-group input:focus {
     outline: none;
-    border-color: #026aa7;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.mypage-tab-content .form-group input.disabled {
-    background: #f5f5f5;
-    color: #999;
+.form-group input.input-disabled {
+    background: #f8fafc;
+    color: #94a3b8;
     cursor: not-allowed;
 }
 
-/* 버튼 */
-.mypage-page .btn {
-    padding: 12px 20px;
+.form-hint {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.form-message {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.form-message.success {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.form-message.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* ===== Buttons ===== */
+.btn {
+    padding: 12px 24px;
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: 10px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.mypage-page .btn-primary {
-    background: #026aa7;
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
 
-.mypage-page .btn-primary:hover {
-    background: #024d7a;
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* 메시지 */
-.message {
-    padding: 12px;
-    border-radius: 8px;
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-outline {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-outline:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 12px;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+/* ===== Current Info ===== */
+.current-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 10px;
     margin-bottom: 20px;
+}
+
+.info-label {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* ===== Verification Notice ===== */
+.verification-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #eff6ff;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #1e40af;
     font-size: 14px;
 }
 
-.message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+.notice-icon {
+    font-size: 24px;
 }
 
-.message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+/* ===== Danger Zone ===== */
+.danger-zone {
+    padding: 24px;
+    background: #fef2f2;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
 }
 
-.loading {
-    text-align: center;
-    padding: 60px;
-    font-size: 16px;
-    color: #666;
+.danger-warning {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
+.warning-icon {
+    font-size: 24px;
+}
+
+.danger-warning strong {
+    display: block;
+    color: #991b1b;
+    margin-bottom: 8px;
+}
+
+.danger-warning ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #7f1d1d;
+    font-size: 14px;
+}
+
+.danger-warning li {
+    margin-bottom: 4px;
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.delete-modal h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: #1e293b;
+}
+
+.delete-modal p {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.delete-confirm-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+
+.delete-confirm-input:focus {
+    outline: none;
+    border-color: #ef4444;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* ===== 반응형: 태블릿 (768px ~ 1023px) ===== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .mypage-layout.sidebar-open {
+        margin-left: 64px;
+    }
+
+    .mypage-layout.sidebar-closed {
+        margin-left: 64px;
+    }
+
+    .mypage-container {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+    }
+
+    .mypage-sidebar-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mypage-nav {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        border-top: none;
+        padding-top: 0;
+        margin-top: 16px;
+    }
+
+    .nav-item {
+        padding: 10px 16px;
+    }
+
+    .mypage-main {
+        padding: 24px;
+    }
+}
+
+/* ===== 반응형: 모바일 (max-width: 767px) ===== */
+@media (max-width: 767px) {
     .mypage-layout.sidebar-open,
     .mypage-layout.sidebar-closed {
         margin-left: 0;
     }
 
-    .team-header {
+    .mypage-header {
         padding: 0 16px;
+        padding-left: 64px; /* 햄버거 버튼 공간 */
         height: 56px;
     }
 
-    .team-header-left {
-        gap: 16px;
-    }
-
-    .team-header .team-name {
+    .mypage-title {
         font-size: 16px;
     }
 
-    .mypage-content {
+    .mypage-main {
         padding: 16px;
     }
 
-    .mypage-box {
-        padding: 20px;
+    .mypage-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
-    .mypage-tabs {
+    .mypage-sidebar-card {
+        padding: 24px 16px;
+    }
+
+    .profile-avatar {
+        width: 64px;
+        height: 64px;
+        font-size: 26px;
+    }
+
+    .profile-name {
+        font-size: 18px;
+    }
+
+    .mypage-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 6px;
+        border-top: none;
+        padding-top: 16px;
+        margin-top: 16px;
+        border-top: 1px solid #e2e8f0;
     }
 
-    .tab-btn {
+    .nav-item {
         padding: 8px 12px;
         font-size: 13px;
+    }
+
+    .nav-icon {
+        font-size: 14px;
+    }
+
+    .mypage-content-card {
+        padding: 20px 16px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
+    .input-with-button {
+        flex-direction: column;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group .btn {
+        width: 100%;
+    }
+
+    .current-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .verification-notice {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .danger-warning {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    /* 모달 - 전체화면 */
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        margin: 0;
+        padding: 24px 16px;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        animation: slideUp 0.3s ease;
+    }
+
+    .modal-buttons {
+        flex-direction: column-reverse;
+    }
+
+    .modal-buttons .btn {
+        width: 100%;
     }
 }

@@ -332,14 +332,27 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .member-info .member-role {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     color: #f59e0b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    background: #fef3c7;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+}
+
+.member-info .member-userid {
+    font-size: 12px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ===== 로딩 상태 ===== */
@@ -411,6 +424,8 @@
 }
 
 /* ===== 반응형 ===== */
+
+/* 데스크톱 중간 크기 (1024px ~ 1200px) */
 @media (max-width: 1200px) {
     .member-sidebar {
         width: 220px;
@@ -421,47 +436,136 @@
     }
 }
 
-@media (max-width: 1024px) {
+/* 태블릿 (768px ~ 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .team-view-layout.sidebar-open {
+        margin-left: 64px;
+    }
+
+    .team-view-layout.sidebar-closed {
+        margin-left: 64px;
+    }
+
     .member-sidebar {
-        width: 200px;
+        width: 180px;
     }
 
     .header-tabs .tab-button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .header-tabs .tab-button .tab-icon {
+        display: none;
+    }
+
+    .header-search {
+        width: 160px;
         padding: 8px 12px;
+    }
+
+    .team-header .team-name {
+        font-size: 17px;
     }
 }
 
-@media (max-width: 768px) {
-    .team-view-layout.sidebar-open {
-        margin-left: 0;
-    }
-
+/* 모바일 (max-width: 767px) */
+@media (max-width: 767px) {
+    .team-view-layout.sidebar-open,
     .team-view-layout.sidebar-closed {
         margin-left: 0;
     }
 
     .team-header {
         padding: 0 16px;
+        padding-left: 64px; /* 햄버거 버튼 공간 */
         height: 56px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .team-header-left {
-        gap: 16px;
+        flex: 1;
+        gap: 12px;
+        min-width: 0;
     }
 
     .team-header .team-name {
-        font-size: 16px;
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
+    /* 헤더 탭 - 모바일에서 가로 스크롤 */
     .header-tabs {
+        display: flex;
+        width: 100%;
+        order: 3;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 3px;
+        margin-top: 4px;
+        scrollbar-width: none;
+    }
+
+    .header-tabs::-webkit-scrollbar {
         display: none;
     }
 
+    .header-tabs .tab-button {
+        flex-shrink: 0;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .header-tabs .tab-button .tab-icon {
+        display: none;
+    }
+
+    .team-header-right {
+        gap: 8px;
+    }
+
     .header-search {
-        width: 160px;
+        display: none;
+    }
+
+    .team-header .logout-btn {
+        padding: 8px 12px;
+        font-size: 12px;
     }
 
     .member-sidebar {
         display: none;
+    }
+
+    /* 메인 콘텐츠 영역 */
+    .team-view-content {
+        padding: 0;
+    }
+
+    /* 로딩 상태 */
+    .team-loading {
+        min-height: 300px;
+    }
+
+    .loading-spinner {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* 팀 없음 상태 */
+    .team-not-found {
+        padding: 24px;
+        min-height: 300px;
+    }
+
+    .team-not-found h2 {
+        font-size: 20px;
+    }
+
+    .team-not-found p {
+        font-size: 14px;
     }
 }

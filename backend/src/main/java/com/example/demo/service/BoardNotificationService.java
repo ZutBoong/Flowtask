@@ -8,7 +8,6 @@ import com.example.demo.dto.BoardEvent;
 import com.example.demo.model.FlowtaskColumn;
 import com.example.demo.model.Task;
 import com.example.demo.model.Comment;
-import com.example.demo.model.Section;
 import com.example.demo.model.ProjectFile;
 
 @Service
@@ -54,19 +53,6 @@ public class BoardNotificationService {
 	// Comment Events
 	public void notifyCommentEvent(String eventType, Comment comment, int teamId) {
 		sendBoardEvent(teamId, eventType, "comment", comment);
-	}
-
-	// Section Events
-	public void notifySectionCreated(Section section, int teamId) {
-		sendBoardEvent(teamId, "SECTION_CREATED", "section", section);
-	}
-
-	public void notifySectionUpdated(Section section, int teamId) {
-		sendBoardEvent(teamId, "SECTION_UPDATED", "section", section);
-	}
-
-	public void notifySectionDeleted(int sectionId, int teamId) {
-		sendBoardEvent(teamId, "SECTION_DELETED", "section", sectionId);
 	}
 
 	// File Events

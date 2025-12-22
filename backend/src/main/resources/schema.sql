@@ -11,12 +11,8 @@ CREATE SEQUENCE IF NOT EXISTS flowtask_team_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_project_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_column_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_task_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_tag_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_comment_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_chat_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_git_repo_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_column_archive_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS flowtask_section_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_file_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS flowtask_email_verification_seq START WITH 1 INCREMENT BY 1;
 
@@ -88,21 +84,6 @@ CREATE TABLE IF NOT EXISTS flowtask_project (
 CREATE INDEX IF NOT EXISTS idx_project_team ON flowtask_project(team_id);
 
 -- ========================================
--- 섹션 테이블 (목록/타임라인 그룹핑용)
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_section (
-    section_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    section_name VARCHAR(100) NOT NULL,
-    position INTEGER DEFAULT 0,
-    color VARCHAR(7) DEFAULT '#6c757d',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_section_team ON flowtask_section(team_id);
-CREATE INDEX IF NOT EXISTS idx_section_position ON flowtask_section(position);
-
--- ========================================
 -- 컬럼 테이블
 -- ========================================
 CREATE TABLE IF NOT EXISTS flowtask_column (
@@ -132,9 +113,7 @@ CREATE TABLE IF NOT EXISTS flowtask_task (
     priority VARCHAR(20) DEFAULT 'MEDIUM',
     start_date TIMESTAMP,
     due_date TIMESTAMP,
-    -- Section for list/timeline grouping
-    section_id INTEGER REFERENCES flowtask_section(section_id) ON DELETE SET NULL,
-    -- Workflow fields (NEW)
+    -- Workflow fields
     workflow_status VARCHAR(20) DEFAULT 'WAITING',
     rejection_reason TEXT,
     rejected_at TIMESTAMP,
@@ -148,33 +127,6 @@ CREATE INDEX IF NOT EXISTS idx_task_workflow_status ON flowtask_task(workflow_st
 CREATE INDEX IF NOT EXISTS idx_task_priority ON flowtask_task(priority);
 CREATE INDEX IF NOT EXISTS idx_task_due_date ON flowtask_task(due_date);
 CREATE INDEX IF NOT EXISTS idx_task_start_date ON flowtask_task(start_date);
-CREATE INDEX IF NOT EXISTS idx_task_section ON flowtask_task(section_id);
-
--- ========================================
--- 태그 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_tag (
-    tag_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    tag_name VARCHAR(50) NOT NULL,
-    color VARCHAR(7) DEFAULT '#6c757d',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (team_id, tag_name)
-);
-
-CREATE INDEX IF NOT EXISTS idx_tag_team ON flowtask_tag(team_id);
-
--- ========================================
--- 태스크-태그 매핑 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_task_tag (
-    task_id INTEGER NOT NULL REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
-    tag_id INTEGER NOT NULL REFERENCES flowtask_tag(tag_id) ON DELETE CASCADE,
-    PRIMARY KEY (task_id, tag_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_tasktag_task ON flowtask_task_tag(task_id);
-CREATE INDEX IF NOT EXISTS idx_tasktag_tag ON flowtask_task_tag(tag_id);
 
 -- ========================================
 -- 댓글 테이블
@@ -205,49 +157,6 @@ CREATE TABLE IF NOT EXISTS flowtask_chat_message (
 CREATE INDEX IF NOT EXISTS idx_chat_team ON flowtask_chat_message(team_id);
 CREATE INDEX IF NOT EXISTS idx_chat_sent ON flowtask_chat_message(sent_at DESC);
 
--- ========================================
--- Git 저장소 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_git_repo (
-    repo_id INTEGER PRIMARY KEY,
-    team_id INTEGER NOT NULL UNIQUE REFERENCES flowtask_team(team_id) ON DELETE CASCADE,
-    provider VARCHAR(20) DEFAULT 'GITHUB',
-    repo_owner VARCHAR(100) NOT NULL,
-    repo_name VARCHAR(100) NOT NULL,
-    access_token VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_gitrepo_team ON flowtask_git_repo(team_id);
-
--- ========================================
--- 태스크-커밋 연결 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_task_commit (
-    task_id INTEGER NOT NULL REFERENCES flowtask_task(task_id) ON DELETE CASCADE,
-    commit_sha VARCHAR(40) NOT NULL,
-    commit_message VARCHAR(500),
-    author_name VARCHAR(100),
-    author_email VARCHAR(200),
-    committed_at TIMESTAMP,
-    commit_url VARCHAR(500),
-    PRIMARY KEY (task_id, commit_sha)
-);
-
-CREATE INDEX IF NOT EXISTS idx_taskcommit_task ON flowtask_task_commit(task_id);
-
--- ========================================
--- 컬럼 즐겨찾기 테이블
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_column_favorite (
-    column_id INTEGER NOT NULL REFERENCES flowtask_column(column_id) ON DELETE CASCADE,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (column_id, member_no)
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_favorite_column ON flowtask_column_favorite(column_id);
-CREATE INDEX IF NOT EXISTS idx_column_favorite_member ON flowtask_column_favorite(member_no);
 
 -- ========================================
 -- 태스크 즐겨찾기 테이블
@@ -261,28 +170,6 @@ CREATE TABLE IF NOT EXISTS flowtask_task_favorite (
 
 CREATE INDEX IF NOT EXISTS idx_task_favorite_task ON flowtask_task_favorite(task_id);
 CREATE INDEX IF NOT EXISTS idx_task_favorite_member ON flowtask_task_favorite(member_no);
-
--- ========================================
--- 컬럼 아카이브 테이블 (삭제된 컬럼 스냅샷 저장)
--- ========================================
-CREATE TABLE IF NOT EXISTS flowtask_column_archive (
-    archive_id INTEGER PRIMARY KEY,
-    member_no INTEGER NOT NULL REFERENCES flowtask_member(no) ON DELETE CASCADE,
-    original_column_id INTEGER NOT NULL,
-    team_id INTEGER,
-    team_name VARCHAR(100),
-    project_id INTEGER,
-    project_name VARCHAR(100),
-    column_title VARCHAR(100) NOT NULL,
-    column_position INTEGER,
-    tasks_snapshot JSONB,
-    archive_note VARCHAR(500),
-    archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_column_archive_member ON flowtask_column_archive(member_no);
-CREATE INDEX IF NOT EXISTS idx_column_archive_team ON flowtask_column_archive(team_id);
-CREATE INDEX IF NOT EXISTS idx_column_archive_archived ON flowtask_column_archive(archived_at DESC);
 
 -- ========================================
 -- 태스크 아카이브 테이블 (아카이브한 태스크 스냅샷 저장)

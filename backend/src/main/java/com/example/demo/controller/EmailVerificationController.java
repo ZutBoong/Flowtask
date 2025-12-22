@@ -145,4 +145,57 @@ public class EmailVerificationController {
 			return ResponseEntity.internalServerError().body(Map.of("message", "이메일 발송에 실패했습니다."));
 		}
 	}
+
+	/**
+	 * 비밀번호 변경용 인증 코드 발송 (마이페이지)
+	 */
+	@PostMapping("/send-password-change-code")
+	public ResponseEntity<?> sendPasswordChangeCode(@RequestBody Map<String, String> request) {
+		String email = request.get("email");
+
+		if (email == null || email.isBlank()) {
+			return ResponseEntity.badRequest().body(Map.of("message", "이메일을 입력해주세요."));
+		}
+
+		// 쿨다운 확인
+		if (!emailVerificationService.canResend(email, "PASSWORD_CHANGE", resendCooldownMs)) {
+			return ResponseEntity.badRequest().body(Map.of("message", "잠시 후 다시 시도해주세요."));
+		}
+
+		try {
+			emailVerificationService.sendVerificationCode(email, "PASSWORD_CHANGE");
+			return ResponseEntity.ok(Map.of("message", "인증 코드가 발송되었습니다."));
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Map.of("message", "이메일 발송에 실패했습니다."));
+		}
+	}
+
+	/**
+	 * 이메일 변경용 인증 코드 발송 (새 이메일로)
+	 */
+	@PostMapping("/send-email-change-code")
+	public ResponseEntity<?> sendEmailChangeCode(@RequestBody Map<String, String> request) {
+		String newEmail = request.get("newEmail");
+
+		if (newEmail == null || newEmail.isBlank()) {
+			return ResponseEntity.badRequest().body(Map.of("message", "새 이메일을 입력해주세요."));
+		}
+
+		// 이메일 중복 체크
+		if (memberDao.findByEmail(newEmail) != null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "이미 사용 중인 이메일입니다."));
+		}
+
+		// 쿨다운 확인
+		if (!emailVerificationService.canResend(newEmail, "EMAIL_CHANGE", resendCooldownMs)) {
+			return ResponseEntity.badRequest().body(Map.of("message", "잠시 후 다시 시도해주세요."));
+		}
+
+		try {
+			emailVerificationService.sendVerificationCode(newEmail, "EMAIL_CHANGE");
+			return ResponseEntity.ok(Map.of("message", "새 이메일로 인증 코드가 발송되었습니다."));
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Map.of("message", "이메일 발송에 실패했습니다."));
+		}
+	}
 }

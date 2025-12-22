@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { columnlistByTeam, tasklistByTeam } from '../api/boardApi';
 import { getTeam, getTeamMembers } from '../api/teamApi';
-import { getSectionsByTeam } from '../api/sectionApi';
 import websocketService from '../api/websocketService';
 import Sidebar from '../components/Sidebar';
 import OverviewView from './views/OverviewView';
@@ -35,7 +34,6 @@ function TeamView() {
     const [team, setTeam] = useState(null);
     const [columns, setColumns] = useState([]);
     const [tasks, setTasks] = useState([]);
-    const [sections, setSections] = useState([]);
     const [teamMembers, setTeamMembers] = useState([]);
     const [loginMember, setLoginMember] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -46,7 +44,6 @@ function TeamView() {
         searchQuery: '',
         priorities: [],
         statuses: [],
-        tags: [],
         assigneeNo: null,
         dueDateFilter: ''
     });
@@ -122,25 +119,6 @@ function TeamView() {
                 ));
                 break;
 
-            // Section 이벤트
-            case 'SECTION_CREATED':
-                setSections(prev => {
-                    const exists = prev.some(s => s.sectionId === event.payload.sectionId);
-                    if (exists) return prev;
-                    return [...prev, event.payload].sort((a, b) => a.position - b.position);
-                });
-                break;
-
-            case 'SECTION_UPDATED':
-                setSections(prev => prev.map(s =>
-                    s.sectionId === event.payload.sectionId ? event.payload : s
-                ));
-                break;
-
-            case 'SECTION_DELETED':
-                setSections(prev => prev.filter(s => s.sectionId !== event.payload));
-                break;
-
             // Team 이벤트
             case 'TEAM_UPDATED':
                 if (event.payload.teamId === parseInt(teamId)) {
@@ -211,18 +189,16 @@ function TeamView() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [teamData, columnsData, tasksData, sectionsData, membersData] = await Promise.all([
+            const [teamData, columnsData, tasksData, membersData] = await Promise.all([
                 getTeam(teamId),
                 columnlistByTeam(teamId),
                 tasklistByTeam(teamId),
-                getSectionsByTeam(teamId),
                 getTeamMembers(teamId)
             ]);
 
             setTeam(teamData);
             setColumns(columnsData || []);
             setTasks(tasksData || []);
-            setSections(sectionsData || []);
             setTeamMembers(membersData || []);
 
             // localStorage에 현재 팀 저장
@@ -271,21 +247,6 @@ function TeamView() {
         setTasks(prev => prev.filter(task => task.columnId !== columnId));
     }, []);
 
-    // Sections 업데이트 헬퍼
-    const updateSection = useCallback((updatedSection) => {
-        setSections(prev => prev.map(s =>
-            s.sectionId === updatedSection.sectionId ? { ...s, ...updatedSection } : s
-        ));
-    }, []);
-
-    const addSection = useCallback((newSection) => {
-        setSections(prev => [...prev, newSection].sort((a, b) => a.position - b.position));
-    }, []);
-
-    const removeSection = useCallback((sectionId) => {
-        setSections(prev => prev.filter(s => s.sectionId !== sectionId));
-    }, []);
-
     // Team 업데이트 헬퍼
     const updateTeam = useCallback((updatedTeam) => {
         setTeam(prev => ({ ...prev, ...updatedTeam }));
@@ -305,7 +266,6 @@ function TeamView() {
         team,
         columns,
         tasks,
-        sections,
         teamMembers,
         loginMember,
         isLeader,
@@ -318,9 +278,6 @@ function TeamView() {
         updateColumn,
         addColumn,
         removeColumn,
-        updateSection,
-        addSection,
-        removeSection,
         updateTeam,
         // 데이터 리로드
         refreshData: fetchData
@@ -437,15 +394,21 @@ function TeamView() {
                                             <span className="online-indicator"></span>
                                             온라인 — {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).length}
                                         </div>
-                                        {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).map(member => (
+                                        {teamMembers
+                                            .filter(m => onlineMembers.includes(m.memberNo))
+                                            .sort((a, b) => (a.role === 'LEADER' ? -1 : b.role === 'LEADER' ? 1 : 0))
+                                            .map(member => (
                                             <div key={member.memberNo} className={`member-item ${member.role === 'LEADER' ? 'leader' : ''}`}>
                                                 <div className="member-avatar">
                                                     {member.memberName?.charAt(0) || 'U'}
                                                     <span className="status-dot online"></span>
                                                 </div>
                                                 <div className="member-info">
-                                                    <span className="member-name">{member.memberName}</span>
-                                                    {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                    <span className="member-name">
+                                                        {member.memberName}
+                                                        {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                    </span>
+                                                    <span className="member-userid">{member.memberUserid}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -457,15 +420,21 @@ function TeamView() {
                                         <div className="member-section-title">
                                             오프라인 — {teamMembers.filter(m => !onlineMembers.includes(m.memberNo)).length}
                                         </div>
-                                        {teamMembers.filter(m => !onlineMembers.includes(m.memberNo)).map(member => (
+                                        {teamMembers
+                                            .filter(m => !onlineMembers.includes(m.memberNo))
+                                            .sort((a, b) => (a.role === 'LEADER' ? -1 : b.role === 'LEADER' ? 1 : 0))
+                                            .map(member => (
                                             <div key={member.memberNo} className={`member-item offline ${member.role === 'LEADER' ? 'leader' : ''}`}>
                                                 <div className="member-avatar">
                                                     {member.memberName?.charAt(0) || 'U'}
                                                     <span className="status-dot"></span>
                                                 </div>
                                                 <div className="member-info">
-                                                    <span className="member-name">{member.memberName}</span>
-                                                    {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                    <span className="member-name">
+                                                        {member.memberName}
+                                                        {member.role === 'LEADER' && <span className="member-role">팀장</span>}
+                                                    </span>
+                                                    <span className="member-userid">{member.memberUserid}</span>
                                                 </div>
                                             </div>
                                         ))}

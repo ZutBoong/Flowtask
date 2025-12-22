@@ -40,17 +40,6 @@
     margin-bottom: 8px;
 }
 
-.team-code {
-    margin: 0;
-    font-size: 14px;
-    color: #64748b;
-    font-family: monospace;
-    background: #f1f5f9;
-    padding: 4px 12px;
-    border-radius: 6px;
-    display: inline-block;
-}
-
 .team-description-area {
     padding-top: 20px;
     margin-top: 20px;

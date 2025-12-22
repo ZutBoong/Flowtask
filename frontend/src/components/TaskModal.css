@@ -851,13 +851,48 @@ section h4 {
 }
 
 /* ===== 반응형 ===== */
-@media (max-width: 768px) {
+
+/* 태블릿 (768px ~ 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
     .task-modal-container {
-        max-height: 95vh;
+        width: 90vw;
+        max-width: 560px;
+    }
+}
+
+/* 모바일 (max-width: 767px) */
+@media (max-width: 767px) {
+    .task-modal-overlay {
+        align-items: flex-end;
+    }
+
+    .task-modal-container {
+        width: 100%;
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+        animation: modalSlideUp 0.3s ease-out;
+    }
+
+    @keyframes modalSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .task-modal-header {
-        padding: 15px;
+        padding: 16px;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        border-bottom: 1px solid #eee;
     }
 
     .task-modal-header h3 {
@@ -865,15 +900,71 @@ section h4 {
     }
 
     .task-modal-content {
-        padding: 15px;
+        padding: 16px;
+        padding-bottom: 100px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    section {
+        margin-bottom: 24px;
+    }
+
+    section h2 {
+        font-size: 15px;
+    }
+
+    section h4 {
+        font-size: 14px;
     }
 
     .task-modal-footer {
-        padding: 12px 15px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px 16px;
+        background: white;
+        border-top: 1px solid #eee;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+    }
+
+    .footer-left,
+    .footer-right {
+        width: 100%;
+    }
+
+    .footer-left {
+        order: 2;
+    }
+
+    .footer-right {
+        order: 1;
+        flex-direction: column;
+    }
+
+    .cancel-btn,
+    .save-btn,
+    .archive-btn {
+        width: 100%;
+        padding: 12px;
     }
 
     .form-row {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .priority-selector {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .priority-option {
+        padding: 10px;
+        text-align: center;
     }
 
     .verification-buttons {
@@ -883,5 +974,45 @@ section h4 {
     .workflow-status-section {
         flex-direction: column;
         align-items: flex-start;
+        padding: 10px;
+    }
+
+    .workflow-actions-section {
+        padding: 12px;
+    }
+
+    .btn-workflow {
+        width: 100%;
+        padding: 12px;
+    }
+
+    /* 드롭다운 최적화 */
+    .multi-select-options {
+        max-height: 150px;
+    }
+
+    .dropdown-list {
+        max-height: 150px;
+    }
+
+    /* 파일 섹션 */
+    .file-item {
+        flex-wrap: wrap;
+    }
+
+    .file-info {
+        flex: 1 1 100%;
+        order: 2;
+    }
+
+    .file-icon {
+        order: 1;
+    }
+
+    .file-actions {
+        order: 3;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 8px;
     }
 }

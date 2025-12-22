@@ -17,7 +17,7 @@
 	<select id="listByColumn" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
 		WHERE t.column_id = #{columnId}
@@ -28,7 +28,7 @@
 	<select id="listAll" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
 		ORDER BY t.column_id, t.position ASC
@@ -38,7 +38,7 @@
 	<select id="listByTeam" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
@@ -50,7 +50,7 @@
 	<select id="listByProject" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
@@ -62,7 +62,7 @@
 	<select id="content" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
 		WHERE t.task_id = #{taskId}
@@ -101,7 +101,7 @@
 	<select id="listByAssignee" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
 		WHERE t.assignee_no = #{memberNo}
@@ -119,7 +119,7 @@
 	<select id="listByStatusAndTeam" parameterType="map" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
@@ -163,7 +163,7 @@
 	<select id="listPendingVerification" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
 		JOIN flowtask_task_verifier tv ON t.task_id = tv.task_id
@@ -184,7 +184,7 @@
 	<select id="listByDateRange" parameterType="map" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM flowtask_task t
 		JOIN flowtask_column c ON t.column_id = c.column_id
 		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
@@ -193,24 +193,6 @@
 		AND t.due_date BETWEEN #{startDate} AND #{endDate}
 		ORDER BY t.due_date ASC, t.priority ASC
 	</select>
-
-	<!-- 섹션별 태스크 목록 -->
-	<select id="listBySection" parameterType="int" resultType="task">
-		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
-			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
-			t.section_id, t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
-		FROM flowtask_task t
-		LEFT JOIN flowtask_member m ON t.assignee_no = m.no
-		WHERE t.section_id = #{sectionId}
-		ORDER BY t.position ASC
-	</select>
-
-	<!-- 섹션 변경 -->
-	<update id="updateSection" parameterType="task">
-		UPDATE flowtask_task
-		SET section_id = #{sectionId, jdbcType=INTEGER}
-		WHERE task_id = #{taskId}
-	</update>
 
 	<!-- 날짜 변경 (타임라인용) -->
 	<update id="updateDates" parameterType="task">
