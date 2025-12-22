@@ -1,25 +1,27 @@
 package com.example.demo.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.ses.SesClient;
-import software.amazon.awssdk.services.ses.model.*;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import java.util.Random;
 
 @Slf4j
 @Service
 public class EmailService {
 
+	@Autowired
+	private JavaMailSender mailSender;
+
 	@Value("${email.environment:dev}")
 	private String environment;
 
-	@Value("${aws.ses.region:ap-northeast-2}")
-	private String awsRegion;
-
-	@Value("${aws.ses.sender:noreply@flowtask.com}")
+	@Value("${spring.mail.username:}")
 	private String sender;
 
 	/**
@@ -58,34 +60,27 @@ public class EmailService {
 			log.info("Code: {}", code);
 			log.info("========================================");
 		} else {
-			// 프로덕션 환경: AWS SES로 발송
-			sendEmailViaSES(to, subject, body);
+			// 프로덕션 환경: SMTP로 발송
+			sendEmailViaSMTP(to, subject, body);
 		}
 	}
 
 	/**
-	 * AWS SES를 통한 이메일 발송
+	 * SMTP를 통한 이메일 발송
 	 */
-	private void sendEmailViaSES(String to, String subject, String body) {
+	private void sendEmailViaSMTP(String to, String subject, String body) {
 		try {
-			SesClient sesClient = SesClient.builder()
-					.region(Region.of(awsRegion))
-					.build();
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-			SendEmailRequest request = SendEmailRequest.builder()
-					.destination(Destination.builder().toAddresses(to).build())
-					.message(Message.builder()
-							.subject(Content.builder().data(subject).charset("UTF-8").build())
-							.body(Body.builder()
-									.html(Content.builder().data(body).charset("UTF-8").build())
-									.build())
-							.build())
-					.source(sender)
-					.build();
+			helper.setFrom(sender);
+			helper.setTo(to);
+			helper.setSubject(subject);
+			helper.setText(body, true); // true = HTML
 
-			sesClient.sendEmail(request);
+			mailSender.send(message);
 			log.info("Email sent successfully to: {}", to);
-		} catch (SesException e) {
+		} catch (MessagingException e) {
 			log.error("Failed to send email to {}: {}", to, e.getMessage());
 			throw new RuntimeException("이메일 발송에 실패했습니다.", e);
 		}

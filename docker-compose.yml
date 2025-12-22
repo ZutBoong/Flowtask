@@ -30,8 +30,9 @@ services:
       SPRING_SQL_INIT_MODE: never
       # Docker는 AWS 전용 = prod 모드 (실제 이메일 발송)
       EMAIL_ENVIRONMENT: prod
-      AWS_SES_REGION: ${AWS_SES_REGION:-ap-northeast-2}
-      AWS_SES_SENDER: ${AWS_SES_SENDER:-noreply@flowtask.com}
+      # SMTP Configuration (Gmail)
+      SPRING_MAIL_USERNAME: ${SMTP_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SMTP_PASSWORD}
     volumes:
       - uploads_data:/app/uploads
     ports:
