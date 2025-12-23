@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS flowtask_member (
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20),
     email_verified BOOLEAN DEFAULT FALSE,
+    profile_image VARCHAR(500),
     register TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -36,6 +37,15 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                    WHERE table_name = 'flowtask_member' AND column_name = 'email_verified') THEN
         ALTER TABLE flowtask_member ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+    END IF;
+END $$;
+
+-- 기존 테이블에 profile_image 컬럼 추가 (없는 경우)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'flowtask_member' AND column_name = 'profile_image') THEN
+        ALTER TABLE flowtask_member ADD COLUMN profile_image VARCHAR(500);
     END IF;
 END $$;
 

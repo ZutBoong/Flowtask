@@ -73,8 +73,10 @@
 .board-view .column-header {
     display: flex;
     flex-direction: column;
-    padding: 8px 4px;
+    padding: 10px 12px;
     margin-bottom: 12px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 10px;
 }
 
 .board-view .column-header h3 {
@@ -226,33 +228,38 @@
 
 /* ===== 태스크 카드 ===== */
 .board-view .task-card {
-    background: white;
+    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 14px 14px 14px 16px;
     margin-bottom: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid transparent;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #cbd5e1;
+    position: relative;
 }
 
 .board-view .task-card:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     border-color: rgba(102, 126, 234, 0.3);
+    border-left-color: #667eea;
     transform: translateY(-2px);
 }
 
 .board-view .task-card.dragging {
     transform: rotate(3deg) scale(1.02);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    border-left-color: #667eea;
 }
 
 .board-view .task-card.done {
     opacity: 0.6;
-    background: #f0fdf4;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
     border-color: #86efac;
+    border-left-color: #10b981;
 }
 
 .board-view .task-card.done .task-card-title {
@@ -260,35 +267,29 @@
     color: #10b981;
 }
 
-.board-view .task-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
+/* 상태별 왼쪽 바 색상 */
+.board-view .task-card.status-waiting {
+    border-left-color: #94a3b8;
 }
 
-.board-view .task-card-top .delete-btn {
-    opacity: 0;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-    margin-top: -4px;
-    margin-right: -4px;
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 16px;
+.board-view .task-card.status-in-progress {
+    border-left-color: #3b82f6;
 }
 
-.board-view .task-card:hover .task-card-top .delete-btn {
-    opacity: 1;
+.board-view .task-card.status-review {
+    border-left-color: #f59e0b;
 }
 
-.board-view .task-card-top .delete-btn:hover {
-    background: #fef2f2;
-    color: #ef4444;
+.board-view .task-card.status-done {
+    border-left-color: #10b981;
+}
+
+.board-view .task-card.status-rejected {
+    border-left-color: #ef4444;
+}
+
+.board-view .task-card.status-declined {
+    border-left-color: #6b7280;
 }
 
 .board-view .task-card-title {
@@ -297,7 +298,7 @@
     color: #1e293b;
     word-break: break-word;
     line-height: 1.5;
-    flex: 1;
+    padding-right: 50px;
 }
 
 .board-view .task-card-meta {
@@ -325,7 +326,7 @@
 /* 워크플로우 상태 배지 */
 .board-view .workflow-status-badge {
     font-size: 10px;
-    padding: 4px 10px;
+    padding: 6px 10px;
     border-radius: 20px;
     display: inline-flex;
     align-items: center;
@@ -357,27 +358,34 @@
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-/* 우선순위 배지 */
-.board-view .task-card-priority {
-    margin-bottom: 10px;
+/* 워크플로우 상태 (상단) */
+.board-view .task-card-workflow {
+    margin-bottom: 8px;
 }
 
-.board-view .task-card-priority .priority-badge {
-    font-size: 10px;
-    font-weight: 700;
+/* 긴급 배지 (하단 메타) */
+.board-view .task-card-meta .urgent-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #dc2626;
+    border-radius: 6px;
+}
+
+.board-view .task-card-meta .urgent-badge i {
+    font-size: 12px;
     color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-/* ===== 태스크 카드 액션 버튼들 (즐겨찾기 + 삭제) ===== */
+/* ===== 태스크 카드 액션 버튼들 (즐겨찾기 + 아카이브) ===== */
 .board-view .task-card-actions {
+    position: absolute;
+    right: 8px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
 }
 
 .board-view .task-card-actions .task-favorite-btn {
@@ -385,18 +393,40 @@
     border: none;
     font-size: 16px;
     cursor: pointer;
-    padding: 0 4px;
-    color: #ccc;
+    padding: 2px 6px;
+    color: #cbd5e1;
     transition: color 0.15s, transform 0.15s;
+    border-radius: 6px;
 }
 
 .board-view .task-card-actions .task-favorite-btn:hover {
     transform: scale(1.1);
     color: #f5a623;
+    background: rgba(245, 166, 35, 0.1);
 }
 
 .board-view .task-card-actions .task-favorite-btn.active {
     color: #f5a623;
+}
+
+.board-view .task-card-actions .archive-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+    color: #cbd5e1;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+}
+
+.board-view .task-card-actions .archive-btn:hover {
+    background: #f5f3ff;
+    color: #8b5cf6;
+}
+
+.board-view .task-card-actions .archive-btn.active {
+    color: #8b5cf6;
 }
 
 /* ===== 태스크 추가 ===== */
@@ -786,9 +816,13 @@
         padding: 3px 8px;
     }
 
-    .board-view .task-card-priority .priority-badge {
-        font-size: 9px;
-        padding: 3px 8px;
+    .board-view .task-card-meta .urgent-badge {
+        width: 18px;
+        height: 18px;
+    }
+
+    .board-view .task-card-meta .urgent-badge i {
+        font-size: 10px;
     }
 
     .board-view .add-task-btn {

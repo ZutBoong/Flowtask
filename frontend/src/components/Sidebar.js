@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getMyTeams, deleteTeam, leaveTeam } from '../api/teamApi';
 import { getUnreadCount } from '../api/notificationApi';
+import { getProfileImageUrl } from '../api/memberApi';
 import TeamSettingsModal from './TeamSettingsModal';
 import './Sidebar.css';
 
@@ -253,7 +254,23 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                         <div className="sidebar-footer-wrapper" ref={userMenuRef}>
                             <div className="sidebar-footer" onClick={() => setShowUserMenu(!showUserMenu)} style={{ cursor: 'pointer' }}>
                                 <div className="user-avatar">
-                                    {loginMember?.name?.charAt(0) || 'U'}
+                                    {loginMember?.profileImage ? (
+                                        <img
+                                            src={getProfileImageUrl(loginMember.no)}
+                                            alt=""
+                                            className="avatar-image"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <span
+                                        className="avatar-initial"
+                                        style={{ display: loginMember?.profileImage ? 'none' : 'flex' }}
+                                    >
+                                        {loginMember?.name?.charAt(0) || 'U'}
+                                    </span>
                                 </div>
                                 <div className="user-info">
                                     <span className="user-name">{loginMember?.name || '사용자'}</span>
@@ -387,7 +404,23 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                         <div className="sidebar-footer-wrapper" ref={userMenuRef}>
                             <div className="sidebar-footer" onClick={() => setShowUserMenu(!showUserMenu)} style={{ cursor: 'pointer' }}>
                                 <div className="user-avatar">
-                                    {loginMember?.name?.charAt(0) || 'U'}
+                                    {loginMember?.profileImage ? (
+                                        <img
+                                            src={getProfileImageUrl(loginMember.no)}
+                                            alt=""
+                                            className="avatar-image"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <span
+                                        className="avatar-initial"
+                                        style={{ display: loginMember?.profileImage ? 'none' : 'flex' }}
+                                    >
+                                        {loginMember?.name?.charAt(0) || 'U'}
+                                    </span>
                                 </div>
                                 <div className="user-info">
                                     <span className="user-name">{loginMember?.name || '사용자'}</span>
@@ -446,18 +479,26 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                             <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                     </button>
-                    <button className="icon-btn" title="팀 목록">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                    </button>
                     <div className="collapsed-spacer"></div>
                     <div className="collapsed-footer-wrapper" ref={userMenuRef}>
                         <div className="user-avatar-small" onClick={() => setShowUserMenu(!showUserMenu)} style={{ cursor: 'pointer' }}>
-                            {loginMember?.name?.charAt(0) || 'U'}
+                            {loginMember?.profileImage ? (
+                                <img
+                                    src={getProfileImageUrl(loginMember.no)}
+                                    alt=""
+                                    className="avatar-image-small"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                            ) : null}
+                            <span
+                                className="avatar-initial-small"
+                                style={{ display: loginMember?.profileImage ? 'none' : 'flex' }}
+                            >
+                                {loginMember?.name?.charAt(0) || 'U'}
+                            </span>
                         </div>
                         {showUserMenu && (
                             <div className="user-menu-popup collapsed">

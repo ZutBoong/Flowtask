@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './TaskModal.css';
 import './TaskCreateModal.css';
 
 function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
@@ -8,7 +9,6 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        status: 'OPEN',
         priority: 'MEDIUM',
         startDate: today,
         dueDate: '',
@@ -20,6 +20,7 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
     const [verifierSearch, setVerifierSearch] = useState('');
     const [startTime, setStartTime] = useState('');
     const [dueTime, setDueTime] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -38,28 +39,35 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
             return;
         }
 
-        // 날짜와 시간 결합
-        const startDateTime = formData.startDate && startTime
-            ? `${formData.startDate}T${startTime}`
-            : formData.startDate;
-        const dueDateTime = formData.dueDate && dueTime
-            ? `${formData.dueDate}T${dueTime}`
-            : formData.dueDate;
+        setLoading(true);
+        try {
+            // 날짜와 시간 결합
+            const startDateTime = formData.startDate && startTime
+                ? `${formData.startDate}T${startTime}`
+                : formData.startDate;
+            const dueDateTime = formData.dueDate && dueTime
+                ? `${formData.dueDate}T${dueTime}`
+                : formData.dueDate;
 
-        const taskData = {
-            columnId,
-            title: formData.title,
-            description: formData.description,
-            status: formData.status,
-            priority: formData.priority,
-            startDate: startDateTime || null,
-            dueDate: dueDateTime || null,
-            assignees: formData.assignees,
-            verifiers: formData.verifiers
-        };
+            const taskData = {
+                columnId,
+                title: formData.title,
+                description: formData.description,
+                priority: formData.priority,
+                startDate: startDateTime || null,
+                dueDate: dueDateTime || null,
+                assignees: formData.assignees,
+                verifiers: formData.verifiers
+            };
 
-        await onCreate(taskData);
-        onClose();
+            await onCreate(taskData);
+            onClose();
+        } catch (error) {
+            console.error('태스크 생성 실패:', error);
+            alert('태스크 생성에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const formatDateForInput = (dateStr) => {
@@ -71,35 +79,26 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
         return `${year}-${month}-${day}`;
     };
 
-    const formatDateTimeForInput = (dateStr) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
-    const extractTimeFromDateTime = (dateStr) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        // 시간이 00:00이면 빈 문자열 반환
-        return (hours === '00' && minutes === '00') ? '' : `${hours}:${minutes}`;
-    };
-
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content task-create-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
+        <div className="task-modal-overlay" onClick={onClose}>
+            <div className="task-modal-container" onClick={(e) => e.stopPropagation()}>
+                <div className="task-modal-header">
                     <h3>새 태스크 만들기</h3>
-                    <button className="close-btn" onClick={onClose}>×</button>
+                    <div className="header-actions">
+                        <button
+                            className={`urgent-btn ${formData.priority === 'URGENT' ? 'active' : ''}`}
+                            onClick={() => handleChange('priority', formData.priority === 'URGENT' ? 'MEDIUM' : 'URGENT')}
+                            title={formData.priority === 'URGENT' ? '긴급 해제' : '긴급 설정'}
+                        >
+                            <i className="fa-solid fa-triangle-exclamation"></i>
+                        </button>
+                        <button className="close-btn" onClick={onClose}>
+                            <i className="fa-solid fa-x"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div className="modal-body">
+                <div className="task-modal-content">
                     <div className="form-field">
                         <label>제목 *</label>
                         <input
@@ -119,36 +118,6 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                             placeholder="태스크에 대한 설명을 입력하세요..."
                             rows={4}
                         />
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-field">
-                            <label>상태</label>
-                            <select
-                                value={formData.status}
-                                onChange={(e) => handleChange('status', e.target.value)}
-                            >
-                                <option value="OPEN">열림</option>
-                                <option value="IN_PROGRESS">진행중</option>
-                                <option value="RESOLVED">해결됨</option>
-                                <option value="CLOSED">닫힘</option>
-                                <option value="CANNOT_REPRODUCE">재현불가</option>
-                                <option value="DUPLICATE">중복</option>
-                            </select>
-                        </div>
-
-                        <div className="form-field">
-                            <label>우선순위</label>
-                            <select
-                                value={formData.priority}
-                                onChange={(e) => handleChange('priority', e.target.value)}
-                            >
-                                <option value="LOW">낮음</option>
-                                <option value="MEDIUM">보통</option>
-                                <option value="HIGH">높음</option>
-                                <option value="URGENT">긴급</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div className="form-row">
@@ -186,27 +155,6 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                     <div className="form-row">
                         <div className="form-field">
                             <label>담당자</label>
-                            <div className="selected-members">
-                                {formData.assignees.length > 0 && (
-                                    <div className="selected-tags">
-                                        {formData.assignees.map(assigneeNo => {
-                                            const member = teamMembers?.find(m => m.memberNo === assigneeNo);
-                                            return member ? (
-                                                <span key={assigneeNo} className="selected-tag">
-                                                    {member.memberName}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleChange('assignees', formData.assignees.filter(no => no !== assigneeNo))}
-                                                        className="remove-tag-btn"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ) : null;
-                                        })}
-                                    </div>
-                                )}
-                            </div>
                             <div className="search-wrapper">
                                 <input
                                     type="text"
@@ -236,7 +184,7 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                                                         onChange={() => {}}
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
-                                                    <span>{member.memberName}</span>
+                                                    <span>{member.memberName} <span className="member-id">@{member.memberUserid}</span></span>
                                                 </div>
                                             ))
                                         ) : (
@@ -245,21 +193,17 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                                     </div>
                                 )}
                             </div>
-                        </div>
-
-                        <div className="form-field">
-                            <label>검증자</label>
-                            <div className="selected-members">
-                                {formData.verifiers.length > 0 && (
+                            {formData.assignees.length > 0 && (
+                                <div className="selected-members">
                                     <div className="selected-tags">
-                                        {formData.verifiers.map(verifierNo => {
-                                            const member = teamMembers?.find(m => m.memberNo === verifierNo);
+                                        {formData.assignees.map(assigneeNo => {
+                                            const member = teamMembers?.find(m => m.memberNo === assigneeNo);
                                             return member ? (
-                                                <span key={verifierNo} className="selected-tag">
-                                                    {member.memberName}
+                                                <span key={assigneeNo} className="selected-tag">
+                                                    {member.memberName} <span className="member-id">@{member.memberUserid}</span>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleChange('verifiers', formData.verifiers.filter(no => no !== verifierNo))}
+                                                        onClick={() => handleChange('assignees', formData.assignees.filter(no => no !== assigneeNo))}
                                                         className="remove-tag-btn"
                                                     >
                                                         ×
@@ -268,8 +212,12 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                                             ) : null;
                                         })}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="form-field">
+                            <label>검증자</label>
                             <div className="search-wrapper">
                                 <input
                                     type="text"
@@ -299,7 +247,7 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                                                         onChange={() => {}}
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
-                                                    <span>{member.memberName}</span>
+                                                    <span>{member.memberName} <span className="member-id">@{member.memberUserid}</span></span>
                                                 </div>
                                             ))
                                         ) : (
@@ -308,17 +256,40 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                                     </div>
                                 )}
                             </div>
+                            {formData.verifiers.length > 0 && (
+                                <div className="selected-members">
+                                    <div className="selected-tags">
+                                        {formData.verifiers.map(verifierNo => {
+                                            const member = teamMembers?.find(m => m.memberNo === verifierNo);
+                                            return member ? (
+                                                <span key={verifierNo} className="selected-tag">
+                                                    {member.memberName} <span className="member-id">@{member.memberUserid}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleChange('verifiers', formData.verifiers.filter(no => no !== verifierNo))}
+                                                        className="remove-tag-btn"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ) : null;
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="modal-footer">
-                    <button className="cancel-btn" onClick={onClose}>
-                        취소
-                    </button>
-                    <button className="save-btn" onClick={handleSubmit}>
-                        생성
-                    </button>
+                <div className="task-modal-footer">
+                    <div className="footer-right">
+                        <button type="button" className="cancel-btn" onClick={onClose}>
+                            취소
+                        </button>
+                        <button type="button" className="save-btn" onClick={handleSubmit} disabled={loading}>
+                            {loading ? '생성중...' : '생성'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

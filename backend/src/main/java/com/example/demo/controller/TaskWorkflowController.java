@@ -94,6 +94,30 @@ public class TaskWorkflowController {
 	}
 
 	/**
+	 * 담당자가 태스크를 거부
+	 * POST /api/task/workflow/{taskId}/decline?memberNo=123
+	 * Body: { "reason": "거부 사유" }
+	 */
+	@PostMapping("/{taskId}/decline")
+	public ResponseEntity<?> declineTask(
+			@PathVariable("taskId") int taskId,
+			@RequestParam("memberNo") int memberNo,
+			@RequestBody Map<String, String> body) {
+		try {
+			String reason = body.get("reason");
+			if (reason == null || reason.trim().isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of("error", "거부 사유를 입력해주세요"));
+			}
+			Task task = workflowService.declineTask(taskId, memberNo, reason);
+			System.out.println("태스크 거부 완료: taskId=" + taskId + ", memberNo=" + memberNo + ", reason=" + reason);
+			return ResponseEntity.ok(task);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			System.out.println("태스크 거부 실패: " + e.getMessage());
+			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+		}
+	}
+
+	/**
 	 * 반려된 태스크 재작업 시작
 	 * POST /api/task/workflow/{taskId}/restart?memberNo=123
 	 */

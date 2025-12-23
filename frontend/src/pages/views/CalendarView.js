@@ -19,6 +19,7 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
     const [loading, setLoading] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [viewMode, setViewMode] = useState('month');
+    const [selectedDate, setSelectedDate] = useState(null); // 더보기 클릭 시 해당 날짜
 
     // props 변경 시 로컬 상태 동기화
     useEffect(() => {
@@ -217,15 +218,24 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                                         {dayTasks.slice(0, 3).map(task => (
                                             <div
                                                 key={task.taskId}
-                                                className={`task-item priority-${(task.priority || 'MEDIUM').toLowerCase()}`}
+                                                className={`task-item status-${task.workflowStatus?.toLowerCase().replace('_', '-') || 'waiting'}`}
                                                 onClick={() => setSelectedTask(task)}
                                                 title={task.title}
                                             >
+                                                {task.priority === 'URGENT' && (
+                                                    <i className="fa-solid fa-triangle-exclamation urgent-icon"></i>
+                                                )}
                                                 {task.title}
                                             </div>
                                         ))}
                                         {dayTasks.length > 3 && (
-                                            <div className="more-tasks">
+                                            <div
+                                                className="more-tasks"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedDate({ date, tasks: dayTasks });
+                                                }}
+                                            >
                                                 +{dayTasks.length - 3}개 더
                                             </div>
                                         )}
@@ -249,6 +259,55 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                         setSelectedTask(null);
                     }}
                 />
+            )}
+
+            {/* 날짜별 태스크 목록 모달 */}
+            {selectedDate && (
+                <div className="day-tasks-modal-overlay" onClick={() => setSelectedDate(null)}>
+                    <div className="day-tasks-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="day-tasks-modal-header">
+                            <h3>
+                                {selectedDate.date.toLocaleDateString('ko-KR', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    weekday: 'short'
+                                })}
+                            </h3>
+                            <span className="task-count">{selectedDate.tasks.length}개</span>
+                            <button
+                                className="modal-close-btn"
+                                onClick={() => setSelectedDate(null)}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="day-tasks-modal-body">
+                            {selectedDate.tasks.map(task => (
+                                <div
+                                    key={task.taskId}
+                                    className={`day-task-item status-${task.workflowStatus?.toLowerCase().replace('_', '-') || 'waiting'}`}
+                                    onClick={() => {
+                                        setSelectedDate(null);
+                                        setSelectedTask(task);
+                                    }}
+                                >
+                                    <div className="day-task-header">
+                                        {task.priority === 'URGENT' && (
+                                            <i className="fa-solid fa-triangle-exclamation urgent-icon"></i>
+                                        )}
+                                        <span className="day-task-title">{task.title}</span>
+                                    </div>
+                                    {task.description && (
+                                        <p className="day-task-description">{task.description}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

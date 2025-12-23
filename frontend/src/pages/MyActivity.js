@@ -5,6 +5,9 @@ import { tasklistByAssignee, getTaskArchives } from '../api/boardApi';
 import Sidebar from '../components/Sidebar';
 import './MyActivity.css';
 
+// 표시할 최대 아이템 개수
+const MAX_DISPLAY_ITEMS = 5;
+
 function MyActivity() {
     const navigate = useNavigate();
     const [teams, setTeams] = useState([]);
@@ -15,6 +18,8 @@ function MyActivity() {
     const [currentTeam, setCurrentTeam] = useState(null);
     const [loginMember, setLoginMember] = useState(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [showTeamsModal, setShowTeamsModal] = useState(false);
+    const [showArchivesModal, setShowArchivesModal] = useState(false);
 
     useEffect(() => {
         const storedMember = localStorage.getItem('member');
@@ -185,9 +190,12 @@ function MyActivity() {
                                                             {dayTasks.slice(0, 3).map(task => (
                                                                 <div
                                                                     key={task.taskId}
-                                                                    className={`task-item priority-${(task.priority || 'MEDIUM').toLowerCase()}`}
+                                                                    className="task-item"
                                                                     title={task.title}
                                                                 >
+                                                                    {task.priority === 'URGENT' && (
+                                                                        <i className="fa-solid fa-triangle-exclamation urgent-icon"></i>
+                                                                    )}
                                                                     {task.title}
                                                                 </div>
                                                             ))}
@@ -215,7 +223,7 @@ function MyActivity() {
                                     </div>
                                     <div className="teams-list">
                                         {teams.length > 0 ? (
-                                            teams.map(t => (
+                                            teams.slice(0, MAX_DISPLAY_ITEMS).map(t => (
                                                 <div
                                                     key={t.teamId}
                                                     className={`team-item ${t.teamId === currentTeam?.teamId ? 'active' : ''}`}
@@ -239,6 +247,14 @@ function MyActivity() {
                                             <p className="no-data">참여 중인 팀이 없습니다.</p>
                                         )}
                                     </div>
+                                    {teams.length > MAX_DISPLAY_ITEMS && (
+                                        <button
+                                            className="show-more-btn"
+                                            onClick={() => setShowTeamsModal(true)}
+                                        >
+                                            +{teams.length - MAX_DISPLAY_ITEMS}개 더보기
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* 아카이브된 태스크 */}
@@ -249,7 +265,7 @@ function MyActivity() {
                                     </div>
                                     <div className="archives-list">
                                         {taskArchives.length > 0 ? (
-                                            taskArchives.slice(0, 10).map(archive => {
+                                            taskArchives.slice(0, MAX_DISPLAY_ITEMS).map(archive => {
                                                 const task = JSON.parse(archive.taskSnapshot || '{}');
                                                 return (
                                                     <div key={`task-${archive.archiveId}`} className="archive-item task-archive">
@@ -283,12 +299,117 @@ function MyActivity() {
                                             <p className="no-data">아카이브된 항목이 없습니다.</p>
                                         )}
                                     </div>
+                                    {taskArchives.length > MAX_DISPLAY_ITEMS && (
+                                        <button
+                                            className="show-more-btn"
+                                            onClick={() => setShowArchivesModal(true)}
+                                        >
+                                            +{taskArchives.length - MAX_DISPLAY_ITEMS}개 더보기
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* 참여 중인 팀 모달 */}
+            {showTeamsModal && (
+                <div className="activity-modal-overlay" onClick={() => setShowTeamsModal(false)}>
+                    <div className="activity-modal" onClick={e => e.stopPropagation()}>
+                        <div className="activity-modal-header">
+                            <h3>참여 중인 팀</h3>
+                            <span className="modal-count">{teams.length}개</span>
+                            <button
+                                className="activity-modal-close"
+                                onClick={() => setShowTeamsModal(false)}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="activity-modal-body">
+                            {teams.map(t => (
+                                <div
+                                    key={t.teamId}
+                                    className={`team-item ${t.teamId === currentTeam?.teamId ? 'active' : ''}`}
+                                    onClick={() => {
+                                        handleSelectTeam(t);
+                                        setShowTeamsModal(false);
+                                        navigate(`/team/${t.teamId}?view=overview`);
+                                    }}
+                                >
+                                    <div className="team-icon">
+                                        {t.teamName?.charAt(0) || 'T'}
+                                    </div>
+                                    <div className="team-details">
+                                        <span className="team-name">{t.teamName}</span>
+                                        {t.leaderNo === loginMember?.no && (
+                                            <span className="team-badge">리더</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 아카이브 모달 */}
+            {showArchivesModal && (
+                <div className="activity-modal-overlay" onClick={() => setShowArchivesModal(false)}>
+                    <div className="activity-modal" onClick={e => e.stopPropagation()}>
+                        <div className="activity-modal-header">
+                            <h3>아카이브</h3>
+                            <span className="modal-count">{taskArchives.length}개</span>
+                            <button
+                                className="activity-modal-close"
+                                onClick={() => setShowArchivesModal(false)}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="activity-modal-body">
+                            {taskArchives.map(archive => {
+                                const task = JSON.parse(archive.taskSnapshot || '{}');
+                                return (
+                                    <div key={`task-${archive.archiveId}`} className="archive-item task-archive">
+                                        <div className="archive-header">
+                                            <span className="archive-title">📝 {task.title || '제목 없음'}</span>
+                                            <span className="archive-date">
+                                                {new Date(archive.archivedAt).toLocaleDateString('ko-KR', {
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                })}
+                                            </span>
+                                        </div>
+                                        {task.description && (
+                                            <p className="archive-description">{task.description.substring(0, 50)}{task.description.length > 50 ? '...' : ''}</p>
+                                        )}
+                                        {archive.archiveNote && (
+                                            <p className="archive-note">{archive.archiveNote}</p>
+                                        )}
+                                        <div className="archive-meta">
+                                            {archive.teamName && (
+                                                <span className="archive-team">{archive.teamName}</span>
+                                            )}
+                                            {archive.columnTitle && (
+                                                <span className="archive-column">{archive.columnTitle}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

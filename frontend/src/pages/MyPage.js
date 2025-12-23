@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     getProfile,
@@ -8,7 +8,10 @@ import {
     changePasswordVerified,
     sendPasswordChangeCode,
     sendEmailChangeCode,
-    verifyCode
+    verifyCode,
+    uploadProfileImage,
+    deleteProfileImage,
+    getProfileImageUrl
 } from '../api/memberApi';
 import Sidebar from '../components/Sidebar';
 import './MyPage.css';
@@ -53,6 +56,12 @@ function MyPage() {
     const [deleteConfirm, setDeleteConfirm] = useState('');
     const [deleteMessage, setDeleteMessage] = useState({ type: '', text: '' });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // 프로필 이미지
+    const fileInputRef = useRef(null);
+    const [profileImageKey, setProfileImageKey] = useState(Date.now());
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [imageMessage, setImageMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
         const storedMember = localStorage.getItem('member');
@@ -101,6 +110,85 @@ function MyPage() {
         localStorage.removeItem('member');
         localStorage.removeItem('currentTeam');
         navigate('/login');
+    };
+
+    // 프로필 이미지 업로드
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 파일 타입 검증
+        if (!file.type.startsWith('image/')) {
+            setImageMessage({ type: 'error', text: '이미지 파일만 업로드 가능합니다.' });
+            return;
+        }
+
+        // 파일 크기 검증 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setImageMessage({ type: 'error', text: '파일 크기는 5MB 이하만 가능합니다.' });
+            return;
+        }
+
+        try {
+            setUploadingImage(true);
+            setImageMessage({ type: '', text: '' });
+
+            const result = await uploadProfileImage(member.no, file);
+
+            if (result.success) {
+                setMember(result.member);
+                setProfileImageKey(Date.now()); // 이미지 캐시 무효화
+                setImageMessage({ type: 'success', text: '프로필 이미지가 업로드되었습니다.' });
+
+                // localStorage 업데이트
+                const storedMember = JSON.parse(localStorage.getItem('member'));
+                localStorage.setItem('member', JSON.stringify({
+                    ...storedMember,
+                    profileImage: result.member.profileImage
+                }));
+            } else {
+                setImageMessage({ type: 'error', text: result.message });
+            }
+        } catch (error) {
+            setImageMessage({ type: 'error', text: '이미지 업로드에 실패했습니다.' });
+        } finally {
+            setUploadingImage(false);
+            // 파일 입력 초기화
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    // 프로필 이미지 삭제
+    const handleImageDelete = async () => {
+        if (!member?.profileImage) return;
+
+        try {
+            setUploadingImage(true);
+            setImageMessage({ type: '', text: '' });
+
+            const result = await deleteProfileImage(member.no);
+
+            if (result.success) {
+                setMember(result.member);
+                setProfileImageKey(Date.now());
+                setImageMessage({ type: 'success', text: '프로필 이미지가 삭제되었습니다.' });
+
+                // localStorage 업데이트
+                const storedMember = JSON.parse(localStorage.getItem('member'));
+                localStorage.setItem('member', JSON.stringify({
+                    ...storedMember,
+                    profileImage: null
+                }));
+            } else {
+                setImageMessage({ type: 'error', text: result.message });
+            }
+        } catch (error) {
+            setImageMessage({ type: 'error', text: '이미지 삭제에 실패했습니다.' });
+        } finally {
+            setUploadingImage(false);
+        }
     };
 
     // 프로필 수정
@@ -358,8 +446,58 @@ function MyPage() {
                         <div className="mypage-container">
                             {/* 왼쪽: 프로필 카드 */}
                             <div className="mypage-sidebar-card">
-                                <div className="profile-avatar">
-                                    {member?.name?.charAt(0) || 'U'}
+                                <div className="profile-avatar-container">
+                                    <div className="profile-avatar">
+                                        {member?.profileImage ? (
+                                            <img
+                                                src={`${getProfileImageUrl(member.no)}?t=${profileImageKey}`}
+                                                alt="프로필"
+                                                className="profile-image"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'flex';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <span
+                                            className="profile-initial"
+                                            style={{ display: member?.profileImage ? 'none' : 'flex' }}
+                                        >
+                                            {member?.name?.charAt(0) || 'U'}
+                                        </span>
+                                    </div>
+                                    <div className="profile-avatar-actions">
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleImageUpload}
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                        />
+                                        <button
+                                            className="avatar-action-btn upload"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={uploadingImage}
+                                            title="이미지 업로드"
+                                        >
+                                            {uploadingImage ? '...' : '📷'}
+                                        </button>
+                                        {member?.profileImage && (
+                                            <button
+                                                className="avatar-action-btn delete"
+                                                onClick={handleImageDelete}
+                                                disabled={uploadingImage}
+                                                title="이미지 삭제"
+                                            >
+                                                🗑️
+                                            </button>
+                                        )}
+                                    </div>
+                                    {imageMessage.text && (
+                                        <div className={`image-message ${imageMessage.type}`}>
+                                            {imageMessage.text}
+                                        </div>
+                                    )}
                                 </div>
                                 <h2 className="profile-name">{member?.name}</h2>
                                 <p className="profile-userid">@{member?.userid}</p>

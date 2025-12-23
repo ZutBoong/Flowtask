@@ -19,6 +19,7 @@ public class TaskWorkflowService {
 	public static final String STATUS_REVIEW = "REVIEW";
 	public static final String STATUS_DONE = "DONE";
 	public static final String STATUS_REJECTED = "REJECTED";
+	public static final String STATUS_DECLINED = "DECLINED";
 
 	@Autowired
 	private TaskDao taskDao;
@@ -172,6 +173,37 @@ public class TaskWorkflowService {
 	}
 
 	/**
+	 * 담당자가 태스크를 거부
+	 * - WAITING 상태에서만 거부 가능
+	 * - 상태가 DECLINED로 변경
+	 */
+	@Transactional
+	public Task declineTask(int taskId, int memberNo, String reason) {
+		Task task = taskDao.content(taskId);
+		if (task == null) {
+			throw new IllegalArgumentException("태스크를 찾을 수 없습니다: " + taskId);
+		}
+
+		// WAITING 상태에서만 거부 가능
+		if (!STATUS_WAITING.equals(task.getWorkflowStatus())) {
+			throw new IllegalStateException("대기 상태의 태스크만 거부할 수 있습니다. 현재 상태: " + task.getWorkflowStatus());
+		}
+
+		// 태스크 거부 상태로 변경
+		task.setWorkflowStatus(STATUS_DECLINED);
+		task.setRejectionReason(reason);
+		task.setRejectedBy(memberNo);
+		taskDao.updateWorkflowStatus(task);
+		taskDao.updateRejection(task);
+
+		// 다른 담당자들에게 거부 알림
+		notifyAssigneesForDecline(task, memberNo, reason);
+
+		notifyAndReturn(task);
+		return taskDao.content(taskId);
+	}
+
+	/**
 	 * 반려된 태스크 재작업 시작
 	 * - REJECTED -> IN_PROGRESS로 변경
 	 */
@@ -302,6 +334,27 @@ public class TaskWorkflowService {
 						"TASK_REJECTED",
 						"태스크 반려",
 						"'" + task.getTitle() + "' 태스크가 반려되었습니다: " + reason,
+						column.getTeamId(),
+						task.getColumnId(),
+						task.getTaskId()
+					);
+				}
+			});
+		}
+	}
+
+	// 담당자들에게 거부 알림
+	private void notifyAssigneesForDecline(Task task, int senderNo, String reason) {
+		FlowtaskColumn column = columnDao.content(task.getColumnId());
+		if (column != null) {
+			assigneeDao.listByTask(task.getTaskId()).forEach(a -> {
+				if (a.getMemberNo() != senderNo) {
+					persistentNotificationService.sendNotification(
+						a.getMemberNo(),
+						senderNo,
+						"TASK_DECLINED",
+						"태스크 거부",
+						"'" + task.getTitle() + "' 태스크가 거부되었습니다: " + reason,
 						column.getTeamId(),
 						task.getColumnId(),
 						task.getTaskId()

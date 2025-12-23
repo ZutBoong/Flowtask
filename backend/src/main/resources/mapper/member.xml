@@ -92,4 +92,9 @@
 		DELETE FROM flowtask_member WHERE no = #{no}
 	</delete>
 
+	<!-- 프로필 이미지 업데이트 -->
+	<update id="updateProfileImage" parameterType="member">
+		UPDATE flowtask_member SET profile_image = #{profileImage} WHERE no = #{no}
+	</update>
+
 </mapper>

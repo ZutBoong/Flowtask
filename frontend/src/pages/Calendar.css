@@ -88,12 +88,10 @@
     align-items: center;
 }
 
-.team-name {
+.calendar-page .team-name {
     font-size: 14px;
     color: #666;
-    background: #f0f0f0;
-    padding: 4px 12px;
-    border-radius: 4px;
+    font-weight: 500;
 }
 
 .header-right {

@@ -2,67 +2,6 @@
     padding: 24px;
 }
 
-/* 업로드 영역 */
-.upload-zone {
-    border: 2px dashed #e2e8f0;
-    border-radius: 16px;
-    padding: 48px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    margin-bottom: 24px;
-}
-
-.upload-zone:hover {
-    border-color: #667eea;
-    background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
-}
-
-.upload-zone.active {
-    border-color: #667eea;
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
-}
-
-.upload-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-}
-
-.upload-icon {
-    font-size: 56px;
-}
-
-.upload-content p {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 600;
-    color: #1e293b;
-}
-
-.upload-hint {
-    font-size: 14px;
-    color: #94a3b8;
-}
-
-.upload-spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 /* 파일 섹션 */
 .files-section {
     background: white;
@@ -116,9 +55,11 @@
 }
 
 .empty-icon {
-    font-size: 56px;
+    font-size: 48px;
+    color: #cbd5e1;
     display: block;
-    margin-bottom: 16px;
+    margin: 0 auto 16px;
+    text-align: center;
 }
 
 /* 파일 그리드 */
@@ -231,10 +172,6 @@
 @media (max-width: 768px) {
     .files-view {
         padding: 16px;
-    }
-
-    .upload-zone {
-        padding: 36px 20px;
     }
 
     .files-grid {

@@ -14,7 +14,7 @@ public class TaskFavorite {
     // 조인용 필드 (Task 정보)
     private String title;
     private String description;
-    private String status;
+    private String workflowStatus;
     private String priority;
     private LocalDateTime dueDate;
     private int columnId;

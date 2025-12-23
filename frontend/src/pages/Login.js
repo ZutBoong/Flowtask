@@ -33,7 +33,15 @@ function Login() {
                 localStorage.setItem('token', result.token);
                 localStorage.setItem('member', JSON.stringify(result.member));
                 alert(`${result.member.name}님, 환영합니다!`);
-                navigate('/activity');
+
+                // 리다이렉트 URL이 있으면 해당 페이지로 이동 (초대 링크 등)
+                const redirectUrl = localStorage.getItem('redirectAfterLogin');
+                if (redirectUrl) {
+                    localStorage.removeItem('redirectAfterLogin');
+                    navigate(redirectUrl);
+                } else {
+                    navigate('/activity');
+                }
             } else {
                 setError(result.message);
             }

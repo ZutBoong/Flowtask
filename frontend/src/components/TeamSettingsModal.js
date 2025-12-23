@@ -14,7 +14,14 @@ function TeamSettingsModal({ team, loginMember, onClose, onTeamUpdate, onTeamDel
     const [description, setDescription] = useState(team?.description || '');
     const [showTeamCode, setShowTeamCode] = useState(false);
     const [codeCopySuccess, setCodeCopySuccess] = useState(false);
+    const [urlCopySuccess, setUrlCopySuccess] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    // 초대 URL 생성
+    const getInviteUrl = () => {
+        const baseUrl = window.location.origin;
+        return `${baseUrl}/invite/${team?.teamCode}`;
+    };
 
     const isLeader = team?.leaderNo === loginMember?.no;
 
@@ -84,6 +91,25 @@ function TeamSettingsModal({ team, loginMember, onClose, onTeamUpdate, onTeamDel
             document.body.removeChild(textArea);
             setCodeCopySuccess(true);
             setTimeout(() => setCodeCopySuccess(false), 2000);
+        }
+    };
+
+    // 초대 URL 복사
+    const handleCopyUrl = async () => {
+        const inviteUrl = getInviteUrl();
+        try {
+            await navigator.clipboard.writeText(inviteUrl);
+            setUrlCopySuccess(true);
+            setTimeout(() => setUrlCopySuccess(false), 2000);
+        } catch (error) {
+            const textArea = document.createElement('textarea');
+            textArea.value = inviteUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setUrlCopySuccess(true);
+            setTimeout(() => setUrlCopySuccess(false), 2000);
         }
     };
 
@@ -265,6 +291,32 @@ function TeamSettingsModal({ team, loginMember, onClose, onTeamUpdate, onTeamDel
                                 )}
                             </div>
 
+                            {/* 초대 링크 */}
+                            {isLeader && (
+                                <div className="tsm-field">
+                                    <label>초대 링크</label>
+                                    <div className="tsm-code-section">
+                                        <div className="tsm-invite-url">
+                                            <input
+                                                type="text"
+                                                value={getInviteUrl()}
+                                                readOnly
+                                                className="tsm-url-input"
+                                            />
+                                            <button
+                                                className="tsm-code-btn primary"
+                                                onClick={handleCopyUrl}
+                                            >
+                                                {urlCopySuccess ? '복사됨!' : '링크 복사'}
+                                            </button>
+                                        </div>
+                                        <p className="tsm-hint">
+                                            이 링크를 공유하여 다른 사람을 팀에 초대할 수 있습니다.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* 초대 코드 */}
                             {isLeader && (
                                 <div className="tsm-field">
@@ -294,7 +346,7 @@ function TeamSettingsModal({ team, loginMember, onClose, onTeamUpdate, onTeamDel
                                             새 코드 생성
                                         </button>
                                         <p className="tsm-hint">
-                                            이 코드를 공유하여 다른 사람을 팀에 초대할 수 있습니다.
+                                            링크 대신 코드로 직접 초대할 수도 있습니다.
                                         </p>
                                     </div>
                                 </div>

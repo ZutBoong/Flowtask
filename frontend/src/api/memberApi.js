@@ -113,3 +113,28 @@ export const verifyCode = async (email, code, type) => {
     const response = await axiosInstance.post('/api/email/verify-code', { email, code, type });
     return response.data;
 };
+
+// 프로필 이미지 업로드
+export const uploadProfileImage = async (memberNo, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('memberNo', memberNo);
+
+    const response = await axiosInstance.post('/api/member/profile-image/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+    return response.data;
+};
+
+// 프로필 이미지 삭제
+export const deleteProfileImage = async (memberNo) => {
+    const response = await axiosInstance.delete(`/api/member/profile-image/${memberNo}`);
+    return response.data;
+};
+
+// 프로필 이미지 URL 생성
+export const getProfileImageUrl = (memberNo) => {
+    return `/api/member/profile-image/${memberNo}`;
+};

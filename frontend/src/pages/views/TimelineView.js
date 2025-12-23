@@ -2,13 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import TaskModal from '../../components/TaskModal';
 import './TimelineView.css';
 
-// 우선순위 색상
-const PRIORITY_COLORS = {
-    CRITICAL: '#dc2626',
-    HIGH: '#f59e0b',
-    MEDIUM: '#3b82f6',
-    LOW: '#6b7280'
-};
 
 function TimelineView({
     team,
@@ -278,7 +271,10 @@ function TimelineView({
             return {
                 left: `${left}%`,
                 width: `${Math.max(width, 100 / viewRange)}%`,
-                backgroundColor: PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.MEDIUM
+                backgroundColor: '#f1f5f9',
+                borderTop: '1px solid #cbd5e1',
+                borderRight: '1px solid #cbd5e1',
+                borderBottom: '1px solid #cbd5e1'
             };
         } else {
             // 주: px 기반
@@ -287,7 +283,10 @@ function TimelineView({
             return {
                 left: `${left}px`,
                 width: `${Math.max(width, cellWidth)}px`,
-                backgroundColor: PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.MEDIUM
+                backgroundColor: '#f1f5f9',
+                borderTop: '1px solid #cbd5e1',
+                borderRight: '1px solid #cbd5e1',
+                borderBottom: '1px solid #cbd5e1'
             };
         }
     };
@@ -447,7 +446,7 @@ function TimelineView({
                                 <div className="timeline-row-bars" style={usePercentage ? {} : { width: `${viewRange * cellWidth}px` }}>
                                     {barStyle && (
                                         <div
-                                            className="task-bar"
+                                            className={`task-bar status-${task.workflowStatus?.toLowerCase().replace('_', '-') || 'waiting'}`}
                                             style={barStyle}
                                             onClick={() => setSelectedTask(task)}
                                         >
@@ -500,7 +499,7 @@ function TimelineView({
                                 <div className="timeline-row-bars" style={usePercentage ? {} : { width: `${viewRange * cellWidth}px` }}>
                                     {barStyle && (
                                         <div
-                                            className="task-bar"
+                                            className={`task-bar status-${task.workflowStatus?.toLowerCase().replace('_', '-') || 'waiting'}`}
                                             style={barStyle}
                                             onClick={() => setSelectedTask(task)}
                                         >

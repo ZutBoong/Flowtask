@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS flowtask_member (
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20),
     email_verified BOOLEAN DEFAULT FALSE,
+    profile_image VARCHAR(500),
     register TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

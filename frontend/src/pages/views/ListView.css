@@ -156,9 +156,9 @@
 
 /* 컬럼 너비 */
 .col-drag {
-    width: 60px;
+    width: 50px;
     text-align: center;
-    padding: 14px 12px !important;
+    padding: 14px 8px !important;
 }
 
 /* 드래그 핸들 */
@@ -190,33 +190,89 @@
 }
 
 .col-check {
-    width: 50px;
+    width: 40px;
     text-align: center;
 }
 
 .col-title {
-    min-width: 200px;
+    width: auto;
 }
 
 .col-assignee {
-    width: 130px;
+    width: 90px;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
 }
 
 .col-due {
-    width: 110px;
+    width: 80px;
+    white-space: nowrap;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
 }
 
 .col-status {
-    width: 100px;
+    width: 90px;
+    white-space: nowrap;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
 }
 
 .col-priority {
-    width: 100px;
-}
-
-.col-actions {
     width: 50px;
     text-align: center;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+
+/* 담당자 아바타 */
+.assignee-avatars {
+    display: flex;
+    align-items: center;
+}
+
+.assignee-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -8px;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: default;
+    position: relative;
+}
+
+.assignee-avatar:first-child {
+    margin-left: 0;
+}
+
+.assignee-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.assignee-avatar .avatar-initial {
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.assignee-avatar.more {
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.no-assignee {
+    color: #94a3b8;
 }
 
 /* 상태 표시 아이콘 */
@@ -252,14 +308,20 @@
 }
 
 
-/* 우선순위 배지 */
-.priority-badge {
-    font-size: 11px;
-    font-weight: 600;
+/* 긴급 배지 */
+.urgent-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #dc2626;
+    border-radius: 6px;
+}
+
+.urgent-badge i {
+    font-size: 12px;
     color: white;
-    padding: 5px 10px;
-    border-radius: 8px;
-    display: inline-block;
 }
 
 /* 상태 배지 */
@@ -400,7 +462,7 @@
 
     .task-table th,
     .task-table td {
-        padding: 12px 16px;
+        padding: 12px 14px;
     }
 
     .col-assignee {
@@ -408,11 +470,21 @@
     }
 
     .col-status {
-        width: 80px;
+        width: 100px;
     }
 
     .col-priority {
-        width: 80px;
+        width: 60px;
+    }
+
+    .assignee-avatar {
+        width: 26px;
+        height: 26px;
+        margin-left: -6px;
+    }
+
+    .assignee-avatar .avatar-initial {
+        font-size: 11px;
     }
 }
 
@@ -442,31 +514,47 @@
 
     .task-table th,
     .task-table td {
-        padding: 10px 12px;
+        padding: 10px 8px;
     }
 
     /* 모바일에서 숨길 컬럼 */
     .col-drag {
-        width: 40px;
-        padding: 10px 8px !important;
+        width: 36px;
+        padding: 10px 6px !important;
     }
 
-    .col-assignee,
     .col-status,
     .col-actions {
         display: none;
     }
 
+    .col-title {
+        width: auto;
+        max-width: none;
+    }
+
+    .col-assignee {
+        width: 60px;
+    }
+
     .col-due {
-        width: 70px;
+        width: 60px;
         font-size: 12px;
     }
 
     .col-priority {
-        width: 60px;
+        width: 40px;
     }
 
-    .priority-badge,
+    .urgent-badge {
+        width: 20px;
+        height: 20px;
+    }
+
+    .urgent-badge i {
+        font-size: 10px;
+    }
+
     .status-badge {
         font-size: 10px;
         padding: 4px 8px;
@@ -514,5 +602,20 @@
 
     .no-columns p {
         font-size: 14px;
+    }
+
+    /* 모바일 아바타 */
+    .assignee-avatar {
+        width: 24px;
+        height: 24px;
+        margin-left: -6px;
+    }
+
+    .assignee-avatar .avatar-initial {
+        font-size: 10px;
+    }
+
+    .assignee-avatar.more {
+        font-size: 9px;
     }
 }

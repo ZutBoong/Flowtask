@@ -158,6 +158,11 @@ export const rejectTask = async (taskId, memberNo, reason) => {
 };
 
 // 반려된 태스크 재작업 시작
+export const declineTask = async (taskId, memberNo, reason) => {
+    const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/decline?memberNo=${memberNo}`, { reason });
+    return response.data;
+};
+
 export const restartTask = async (taskId, memberNo) => {
     const response = await axiosInstance.post(`${API_PATH}/task/workflow/${taskId}/restart?memberNo=${memberNo}`);
     return response.data;
@@ -294,9 +299,15 @@ export const archiveTask = async (taskId, memberNo, archiveNote = '') => {
     return response.data;
 };
 
-// 아카이브 삭제
+// 아카이브 삭제 (archiveId로)
 export const deleteTaskArchive = async (archiveId) => {
     const response = await axiosInstance.delete(`${API_PATH}/task/archive/${archiveId}`);
+    return response.data;
+};
+
+// 아카이브 해제 (taskId와 memberNo로)
+export const unarchiveTask = async (taskId, memberNo) => {
+    const response = await axiosInstance.delete(`${API_PATH}/task/${taskId}/archive?memberNo=${memberNo}`);
     return response.data;
 };
 

@@ -272,25 +272,42 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        String[] taskPrefixes = {
-            "개발", "설계", "분석", "테스트", "배포",
-            "리뷰", "문서화", "회의", "조사", "개선"
+        // 팀장 찾기
+        Member leader = teamMembers.stream()
+            .filter(m -> m.getNo() == team.getLeaderNo())
+            .findFirst()
+            .orElse(teamMembers.get(0));
+
+        String[] taskTitles = {
+            "API 엔드포인트 구현", "UI 컴포넌트 개발", "데이터베이스 스키마 설계",
+            "버그 수정", "성능 최적화", "코드 리뷰", "테스트 케이스 작성",
+            "문서 업데이트", "배포 스크립트 작성", "보안 취약점 점검",
+            "사용자 피드백 반영", "신규 기능 기획", "리팩토링 작업",
+            "로깅 시스템 구축", "모니터링 대시보드 개발", "알림 기능 구현",
+            "검색 기능 개선", "페이지네이션 추가", "캐싱 전략 수립",
+            "CI/CD 파이프라인 구성", "인증 시스템 강화", "권한 관리 구현",
+            "파일 업로드 기능", "이메일 발송 기능", "실시간 알림 구현"
         };
 
-        String[] priorities = {"CRITICAL", "HIGH", "MEDIUM", "LOW"};
-        String[] workflowStatuses = {"WAITING", "IN_PROGRESS", "REVIEW", "DONE"};
+        String[] priorities = {"URGENT", "HIGH", "MEDIUM", "LOW"};
 
         List<Task> createdTasks = new ArrayList<>();
 
         for (int i = 1; i <= 50; i++) {
             FlowtaskColumn column = columns.get(random.nextInt(columns.size()));
 
+            // 검증자 유무 결정 (50% 확률)
+            boolean hasVerifiers = random.nextDouble() < 0.5;
+
+            // 상태 결정 (논리적으로 가능한 상태만 선택)
+            String status = determineWorkflowStatus(hasVerifiers);
+
             Task task = new Task();
             task.setColumnId(column.getColumnId());
-            task.setTitle(taskPrefixes[random.nextInt(taskPrefixes.length)] + " #" + i);
-            task.setDescription("태스크 설명입니다. " + team.getTeamName() + "의 " + (i) + "번째 작업입니다.");
+            task.setTitle(taskTitles[random.nextInt(taskTitles.length)] + " #" + i);
+            task.setDescription("태스크 설명입니다. " + team.getTeamName() + "의 " + i + "번째 작업입니다.\n\n상세 내용:\n- 작업 범위 정의\n- 예상 소요 시간 산정\n- 관련 문서 참조");
             task.setPriority(priorities[random.nextInt(priorities.length)]);
-            task.setWorkflowStatus(workflowStatuses[random.nextInt(workflowStatuses.length)]);
+            task.setWorkflowStatus(status);
 
             // 날짜 설정 (최근 30일 ~ 앞으로 60일)
             LocalDate startDate = LocalDate.now().minusDays(random.nextInt(30));
@@ -322,55 +339,199 @@ public class DataInitializer implements CommandLineRunner {
             );
             createdTasks.add(created);
 
-            // 담당자 추가 (1~3명)
-            addTaskAssignees(created, teamMembers);
+            // 담당자 추가 (상태에 맞게)
+            List<Integer> assigneeNos = addTaskAssignees(created, teamMembers, leader, status);
 
-            // 일부 태스크에 검증자 추가 (30% 확률)
-            if (random.nextDouble() < 0.3) {
-                addTaskVerifiers(created, teamMembers);
+            // 검증자 추가 (REVIEW, DONE, REJECTED는 반드시 검증자 필요)
+            if (hasVerifiers || status.equals("REVIEW") || status.equals("REJECTED")) {
+                addTaskVerifiers(created, teamMembers, status, assigneeNos);
+            }
+
+            // REJECTED/DECLINED 상태인 경우 사유 추가
+            if (status.equals("REJECTED") || status.equals("DECLINED")) {
+                String reason = status.equals("REJECTED")
+                    ? "요구사항이 충족되지 않았습니다. 수정 후 재검토 필요합니다."
+                    : "현재 업무 과중으로 수행이 어렵습니다.";
+                int rejectedBy = assigneeNos.isEmpty()
+                    ? teamMembers.get(random.nextInt(teamMembers.size())).getNo()
+                    : assigneeNos.get(0);
+                jdbcTemplate.update(
+                    "UPDATE flowtask_task SET rejection_reason = ?, rejected_by = ?, rejected_at = CURRENT_TIMESTAMP WHERE task_id = ?",
+                    reason, rejectedBy, created.getTaskId()
+                );
+            }
+
+            // 댓글 추가 (50% 확률로 1~5개)
+            if (random.nextDouble() < 0.5) {
+                addComments(created, teamMembers);
             }
         }
 
-        // 즐겨찾기 추가 (유저마다 0~10개)
+        // 즐겨찾기 추가 (유저마다 0~10개, 시간차 두고)
         addFavorites(createdTasks, teamMembers);
 
         // 아카이브 추가 (유저마다 0~5개)
         addArchives(createdTasks, teamMembers);
     }
 
-    private void addTaskAssignees(Task task, List<Member> teamMembers) {
+    /**
+     * 워크플로우 상태 결정
+     * - WAITING: 담당자 미수락
+     * - IN_PROGRESS: 담당자 수락, 작업 중
+     * - REVIEW: 담당자 완료, 검증자 검토 중 (검증자 필수)
+     * - DONE: 모든 작업 완료 (검증자 있으면 승인 완료)
+     * - REJECTED: 검증자가 반려 (검증자 필수)
+     * - DECLINED: 담당자가 거부
+     */
+    private String determineWorkflowStatus(boolean hasVerifiers) {
+        int rand = random.nextInt(100);
+
+        if (rand < 15) {
+            return "WAITING";       // 15%
+        } else if (rand < 40) {
+            return "IN_PROGRESS";   // 25%
+        } else if (rand < 55 && hasVerifiers) {
+            return "REVIEW";        // 15% (검증자 있을 때만)
+        } else if (rand < 75) {
+            return "DONE";          // 20~35%
+        } else if (rand < 85 && hasVerifiers) {
+            return "REJECTED";      // 10% (검증자 있을 때만)
+        } else if (rand < 95) {
+            return "DECLINED";      // 10%
+        } else {
+            return "IN_PROGRESS";   // 나머지
+        }
+    }
+
+    /**
+     * 담당자 추가 - 상태에 맞게 accepted/completed 설정
+     * - WAITING: accepted=false, completed=false
+     * - IN_PROGRESS: accepted=true, completed=false
+     * - REVIEW/DONE/REJECTED: accepted=true, completed=true
+     * - DECLINED: accepted=false (거부)
+     */
+    private List<Integer> addTaskAssignees(Task task, List<Member> teamMembers, Member leader, String status) {
         int assigneeCount = 1 + random.nextInt(3); // 1~3명
         List<Integer> addedAssignees = new ArrayList<>();
 
-        for (int i = 0; i < assigneeCount && i < teamMembers.size(); i++) {
-            Member member = teamMembers.get(random.nextInt(teamMembers.size()));
+        // 팀장도 30% 확률로 담당자에 포함
+        if (random.nextDouble() < 0.3) {
+            addedAssignees.add(leader.getNo());
+        }
 
+        // 추가 담당자 선택
+        for (int i = 0; i < assigneeCount && addedAssignees.size() < assigneeCount; i++) {
+            Member member = teamMembers.get(random.nextInt(teamMembers.size()));
             if (!addedAssignees.contains(member.getNo())) {
                 addedAssignees.add(member.getNo());
+            }
+        }
+
+        // 최소 1명 보장
+        if (addedAssignees.isEmpty()) {
+            addedAssignees.add(teamMembers.get(random.nextInt(teamMembers.size())).getNo());
+        }
+
+        // 상태에 따른 accepted/completed 설정
+        for (Integer memberNo : addedAssignees) {
+            boolean accepted;
+            boolean completed;
+
+            switch (status) {
+                case "WAITING":
+                    accepted = false;
+                    completed = false;
+                    break;
+                case "IN_PROGRESS":
+                    accepted = true;
+                    completed = false;
+                    break;
+                case "REVIEW":
+                case "DONE":
+                case "REJECTED":
+                    accepted = true;
+                    completed = true;
+                    break;
+                case "DECLINED":
+                    accepted = false;
+                    completed = false;
+                    break;
+                default:
+                    accepted = false;
+                    completed = false;
+            }
+
+            jdbcTemplate.update(
+                "INSERT INTO flowtask_task_assignee (task_id, member_no, accepted, completed) VALUES (?, ?, ?, ?)",
+                task.getTaskId(), memberNo, accepted, completed
+            );
+        }
+
+        return addedAssignees;
+    }
+
+    /**
+     * 검증자 추가 - 상태에 맞게 approved 설정
+     * - REVIEW: approved=false (검토 중)
+     * - DONE: approved=true (승인 완료)
+     * - REJECTED: approved=false (반려)
+     * - 담당자와 중복되지 않도록 설정
+     */
+    private void addTaskVerifiers(Task task, List<Member> teamMembers, String status, List<Integer> assigneeNos) {
+        int verifierCount = 1 + random.nextInt(2); // 1~2명
+        List<Integer> addedVerifiers = new ArrayList<>();
+
+        // 담당자가 아닌 멤버 중에서 검증자 선택
+        List<Member> availableVerifiers = teamMembers.stream()
+            .filter(m -> !assigneeNos.contains(m.getNo()))
+            .collect(java.util.stream.Collectors.toList());
+
+        // 가능한 검증자가 없으면 전체에서 선택
+        if (availableVerifiers.isEmpty()) {
+            availableVerifiers = teamMembers;
+        }
+
+        for (int i = 0; i < verifierCount && i < availableVerifiers.size(); i++) {
+            Member member = availableVerifiers.get(random.nextInt(availableVerifiers.size()));
+
+            if (!addedVerifiers.contains(member.getNo())) {
+                addedVerifiers.add(member.getNo());
+
+                // 상태에 따라 approved 설정
+                boolean approved = status.equals("DONE");
 
                 jdbcTemplate.update(
-                    "INSERT INTO flowtask_task_assignee (task_id, member_no) VALUES (?, ?)",
-                    task.getTaskId(), member.getNo()
+                    "INSERT INTO flowtask_task_verifier (task_id, member_no, approved) VALUES (?, ?, ?)",
+                    task.getTaskId(), member.getNo(), approved
                 );
             }
         }
     }
 
-    private void addTaskVerifiers(Task task, List<Member> teamMembers) {
-        int verifierCount = 1 + random.nextInt(2); // 1~2명
-        List<Integer> addedVerifiers = new ArrayList<>();
+    private void addComments(Task task, List<Member> teamMembers) {
+        String[] commentTemplates = {
+            "진행 상황 업데이트합니다. 현재 %d%% 완료되었습니다.",
+            "관련 문서 확인 부탁드립니다.",
+            "이 부분은 추가 논의가 필요할 것 같습니다.",
+            "테스트 완료했습니다. 이상 없습니다.",
+            "코드 리뷰 부탁드립니다.",
+            "수정 사항 반영했습니다.",
+            "일정 조율이 필요합니다.",
+            "좋은 접근 방식인 것 같습니다!",
+            "이 이슈와 연관된 작업입니다. 참고 부탁드립니다.",
+            "마감일 전까지 완료 가능할 것 같습니다."
+        };
 
-        for (int i = 0; i < verifierCount && i < teamMembers.size(); i++) {
-            Member member = teamMembers.get(random.nextInt(teamMembers.size()));
+        int commentCount = 1 + random.nextInt(5); // 1~5개
 
-            if (!addedVerifiers.contains(member.getNo())) {
-                addedVerifiers.add(member.getNo());
+        for (int i = 0; i < commentCount; i++) {
+            Member author = teamMembers.get(random.nextInt(teamMembers.size()));
+            String content = String.format(commentTemplates[random.nextInt(commentTemplates.length)], 10 + random.nextInt(90));
 
-                jdbcTemplate.update(
-                    "INSERT INTO flowtask_task_verifier (task_id, member_no) VALUES (?, ?)",
-                    task.getTaskId(), member.getNo()
-                );
-            }
+            jdbcTemplate.update(
+                "INSERT INTO flowtask_comment (comment_id, task_id, author_no, content, created_at, updated_at) VALUES (nextval('flowtask_comment_seq'), ?, ?, ?, CURRENT_TIMESTAMP - INTERVAL '" + random.nextInt(72) + " hours', CURRENT_TIMESTAMP - INTERVAL '" + random.nextInt(24) + " hours')",
+                task.getTaskId(), author.getNo(), content
+            );
         }
     }
 
@@ -378,6 +539,7 @@ public class DataInitializer implements CommandLineRunner {
         for (Member member : teamMembers) {
             int favoriteCount = random.nextInt(11); // 0~10개
             List<Integer> addedFavorites = new ArrayList<>();
+            int timeOffset = 0;
 
             for (int i = 0; i < favoriteCount && i < tasks.size(); i++) {
                 Task task = tasks.get(random.nextInt(tasks.size()));
@@ -385,19 +547,27 @@ public class DataInitializer implements CommandLineRunner {
                 if (!addedFavorites.contains(task.getTaskId())) {
                     addedFavorites.add(task.getTaskId());
 
+                    // 즐겨찾기 시간을 다르게 설정하여 정렬 순서 유지 (가장 최근 것이 가장 나중에 추가됨)
                     jdbcTemplate.update(
-                        "INSERT INTO flowtask_task_favorite (task_id, member_no) VALUES (?, ?)",
+                        "INSERT INTO flowtask_task_favorite (task_id, member_no, created_at) VALUES (?, ?, CURRENT_TIMESTAMP - INTERVAL '" + timeOffset + " minutes')",
                         task.getTaskId(), member.getNo()
                     );
+                    timeOffset += 5 + random.nextInt(30); // 5~35분 간격
                 }
             }
         }
     }
 
     private void addArchives(List<Task> tasks, List<Member> teamMembers) {
+        String[] archiveNotes = {
+            "참고용으로 보관", "완료된 작업 아카이브", "나중에 재활용할 수 있음",
+            "중요 작업 백업", "프로젝트 정리용", ""
+        };
+
         for (Member member : teamMembers) {
             int archiveCount = random.nextInt(6); // 0~5개
             List<Integer> addedArchives = new ArrayList<>();
+            int timeOffset = 0;
 
             for (int i = 0; i < archiveCount && i < tasks.size(); i++) {
                 Task task = tasks.get(random.nextInt(tasks.size()));
@@ -405,16 +575,20 @@ public class DataInitializer implements CommandLineRunner {
                 if (!addedArchives.contains(task.getTaskId())) {
                     addedArchives.add(task.getTaskId());
 
-                    // task_snapshot을 JSON 형태로 저장
+                    // task_snapshot을 JSON 형태로 저장 (description에서 특수문자 제거)
+                    String safeDescription = task.getDescription().replace("\"", "\\\"").replace("\n", "\\n");
                     String taskSnapshot = String.format(
                         "{\"taskId\":%d,\"title\":\"%s\",\"description\":\"%s\",\"priority\":\"%s\",\"workflowStatus\":\"%s\"}",
-                        task.getTaskId(), task.getTitle(), task.getDescription(), task.getPriority(), task.getWorkflowStatus()
+                        task.getTaskId(), task.getTitle(), safeDescription, task.getPriority(), task.getWorkflowStatus()
                     );
 
+                    String note = archiveNotes[random.nextInt(archiveNotes.length)];
+
                     jdbcTemplate.update(
-                        "INSERT INTO flowtask_task_archive (archive_id, original_task_id, member_no, task_snapshot, archive_note) VALUES (nextval('flowtask_task_archive_seq'), ?, ?, ?::jsonb, ?)",
-                        task.getTaskId(), member.getNo(), taskSnapshot, "샘플 아카이브"
+                        "INSERT INTO flowtask_task_archive (archive_id, original_task_id, member_no, task_snapshot, archive_note, archived_at) VALUES (nextval('flowtask_task_archive_seq'), ?, ?, ?::jsonb, ?, CURRENT_TIMESTAMP - INTERVAL '" + timeOffset + " hours')",
+                        task.getTaskId(), member.getNo(), taskSnapshot, note
                     );
+                    timeOffset += 1 + random.nextInt(48); // 1~49시간 간격
                 }
             }
         }

@@ -1,8 +1,21 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.HashMap;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.model.Member;
 import com.example.demo.security.JwtTokenProvider;
@@ -16,6 +29,9 @@ public class MemberController {
 	private final MemberService service;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final TeamDao teamDao;
+
+	@Value("${flowtask.upload.path:uploads}")
+	private String uploadPath;
 
 	public MemberController(MemberService service, JwtTokenProvider jwtTokenProvider, TeamDao teamDao) {
 		this.service = service;
@@ -339,6 +355,99 @@ public class MemberController {
 		} else {
 			result.put("success", false);
 			result.put("message", "비밀번호 변경에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 프로필 이미지 업로드
+	@PostMapping("member/profile-image/upload")
+	public Map<String, Object> uploadProfileImage(
+			@RequestParam("file") MultipartFile file,
+			@RequestParam("memberNo") int memberNo) {
+		System.out.println("프로필 이미지 업로드 요청 - memberNo: " + memberNo);
+		Map<String, Object> result = new HashMap<>();
+
+		// 파일 타입 검증
+		String contentType = file.getContentType();
+		if (contentType == null || !contentType.startsWith("image/")) {
+			result.put("success", false);
+			result.put("message", "이미지 파일만 업로드 가능합니다.");
+			return result;
+		}
+
+		// 파일 크기 검증 (5MB)
+		if (file.getSize() > 5 * 1024 * 1024) {
+			result.put("success", false);
+			result.put("message", "파일 크기는 5MB 이하만 가능합니다.");
+			return result;
+		}
+
+		try {
+			String profileImagePath = service.uploadProfileImage(memberNo, file);
+			Member updatedMember = service.findByNo(memberNo);
+			updatedMember.setPassword(null);
+
+			result.put("success", true);
+			result.put("message", "프로필 이미지가 업로드되었습니다.");
+			result.put("profileImage", profileImagePath);
+			result.put("member", updatedMember);
+		} catch (IOException e) {
+			System.err.println("프로필 이미지 업로드 실패: " + e.getMessage());
+			result.put("success", false);
+			result.put("message", "파일 업로드에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 프로필 이미지 조회 (다운로드)
+	@GetMapping("member/profile-image/{memberNo}")
+	public ResponseEntity<Resource> getProfileImage(@PathVariable int memberNo) {
+		try {
+			Member member = service.findByNo(memberNo);
+			if (member == null || member.getProfileImage() == null) {
+				return ResponseEntity.notFound().build();
+			}
+
+			Path filePath = Paths.get(uploadPath, member.getProfileImage());
+			if (!Files.exists(filePath)) {
+				return ResponseEntity.notFound().build();
+			}
+
+			Resource resource = new UrlResource(filePath.toUri());
+			String contentType = Files.probeContentType(filePath);
+			if (contentType == null) {
+				contentType = "application/octet-stream";
+			}
+
+			return ResponseEntity.ok()
+					.contentType(MediaType.parseMediaType(contentType))
+					.header(HttpHeaders.CACHE_CONTROL, "max-age=86400")
+					.body(resource);
+		} catch (Exception e) {
+			System.err.println("프로필 이미지 조회 실패: " + e.getMessage());
+			return ResponseEntity.notFound().build();
+		}
+	}
+
+	// 프로필 이미지 삭제
+	@DeleteMapping("member/profile-image/{memberNo}")
+	public Map<String, Object> deleteProfileImage(@PathVariable int memberNo) {
+		System.out.println("프로필 이미지 삭제 요청 - memberNo: " + memberNo);
+		Map<String, Object> result = new HashMap<>();
+
+		boolean deleted = service.deleteProfileImage(memberNo);
+		if (deleted) {
+			Member updatedMember = service.findByNo(memberNo);
+			updatedMember.setPassword(null);
+
+			result.put("success", true);
+			result.put("message", "프로필 이미지가 삭제되었습니다.");
+			result.put("member", updatedMember);
+		} else {
+			result.put("success", false);
+			result.put("message", "삭제할 프로필 이미지가 없습니다.");
 		}
 
 		return result;

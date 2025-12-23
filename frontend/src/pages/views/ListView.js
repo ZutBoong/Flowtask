@@ -7,28 +7,14 @@ import './ListView.css';
 
 // 워크플로우 상태
 const WORKFLOW_STATUSES = {
-    WAITING: { label: '대기', color: '#94a3b8' },
-    IN_PROGRESS: { label: '진행', color: '#3b82f6' },
-    REVIEW: { label: '검토', color: '#f59e0b' },
-    DONE: { label: '완료', color: '#10b981' },
-    REJECTED: { label: '반려', color: '#ef4444' }
+    WAITING: { label: 'Waiting', color: '#94a3b8' },
+    IN_PROGRESS: { label: 'In Progress', color: '#3b82f6' },
+    REVIEW: { label: 'Review', color: '#f59e0b' },
+    DONE: { label: 'Done', color: '#10b981' },
+    REJECTED: { label: 'Rejected', color: '#ef4444' },
+    DECLINED: { label: 'Declined', color: '#6b7280' }
 };
 
-// 우선순위 라벨
-const PRIORITY_LABELS = {
-    CRITICAL: '긴급',
-    HIGH: '높음',
-    MEDIUM: '보통',
-    LOW: '낮음'
-};
-
-// 우선순위 색상
-const PRIORITY_COLORS = {
-    CRITICAL: '#dc2626',
-    HIGH: '#f59e0b',
-    MEDIUM: '#3b82f6',
-    LOW: '#6b7280'
-};
 
 function ListView({
     team,
@@ -128,10 +114,32 @@ function ListView({
         });
     };
 
-    // 칼럼별 태스크 가져오기
+    // 칼럼별 태스크 가져오기 (Done 맨 아래, 긴급 우선, 마감일 빠른 순)
     const getTasksByColumn = (columnId) => {
         const columnTasks = tasks.filter(t => t.columnId === columnId);
-        return applyFilters(columnTasks);
+        const filteredTasks = applyFilters(columnTasks);
+
+        // 정렬: 1) Done은 맨 아래, 2) 긴급(URGENT) 우선, 3) 마감일 빠른 순
+        return filteredTasks.sort((a, b) => {
+            // Done 상태는 맨 아래
+            const aDone = a.workflowStatus === 'DONE' ? 1 : 0;
+            const bDone = b.workflowStatus === 'DONE' ? 1 : 0;
+            if (aDone !== bDone) return aDone - bDone;
+
+            // 긴급 우선
+            const aUrgent = a.priority === 'URGENT' ? 0 : 1;
+            const bUrgent = b.priority === 'URGENT' ? 0 : 1;
+            if (aUrgent !== bUrgent) return aUrgent - bUrgent;
+
+            // 마감일 빠른 순 (마감일 없는 것은 뒤로)
+            const aDate = a.dueDate ? new Date(a.dueDate) : null;
+            const bDate = b.dueDate ? new Date(b.dueDate) : null;
+
+            if (aDate && bDate) return aDate - bDate;
+            if (aDate && !bDate) return -1;
+            if (!aDate && bDate) return 1;
+            return 0;
+        });
     };
 
     // 태스크 추가 (모달에서)
@@ -270,16 +278,52 @@ function ListView({
         }
     };
 
-    // 담당자 이름 가져오기
-    const getAssigneeName = (task) => {
+    // 담당자 아바타 렌더링
+    const renderAssigneeAvatars = (task) => {
+        let assignees = [];
+
         if (task.assignees?.length > 0) {
-            return task.assignees.map(a => a.memberName).join(', ');
-        }
-        if (task.assigneeNo) {
+            assignees = task.assignees;
+        } else if (task.assigneeNo) {
             const member = teamMembers.find(m => m.memberNo === task.assigneeNo);
-            return member?.memberName || '-';
+            if (member) {
+                assignees = [{ memberNo: member.memberNo, memberName: member.memberName, profileImage: member.profileImage }];
+            }
         }
-        return '-';
+
+        if (assignees.length === 0) {
+            return <span className="no-assignee">-</span>;
+        }
+
+        const maxDisplay = 3;
+        const displayAssignees = assignees.slice(0, maxDisplay);
+        const remaining = assignees.length - maxDisplay;
+
+        return (
+            <div className="assignee-avatars">
+                {displayAssignees.map((assignee, index) => (
+                    <div
+                        key={assignee.memberNo}
+                        className="assignee-avatar"
+                        title={assignee.memberName}
+                        style={{ zIndex: displayAssignees.length - index }}
+                    >
+                        {assignee.profileImage ? (
+                            <img src={assignee.profileImage} alt={assignee.memberName} />
+                        ) : (
+                            <span className="avatar-initial">
+                                {assignee.memberName?.charAt(0) || '?'}
+                            </span>
+                        )}
+                    </div>
+                ))}
+                {remaining > 0 && (
+                    <div className="assignee-avatar more" title={`외 ${remaining}명`}>
+                        +{remaining}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     // 마감일 포맷
@@ -336,8 +380,7 @@ function ListView({
                                             <th className="col-assignee">담당자</th>
                                             <th className="col-due">마감일</th>
                                             <th className="col-status">상태</th>
-                                            <th className="col-priority">우선순위</th>
-                                            <th className="col-actions"></th>
+                                            <th className="col-priority">긴급</th>
                                         </tr>
                                     </thead>
                                     <Droppable droppableId={`column-${column.columnId}`} type="task">
@@ -375,7 +418,7 @@ function ListView({
                                                                         {task.title}
                                                                     </span>
                                                                 </td>
-                                                                <td className="col-assignee">{getAssigneeName(task)}</td>
+                                                                <td className="col-assignee">{renderAssigneeAvatars(task)}</td>
                                                                 <td className="col-due">{formatDueDate(task.dueDate)}</td>
                                                                 <td className="col-status">
                                                                     <span
@@ -386,23 +429,11 @@ function ListView({
                                                                     </span>
                                                                 </td>
                                                                 <td className="col-priority">
-                                                                    {task.priority && (
-                                                                        <span
-                                                                            className="priority-badge"
-                                                                            style={{ backgroundColor: PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.MEDIUM }}
-                                                                        >
-                                                                            {PRIORITY_LABELS[task.priority] || '보통'}
+                                                                    {task.priority === 'URGENT' && (
+                                                                        <span className="urgent-badge">
+                                                                            <i className="fa-solid fa-triangle-exclamation"></i>
                                                                         </span>
                                                                     )}
-                                                                </td>
-                                                                <td className="col-actions">
-                                                                    <button
-                                                                        className="row-delete-btn"
-                                                                        onClick={() => handleDeleteTask(task.taskId)}
-                                                                        title="삭제"
-                                                                    >
-                                                                        ×
-                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         )}

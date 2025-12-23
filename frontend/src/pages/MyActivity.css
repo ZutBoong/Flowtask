@@ -337,37 +337,31 @@
 
 .task-item {
     padding: 6px 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
-    color: white !important;
+    color: #334155;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     transition: all 0.15s ease;
-    border: none;
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.task-item.priority-critical {
-    background: #dc2626 !important;
-}
-
-.task-item.priority-high {
-    background: #f59e0b !important;
-}
-
-.task-item.priority-medium {
-    background: #3b82f6 !important;
-}
-
-.task-item.priority-low {
-    background: #6b7280 !important;
+.task-item .urgent-icon {
+    font-size: 10px;
+    flex-shrink: 0;
+    color: #dc2626;
 }
 
 .task-item:hover {
-    opacity: 0.85;
-    transform: translateX(2px);
+    background: #e2e8f0;
+    border-color: #94a3b8;
 }
 
 .more-tasks {
@@ -407,16 +401,12 @@
 .teams-section {
     display: flex;
     flex-direction: column;
-    max-height: 500px;
 }
 
 .teams-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto;
-    flex: 1;
-    max-height: 400px;
 }
 
 .teams-list::-webkit-scrollbar,
@@ -440,7 +430,7 @@
     background: #cbd5e1;
 }
 
-.team-item {
+.teams-list .team-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -450,15 +440,17 @@
     transition: all 0.2s ease;
     cursor: pointer;
     border: 2px solid transparent;
+    min-height: 72px;
+    flex-shrink: 0;
 }
 
-.team-item:hover {
+.teams-list .team-item:hover {
     background: white;
     border-color: rgba(102, 126, 234, 0.2);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
 }
 
-.team-item.active {
+.teams-list .team-item.active {
     background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
     border-color: #667eea;
 }
@@ -507,16 +499,12 @@
 .archives-section {
     display: flex;
     flex-direction: column;
-    max-height: 500px;
 }
 
 .archives-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto;
-    flex: 1;
-    max-height: 400px;
 }
 
 .archive-item {
@@ -525,6 +513,8 @@
     border-radius: 12px;
     transition: all 0.2s ease;
     border: 2px solid transparent;
+    min-height: 80px;
+    flex-shrink: 0;
 }
 
 .archive-item:hover {
@@ -636,6 +626,135 @@
     border-radius: 10px;
 }
 
+/* 더보기 버튼 */
+.show-more-btn {
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.show-more-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 모달 오버레이 */
+.activity-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 모달 */
+.activity-modal {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.activity-modal-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
+}
+
+.activity-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.modal-count {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.activity-modal-close {
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.activity-modal-close:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.activity-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.activity-modal-body::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 3px;
+}
+
+.activity-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
 /* 반응형 - 캘린더 */
 @media (max-width: 1200px) {
     .calendar-day {
@@ -686,12 +805,21 @@
 
     .teams-section,
     .archives-section {
-        max-height: 400px;
+        max-height: none;
     }
 
-    .teams-list,
-    .archives-list {
-        max-height: 320px;
+    .activity-modal {
+        width: 95%;
+        max-height: 85vh;
+        margin: 0 10px;
+    }
+
+    .activity-modal-header {
+        padding: 16px 20px;
+    }
+
+    .activity-modal-body {
+        padding: 16px 20px;
     }
 
     .calendar-day {

@@ -181,24 +181,57 @@
 
 /* ===== 멤버 사이드바 ===== */
 .member-sidebar {
-    width: 260px;
     background: white;
     border-left: 1px solid rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
+    transition: width 0.3s ease;
+}
+
+.member-sidebar.open {
+    width: 260px;
+}
+
+.member-sidebar.collapsed {
+    width: 64px;
 }
 
 .member-sidebar-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
     padding: 16px 20px;
     border-bottom: 1px solid #e2e8f0;
 }
 
-.member-sidebar-header span:first-child {
+.member-sidebar.collapsed .member-sidebar-header {
+    justify-content: center;
+    padding: 16px 12px;
+}
+
+.member-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.member-sidebar-toggle:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.member-sidebar-header > span:first-of-type {
     font-size: 11px;
     font-weight: 700;
     color: #64748b;
@@ -355,6 +388,59 @@
     text-overflow: ellipsis;
 }
 
+/* ===== 멤버 사이드바 접힌 상태 ===== */
+.member-list-collapsed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-avatar-collapsed {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.member-avatar-collapsed:hover {
+    transform: scale(1.1);
+}
+
+.member-avatar-collapsed.leader {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.member-avatar-collapsed .status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: #cbd5e1;
+}
+
+.member-avatar-collapsed .status-dot.online {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
 /* ===== 로딩 상태 ===== */
 .team-loading {
     display: flex;
@@ -427,8 +513,12 @@
 
 /* 데스크톱 중간 크기 (1024px ~ 1200px) */
 @media (max-width: 1200px) {
-    .member-sidebar {
+    .member-sidebar.open {
         width: 220px;
+    }
+
+    .member-sidebar.collapsed {
+        width: 64px;
     }
 
     .header-search {
@@ -446,8 +536,12 @@
         margin-left: 64px;
     }
 
-    .member-sidebar {
+    .member-sidebar.open {
         width: 180px;
+    }
+
+    .member-sidebar.collapsed {
+        width: 56px;
     }
 
     .header-tabs .tab-button {

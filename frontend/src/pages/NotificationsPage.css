@@ -224,8 +224,10 @@
 
 .empty-icon {
     font-size: 36px;
-    margin-bottom: 12px;
-    opacity: 0.5;
+    display: block;
+    margin: 0 auto 12px;
+    text-align: center;
+    color: #cbd5e1;
 }
 
 .notifications-empty p {
@@ -350,9 +352,9 @@
 }
 
 .empty-detail-icon {
-    font-size: 64px;
+    font-size: 56px;
     margin-bottom: 20px;
-    opacity: 0.4;
+    color: #cbd5e1;
 }
 
 .notification-detail-empty h3 {

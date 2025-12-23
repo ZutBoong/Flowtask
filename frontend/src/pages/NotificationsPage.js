@@ -279,7 +279,7 @@ function NotificationsPage() {
                                     </div>
                                 ) : filteredNotifications.length === 0 ? (
                                     <div className="notifications-empty">
-                                        <div className="empty-icon">🔔</div>
+                                        <i className="fa-regular fa-bell empty-icon"></i>
                                         <p>{filter === 'unread' ? '읽지 않은 알림이 없습니다' : '알림이 없습니다'}</p>
                                     </div>
                                 ) : (
@@ -384,7 +384,7 @@ function NotificationsPage() {
                                 </div>
                             ) : (
                                 <div className="notification-detail-empty">
-                                    <div className="empty-detail-icon">📬</div>
+                                    <i className="fa-solid fa-box empty-detail-icon"></i>
                                     <h3>알림을 선택하세요</h3>
                                     <p>왼쪽 목록에서 알림을 선택하면<br />상세 내용을 확인할 수 있습니다.</p>
                                 </div>

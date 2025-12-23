@@ -9,6 +9,7 @@ import ListView from './views/ListView';
 import BoardView from './views/BoardView';
 import TimelineView from './views/TimelineView';
 import CalendarView from './views/CalendarView';
+import ChatView from './views/ChatView';
 import FilesView from './views/FilesView';
 import './TeamView.css';
 
@@ -19,6 +20,7 @@ const TABS = [
     { id: 'board', label: '보드', icon: '▦' },
     { id: 'timeline', label: '타임라인', icon: '📊' },
     { id: 'calendar', label: '캘린더', icon: '📅' },
+    { id: 'chat', label: '채팅', icon: '💬' },
     { id: 'files', label: '파일', icon: '📁' }
 ];
 
@@ -38,6 +40,7 @@ function TeamView() {
     const [loginMember, setLoginMember] = useState(null);
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [memberSidebarOpen, setMemberSidebarOpen] = useState(true);
     const [wsConnected, setWsConnected] = useState(false);
     const [onlineMembers, setOnlineMembers] = useState([]);
     const [filters, setFilters] = useState({
@@ -280,7 +283,9 @@ function TeamView() {
         removeColumn,
         updateTeam,
         // 데이터 리로드
-        refreshData: fetchData
+        refreshData: fetchData,
+        // 현재 탭
+        activeTab
     };
 
     // 현재 탭에 해당하는 뷰 렌더링
@@ -314,6 +319,8 @@ function TeamView() {
                 return <TimelineView {...viewProps} />;
             case 'calendar':
                 return <CalendarView {...viewProps} />;
+            case 'chat':
+                return <ChatView {...viewProps} />;
             case 'files':
                 return <FilesView {...viewProps} />;
             default:
@@ -381,11 +388,29 @@ function TeamView() {
 
                     {/* 멤버 사이드바 */}
                     {team && (
-                        <aside className="member-sidebar">
+                        <aside className={`member-sidebar ${memberSidebarOpen ? 'open' : 'collapsed'}`}>
                             <div className="member-sidebar-header">
-                                <span>멤버</span>
-                                <span className="member-count">{teamMembers.length}</span>
+                                <button
+                                    className="member-sidebar-toggle"
+                                    onClick={() => setMemberSidebarOpen(!memberSidebarOpen)}
+                                    title={memberSidebarOpen ? '멤버 패널 접기' : '멤버 패널 펼치기'}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        {memberSidebarOpen ? (
+                                            <polyline points="15 18 9 12 15 6" />
+                                        ) : (
+                                            <polyline points="9 18 15 12 9 6" />
+                                        )}
+                                    </svg>
+                                </button>
+                                {memberSidebarOpen && (
+                                    <>
+                                        <span>멤버</span>
+                                        <span className="member-count">{teamMembers.length}</span>
+                                    </>
+                                )}
                             </div>
+                            {memberSidebarOpen ? (
                             <div className="member-list">
                                 {/* 온라인 멤버 */}
                                 {teamMembers.filter(m => onlineMembers.includes(m.memberNo)).length > 0 && (
@@ -441,6 +466,28 @@ function TeamView() {
                                     </div>
                                 )}
                             </div>
+                            ) : (
+                            <div className="member-list-collapsed">
+                                {teamMembers
+                                    .sort((a, b) => {
+                                        // 온라인 먼저, 그 다음 리더 먼저
+                                        const aOnline = onlineMembers.includes(a.memberNo) ? 1 : 0;
+                                        const bOnline = onlineMembers.includes(b.memberNo) ? 1 : 0;
+                                        if (aOnline !== bOnline) return bOnline - aOnline;
+                                        return a.role === 'LEADER' ? -1 : b.role === 'LEADER' ? 1 : 0;
+                                    })
+                                    .map(member => (
+                                    <div
+                                        key={member.memberNo}
+                                        className={`member-avatar-collapsed ${member.role === 'LEADER' ? 'leader' : ''}`}
+                                        title={`${member.memberName} (${member.memberUserid})`}
+                                    >
+                                        {member.memberName?.charAt(0) || 'U'}
+                                        <span className={`status-dot ${onlineMembers.includes(member.memberNo) ? 'online' : ''}`}></span>
+                                    </div>
+                                ))}
+                            </div>
+                            )}
                         </aside>
                     )}
                 </div>

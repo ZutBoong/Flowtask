@@ -1,7 +1,16 @@
 package com.example.demo.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.demo.dao.MemberDao;
 import com.example.demo.model.Member;
 
@@ -10,6 +19,9 @@ public class MemberService {
 
 	private final MemberDao dao;
 	private final PasswordEncoder passwordEncoder;
+
+	@Value("${flowtask.upload.path:uploads}")
+	private String uploadPath;
 
 	public MemberService(MemberDao dao, PasswordEncoder passwordEncoder) {
 		this.dao = dao;
@@ -115,5 +127,67 @@ public class MemberService {
 	// 회원 삭제
 	public int delete(int no) {
 		return dao.delete(no);
+	}
+
+	// 프로필 이미지 업로드
+	public String uploadProfileImage(int memberNo, MultipartFile file) throws IOException {
+		// 저장 경로 설정
+		Path profileDir = Paths.get(uploadPath, "profiles");
+		if (!Files.exists(profileDir)) {
+			Files.createDirectories(profileDir);
+		}
+
+		// 기존 프로필 이미지 삭제
+		Member member = dao.findByNo(memberNo);
+		if (member != null && member.getProfileImage() != null) {
+			try {
+				Path oldFile = Paths.get(uploadPath, member.getProfileImage());
+				Files.deleteIfExists(oldFile);
+			} catch (Exception e) {
+				// 기존 파일 삭제 실패해도 계속 진행
+			}
+		}
+
+		// 새 파일명 생성 (UUID + 확장자)
+		String originalFilename = file.getOriginalFilename();
+		String extension = "";
+		if (originalFilename != null && originalFilename.contains(".")) {
+			extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+		}
+		String storedFilename = UUID.randomUUID().toString() + extension;
+
+		// 파일 저장
+		Path filePath = profileDir.resolve(storedFilename);
+		Files.copy(file.getInputStream(), filePath);
+
+		// DB 업데이트 (상대 경로 저장)
+		String relativePath = "profiles/" + storedFilename;
+		Member updateMember = new Member();
+		updateMember.setNo(memberNo);
+		updateMember.setProfileImage(relativePath);
+		dao.updateProfileImage(updateMember);
+
+		return relativePath;
+	}
+
+	// 프로필 이미지 삭제
+	public boolean deleteProfileImage(int memberNo) {
+		Member member = dao.findByNo(memberNo);
+		if (member != null && member.getProfileImage() != null) {
+			try {
+				Path filePath = Paths.get(uploadPath, member.getProfileImage());
+				Files.deleteIfExists(filePath);
+			} catch (Exception e) {
+				// 파일 삭제 실패해도 DB 업데이트는 진행
+			}
+
+			// DB 업데이트 (null로 설정)
+			Member updateMember = new Member();
+			updateMember.setNo(memberNo);
+			updateMember.setProfileImage(null);
+			dao.updateProfileImage(updateMember);
+			return true;
+		}
+		return false;
 	}
 }

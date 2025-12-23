@@ -14,5 +14,6 @@ public class Member {
 	private String email;
 	private String phone;
 	private boolean emailVerified;
+	private String profileImage;
 	private Date register;
 }

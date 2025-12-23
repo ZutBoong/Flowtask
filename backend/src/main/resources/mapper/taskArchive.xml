@@ -15,10 +15,16 @@
         )
     </insert>
 
-    <!-- 아카이브 삭제 -->
+    <!-- 아카이브 삭제 (archiveId로) -->
     <delete id="delete" parameterType="int">
         DELETE FROM flowtask_task_archive
         WHERE archive_id = #{archiveId}
+    </delete>
+
+    <!-- 아카이브 삭제 (taskId와 memberNo로) -->
+    <delete id="deleteByTaskAndMember">
+        DELETE FROM flowtask_task_archive
+        WHERE original_task_id = #{taskId} AND member_no = #{memberNo}
     </delete>
 
     <!-- 아카이브 상세 조회 -->

@@ -31,10 +31,19 @@ public class TaskArchiveController {
         }
     }
 
-    // 아카이브 삭제
+    // 아카이브 삭제 (archiveId로)
     @DeleteMapping("/archive/{archiveId}")
     public ResponseEntity<?> deleteArchive(@PathVariable int archiveId) {
         int result = service.deleteArchive(archiveId);
+        return ResponseEntity.ok(Map.of("success", result > 0));
+    }
+
+    // 아카이브 삭제 (taskId와 memberNo로)
+    @DeleteMapping("/{taskId}/archive")
+    public ResponseEntity<?> deleteArchiveByTask(
+            @PathVariable int taskId,
+            @RequestParam int memberNo) {
+        int result = service.deleteArchiveByTaskAndMember(taskId, memberNo);
         return ResponseEntity.ok(Map.of("success", result > 0));
     }
 

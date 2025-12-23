@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    uploadFile, getFilesByTeam, deleteFile,
+    getFilesByTeam, deleteFile,
     getDownloadUrl, formatFileSize, getFileIcon
 } from '../../api/fileApi';
 import './FilesView.css';
@@ -8,9 +8,6 @@ import './FilesView.css';
 function FilesView({ team, teamMembers, loginMember, filters }) {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [dragActive, setDragActive] = useState(false);
-    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (team) {
@@ -29,50 +26,6 @@ function FilesView({ team, teamMembers, loginMember, filters }) {
             console.error('파일 목록 로드 실패:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    // 파일 업로드
-    const handleUpload = async (fileList) => {
-        if (!fileList || fileList.length === 0 || !team || !loginMember) return;
-
-        setUploading(true);
-        try {
-            for (const file of fileList) {
-                await uploadFile(file, team.teamId, null, loginMember.no);
-            }
-            await fetchFiles();
-        } catch (error) {
-            console.error('파일 업로드 실패:', error);
-            alert('파일 업로드에 실패했습니다.');
-        } finally {
-            setUploading(false);
-        }
-    };
-
-    // 파일 선택
-    const handleFileSelect = (e) => {
-        handleUpload(e.target.files);
-        e.target.value = '';
-    };
-
-    // 드래그 앤 드롭
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleUpload(e.dataTransfer.files);
         }
     };
 
@@ -125,38 +78,6 @@ function FilesView({ team, teamMembers, loginMember, filters }) {
 
     return (
         <div className="files-view">
-            {/* 업로드 영역 */}
-            <div
-                className={`upload-zone ${dragActive ? 'active' : ''}`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-            >
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                    hidden
-                />
-                <div className="upload-content">
-                    {uploading ? (
-                        <>
-                            <div className="upload-spinner"></div>
-                            <p>업로드 중...</p>
-                        </>
-                    ) : (
-                        <>
-                            <span className="upload-icon">📁</span>
-                            <p>파일을 드래그하거나 클릭하여 업로드</p>
-                            <span className="upload-hint">모든 파일 형식 지원</span>
-                        </>
-                    )}
-                </div>
-            </div>
-
             {/* 파일 목록 */}
             <div className="files-section">
                 <div className="section-header">
@@ -170,7 +91,7 @@ function FilesView({ team, teamMembers, loginMember, filters }) {
                     </div>
                 ) : filteredFiles.length === 0 ? (
                     <div className="files-empty">
-                        <span className="empty-icon">📂</span>
+                        <i className="fa-regular fa-file empty-icon"></i>
                         <p>{filters?.searchQuery ? '검색 결과가 없습니다' : '업로드된 파일이 없습니다'}</p>
                     </div>
                 ) : (

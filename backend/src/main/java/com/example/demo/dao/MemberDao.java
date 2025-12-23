@@ -55,4 +55,7 @@ public interface MemberDao {
 
 	// 회원 삭제
 	int delete(int no);
+
+	// 프로필 이미지 업데이트
+	int updateProfileImage(Member member);
 }

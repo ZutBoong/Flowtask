@@ -5,27 +5,21 @@ import {
     taskwrite, taskdelete, taskposition,
     tasklistByTeam, columnlistByTeam
 } from '../../api/boardApi';
-import { addTaskFavorite, removeTaskFavorite, checkTaskFavorite, getTaskFavorites } from '../../api/boardApi';
+import { addTaskFavorite, removeTaskFavorite, checkTaskFavorite, getTaskFavorites, archiveTask, unarchiveTask, getTaskArchives } from '../../api/boardApi';
 import TaskModal from '../../components/TaskModal';
 import TaskCreateModal from '../../components/TaskCreateModal';
 import './BoardView.css';
 
 // 워크플로우 상태
 const WORKFLOW_STATUSES = {
-    WAITING: { label: '대기', color: '#94a3b8' },
-    IN_PROGRESS: { label: '진행', color: '#3b82f6' },
-    REVIEW: { label: '검토', color: '#f59e0b' },
-    DONE: { label: '완료', color: '#10b981' },
-    REJECTED: { label: '반려', color: '#ef4444' }
+    WAITING: { label: 'Waiting', color: '#94a3b8' },
+    IN_PROGRESS: { label: 'In Progress', color: '#3b82f6' },
+    REVIEW: { label: 'Review', color: '#f59e0b' },
+    DONE: { label: 'Done', color: '#10b981' },
+    REJECTED: { label: 'Rejected', color: '#ef4444' },
+    DECLINED: { label: 'Declined', color: '#6b7280' }
 };
 
-// 우선순위 라벨
-const PRIORITY_LABELS = {
-    CRITICAL: { label: '긴급', color: '#dc2626' },
-    HIGH: { label: '높음', color: '#f59e0b' },
-    MEDIUM: { label: '보통', color: '#3b82f6' },
-    LOW: { label: '낮음', color: '#6b7280' }
-};
 
 function BoardView({
     team,
@@ -55,6 +49,7 @@ function BoardView({
 
     // 태스크 즐겨찾기 관련 상태
     const [taskFavorites, setTaskFavorites] = useState({});  // { taskId: boolean }
+    const [taskArchives, setTaskArchives] = useState({});  // { taskId: boolean }
     const [createTaskModalColumnId, setCreateTaskModalColumnId] = useState(null);
 
     // 스크롤 관련
@@ -74,10 +69,11 @@ function BoardView({
         setTasks(propTasks || []);
     }, [propTasks]);
 
-    // 태스크 즐겨찾기 로드
+    // 태스크 즐겨찾기/아카이브 로드
     useEffect(() => {
         if (loginMember) {
             loadTaskFavorites();
+            loadTaskArchives();
         }
     }, [loginMember]);
 
@@ -93,6 +89,21 @@ function BoardView({
             setTaskFavorites(favoritesMap);
         } catch (error) {
             console.error('즐겨찾기 로드 실패:', error);
+        }
+    };
+
+    const loadTaskArchives = async () => {
+        if (!loginMember) return;
+
+        try {
+            const archives = await getTaskArchives(loginMember.no);
+            const archivesMap = {};
+            archives.forEach(archive => {
+                archivesMap[archive.originalTaskId] = true;
+            });
+            setTaskArchives(archivesMap);
+        } catch (error) {
+            console.error('아카이브 로드 실패:', error);
         }
     };
 
@@ -220,7 +231,28 @@ function BoardView({
     const getTasksByColumn = (columnId) => {
         const columnTasks = tasks.filter(task => task.columnId === columnId);
         const filteredTasks = applyFilters(columnTasks);
-        return filteredTasks.sort((a, b) => a.position - b.position);
+
+        // 정렬: 1) Done은 맨 아래, 2) 긴급(URGENT) 우선, 3) 마감일 빠른 순
+        return filteredTasks.sort((a, b) => {
+            // Done 상태는 맨 아래
+            const aDone = a.workflowStatus === 'DONE' ? 1 : 0;
+            const bDone = b.workflowStatus === 'DONE' ? 1 : 0;
+            if (aDone !== bDone) return aDone - bDone;
+
+            // 긴급 우선
+            const aUrgent = a.priority === 'URGENT' ? 0 : 1;
+            const bUrgent = b.priority === 'URGENT' ? 0 : 1;
+            if (aUrgent !== bUrgent) return aUrgent - bUrgent;
+
+            // 마감일 빠른 순 (마감일 없는 것은 뒤로)
+            const aDate = a.dueDate ? new Date(a.dueDate) : null;
+            const bDate = b.dueDate ? new Date(b.dueDate) : null;
+
+            if (aDate && bDate) return aDate - bDate;
+            if (aDate && !bDate) return -1;
+            if (!aDate && bDate) return 1;
+            return 0;
+        });
     };
 
     // 드래그 앤 드롭
@@ -376,13 +408,29 @@ function BoardView({
         }
     };
 
-    // 태스크 삭제
-    const handleDeleteTask = async (taskId) => {
+    // 태스크 아카이브 토글
+    const handleArchiveTask = async (taskId, e) => {
+        e.stopPropagation();
+        if (!loginMember) return;
+
         try {
-            await taskdelete(taskId);
-            setTasks(prev => prev.filter(t => t.taskId !== taskId));
+            if (taskArchives[taskId]) {
+                // 아카이브 해제
+                await unarchiveTask(taskId, loginMember.no);
+                setTaskArchives(prev => ({
+                    ...prev,
+                    [taskId]: false
+                }));
+            } else {
+                // 아카이브 설정
+                await archiveTask(taskId, loginMember.no, '');
+                setTaskArchives(prev => ({
+                    ...prev,
+                    [taskId]: true
+                }));
+            }
         } catch (error) {
-            console.error('태스크 삭제 실패:', error);
+            console.error('태스크 아카이브 토글 실패:', error);
         }
     };
 
@@ -484,44 +532,39 @@ function BoardView({
                                                                 >
                                                                     {(provided, snapshot) => (
                                                                         <div
-                                                                            className={`task-card ${snapshot.isDragging ? 'dragging' : ''} ${task.workflowStatus === 'DONE' ? 'done' : ''}`}
+                                                                            className={`task-card ${snapshot.isDragging ? 'dragging' : ''} ${task.workflowStatus === 'DONE' ? 'done' : ''} status-${task.workflowStatus?.toLowerCase().replace('_', '-') || 'waiting'}`}
                                                                             ref={provided.innerRef}
                                                                             {...provided.draggableProps}
                                                                             {...provided.dragHandleProps}
                                                                             onClick={() => handleTaskClick(task)}
                                                                         >
-                                                                            {task.priority && PRIORITY_LABELS[task.priority] && (
-                                                                                <div className="task-card-priority">
+                                                                            <div className="task-card-actions">
+                                                                                <button
+                                                                                    className={`task-favorite-btn ${taskFavorites[task.taskId] ? 'active' : ''}`}
+                                                                                    onClick={(e) => handleToggleTaskFavorite(task.taskId, e)}
+                                                                                    title={taskFavorites[task.taskId] ? '즐겨찾기 해제' : '즐겨찾기'}
+                                                                                >
+                                                                                    <i className={taskFavorites[task.taskId] ? 'fa-solid fa-star' : 'fa-regular fa-star'}></i>
+                                                                                </button>
+                                                                                <button
+                                                                                    className={`archive-btn ${taskArchives[task.taskId] ? 'active' : ''}`}
+                                                                                    onClick={(e) => handleArchiveTask(task.taskId, e)}
+                                                                                    title={taskArchives[task.taskId] ? '아카이브 해제' : '아카이브'}
+                                                                                >
+                                                                                    <i className={taskArchives[task.taskId] ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'}></i>
+                                                                                </button>
+                                                                            </div>
+                                                                            {task.workflowStatus && WORKFLOW_STATUSES[task.workflowStatus] && (
+                                                                                <div className="task-card-workflow">
                                                                                     <span
-                                                                                        className="priority-badge"
-                                                                                        style={{ backgroundColor: PRIORITY_LABELS[task.priority].color }}
+                                                                                        className={`workflow-status-badge status-${task.workflowStatus?.toLowerCase().replace('_', '-')}`}
                                                                                     >
-                                                                                        {PRIORITY_LABELS[task.priority].label}
+                                                                                        {WORKFLOW_STATUSES[task.workflowStatus].label}
                                                                                     </span>
                                                                                 </div>
                                                                             )}
-                                                                            <div className="task-card-top">
-                                                                                <div className="task-card-title">
-                                                                                    {task.title}
-                                                                                </div>
-                                                                                <div className="task-card-actions">
-                                                                                    <button
-                                                                                        className={`task-favorite-btn ${taskFavorites[task.taskId] ? 'active' : ''}`}
-                                                                                        onClick={(e) => handleToggleTaskFavorite(task.taskId, e)}
-                                                                                        title={taskFavorites[task.taskId] ? '즐겨찾기 해제' : '즐겨찾기'}
-                                                                                    >
-                                                                                        {taskFavorites[task.taskId] ? '★' : '☆'}
-                                                                                    </button>
-                                                                                    <button
-                                                                                        className="delete-btn"
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            handleDeleteTask(task.taskId);
-                                                                                        }}
-                                                                                    >
-                                                                                        ×
-                                                                                    </button>
-                                                                                </div>
+                                                                            <div className="task-card-title">
+                                                                                {task.title}
                                                                             </div>
                                                                             <div className="task-card-meta">
                                                                                 {task.dueDate && (
@@ -529,12 +572,9 @@ function BoardView({
                                                                                         {new Date(task.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                                                                                     </span>
                                                                                 )}
-                                                                                {task.workflowStatus && WORKFLOW_STATUSES[task.workflowStatus] && (
-                                                                                    <span
-                                                                                        className={`workflow-status-badge status-${task.workflowStatus?.toLowerCase().replace('_', '-')}`}
-                                                                                        style={{ backgroundColor: WORKFLOW_STATUSES[task.workflowStatus].color }}
-                                                                                    >
-                                                                                        {WORKFLOW_STATUSES[task.workflowStatus].label}
+                                                                                {task.priority === 'URGENT' && (
+                                                                                    <span className="urgent-badge">
+                                                                                        <i className="fa-solid fa-triangle-exclamation"></i>
                                                                                     </span>
                                                                                 )}
                                                                             </div>
@@ -587,6 +627,13 @@ function BoardView({
                     task={selectedTask}
                     teamId={team?.teamId}
                     loginMember={loginMember}
+                    isArchived={taskArchives[selectedTask.taskId] || false}
+                    onArchiveChange={(archived) => {
+                        setTaskArchives(prev => ({
+                            ...prev,
+                            [selectedTask.taskId]: archived
+                        }));
+                    }}
                     onClose={() => setSelectedTask(null)}
                     onSave={() => {
                         if (refreshData) refreshData();
