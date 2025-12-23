@@ -10,10 +10,14 @@ import TeamView from './pages/TeamView';
 import MyPage from './pages/MyPage';
 import MyActivity from './pages/MyActivity';
 import CreateTeam from './pages/CreateTeam';
+import OAuth2Redirect from './pages/OAuth2Redirect';
+
 import './App.css';
 
 function AppContent() {
   const location = useLocation();
+
+  const isOAuthRedirect = location.pathname === '/oauth2/redirect';
   const isCalendarPage = location.pathname === '/calendar';
   const isTeamPage = location.pathname.startsWith('/team/');
   const isMyPage = location.pathname === '/mypage';
@@ -21,8 +25,11 @@ function AppContent() {
   const isCreateTeam = location.pathname === '/create-team';
   const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password'].includes(location.pathname);
 
-  // TeamView, Calendar, MyPage, MyActivity, CreateTeam 페이지는 독립적인 레이아웃 사용
-  // TeamView는 Routes 내에서 렌더링 (useParams 사용을 위해)
+  // 🔥 반드시 최위에 두어야 한다!
+  if (isOAuthRedirect) {
+    return <OAuth2Redirect />;
+  }
+
   if (isTeamPage) {
     return (
       <Routes>
@@ -57,11 +64,17 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/find-id" element={<FindId />} />
           <Route path="/find-password" element={<FindPassword />} />
+          
+          {/* 🔥 여기도 물론 있어야 하지만 */}
+          <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
+
+          <Route path="/activity" element={<MyActivity />} />
         </Routes>
       </main>
     </div>
   );
 }
+
 
 function App() {
   return (

@@ -43,6 +43,13 @@ function Login() {
         }
     };
 
+    {/* 작성자: 홍진기 
+    소셜 로그인: */}
+    const handleGoogleLogin = () => {
+        window.location.href =
+        'http://localhost:8081/oauth2/authorization/google'
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-box">
@@ -76,9 +83,10 @@ function Login() {
                         <button type="submit" className="btn btn-primary">로그인</button>
                     </div>
 
-                    {/* 작성자: 홍진기 */}
-                    <div>
-                        <button type= "button" className="btn btn-primary">구글 로그인</button>
+                    {/* 작성자: 홍진기 
+                        소셜 로그인: */}
+                    <div className='button-group' style={{marginTop: '10px'}}>
+                        <button type= "button" className="btn btn-outline" onClick={handleGoogleLogin}>구글 로그인</button>
                         <button type= "button" className="btn btn-primary">네이버 로그인</button>
                     </div>
                 </form>
