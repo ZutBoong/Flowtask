@@ -94,6 +94,12 @@
 			<artifactId>ses</artifactId>
 			<version>2.21.0</version>
 		</dependency>
+
+		<!-- Google OAuth2 Login -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

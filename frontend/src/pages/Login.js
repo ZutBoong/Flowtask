@@ -73,6 +73,11 @@ function Login() {
         }
     };
 
+    // 소셜 로그인
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:8081/oauth2/authorization/google';
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-box">
@@ -115,7 +120,7 @@ function Login() {
                     <button
                         type="button"
                         className="social-btn google"
-                        onClick={() => alert('Google 로그인은 준비 중입니다.')}
+                        onClick={handleGoogleLogin}
                         title="Google로 로그인"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24">

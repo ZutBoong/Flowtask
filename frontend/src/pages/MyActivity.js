@@ -29,8 +29,9 @@ function MyActivity() {
         }
 
         const memberData = JSON.parse(storedMember);
+        console.log("저장된 member: ", memberData);
         setLoginMember(memberData);
-        fetchData(memberData.no);
+        fetchData(Number(memberData.no || memberData.memberNo));
 
         // 저장된 현재 팀 불러오기
         const storedTeam = localStorage.getItem('currentTeam');
@@ -237,7 +238,7 @@ function MyActivity() {
                                                     </div>
                                                     <div className="team-details">
                                                         <span className="team-name">{t.teamName}</span>
-                                                        {t.leaderNo === loginMember?.no && (
+                                                        {t.leaderNo === (loginMember?.no || loginMember?.memberNo) && (
                                                             <span className="team-badge">리더</span>
                                                         )}
                                                     </div>
