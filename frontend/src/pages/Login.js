@@ -49,11 +49,15 @@ function Login() {
         window.location.href =
         'http://localhost:8081/oauth2/authorization/google'
     };
-
-    const handleNaverLogin = () => {
-        window.location.href = 
+    const handleNaverLogin = () => {    //작성자 : 윤희망 OAuth2.0연동 Naver.Kakao
+        window.location.href =
         'http://localhost:8081/oauth2/authorization/naver'
-    }
+    };
+    const handleKakaoLogin = () => {
+        window.location.href =
+        'http://localhost:8081/oauth2/authorization/kakao'
+    };
+
 
     return (
         <div className="auth-container">
@@ -88,9 +92,10 @@ function Login() {
                         <button type="submit" className="btn btn-primary">로그인</button>
                     </div>
 
-                    {/* 작성자: 홍진기 
+                    {/* 작성자: 홍진기, 윤희망(수정 : 네이버, 카카오 소셜로그인 추가.) 
                         소셜 로그인: */}
                     <div className='button-group' style={{marginTop: '10px'}}>
+
                         <button 
                             type= "button" 
                             className="btn btn-outline" 
@@ -110,10 +115,12 @@ function Login() {
                         <button 
                             type= "button" 
                             className="btn btn-outline" 
-                            
-                            style={{backgroundColor:"#ffe300"}}>
+                            onClick={handleKakaoLogin}
+                            style={{backgroundColor:"#ffe300"}}
+                        >
                                 Kakao
                         </button>
+
                     </div>
                 </form>
 
