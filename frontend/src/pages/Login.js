@@ -50,6 +50,11 @@ function Login() {
         'http://localhost:8081/oauth2/authorization/google'
     };
 
+    const handleNaverLogin = () => {
+        window.location.href = 
+        'http://localhost:8081/oauth2/authorization/naver'
+    }
+
     return (
         <div className="auth-container">
             <div className="auth-box">
@@ -86,8 +91,29 @@ function Login() {
                     {/* 작성자: 홍진기 
                         소셜 로그인: */}
                     <div className='button-group' style={{marginTop: '10px'}}>
-                        <button type= "button" className="btn btn-outline" onClick={handleGoogleLogin}>구글 로그인</button>
-                        <button type= "button" className="btn btn-primary">네이버 로그인</button>
+                        <button 
+                            type= "button" 
+                            className="btn btn-outline" 
+                            onClick={handleGoogleLogin} 
+                            style={{backgroundColor:"#F8F9FA"}}>
+                                Google
+                        </button>
+                        {/* 작성자: 윤희망 */}
+                        <button 
+                            type= "button" 
+                            className="btn btn-outline" 
+                            onClick={handleNaverLogin}
+                            style={{backgroundColor:"#00ee00"}}>
+                                Naver
+                        </button>
+                        {/* 작성자: 홍진기 */}
+                        <button 
+                            type= "button" 
+                            className="btn btn-outline" 
+                            
+                            style={{backgroundColor:"#ffe300"}}>
+                                Kakao
+                        </button>
                     </div>
                 </form>
 
