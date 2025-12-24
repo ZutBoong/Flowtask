@@ -77,6 +77,14 @@ function Login() {
     const handleGoogleLogin = () => {
         window.location.href = 'http://localhost:8081/oauth2/authorization/google';
     };
+    const handleNaverLogin = () => {    //작성자 : 윤희망 OAuth2.0연동 Naver.Kakao
+        window.location.href =
+        'http://localhost:8081/oauth2/authorization/naver'
+    };
+    const handleKakaoLogin = () => {
+        window.location.href =
+        'http://localhost:8081/oauth2/authorization/kakao'
+    };
 
     return (
         <div className="auth-container">
@@ -133,7 +141,7 @@ function Login() {
                     <button
                         type="button"
                         className="social-btn naver"
-                        onClick={() => alert('Naver 로그인은 준비 중입니다.')}
+                        onClick={handleNaverLogin}
                         title="Naver로 로그인"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -143,7 +151,7 @@ function Login() {
                     <button
                         type="button"
                         className="social-btn kakao"
-                        onClick={() => alert('Kakao 로그인은 준비 중입니다.')}
+                        onClick={handleKakaoLogin}
                         title="Kakao로 로그인"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">

@@ -45,8 +45,7 @@ function OAuth2Redirect() {
             memberNo: Number(memberNo),
             email: email,
             name: name,
-            provider: provider,          // google / naver
-            userid: `${provider}_${email}`
+            provider: provider?.toUpperCase() // GOOGLE / NAVER / KAKAO
         };
 
         localStorage.setItem('member', JSON.stringify(member));
