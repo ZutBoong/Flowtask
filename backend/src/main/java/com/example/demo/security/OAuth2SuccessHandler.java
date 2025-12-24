@@ -96,6 +96,26 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         /*
          * ===============================
+         * KAKAO LOGIN
+         * ===============================
+         */
+        else if ("kakao".equals(registrationId)) {
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+
+            email = (String) kakaoAccount.get("email");
+            name = (String) profile.get("nickname");
+
+            String providerId = String.valueOf(attributes.get("id"));
+            userid = "kakao_" + providerId;
+        }
+
+        /*
+         * ===============================
          * UNSUPPORTED PROVIDER
          * ===============================
          */
