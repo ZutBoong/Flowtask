@@ -15,6 +15,9 @@ cd backend
 ./mvnw clean package            # Build JAR
 ./mvnw test                     # Run tests
 ./mvnw test -Dtest=TestClass    # Run single test class
+
+# Windows PowerShell (use quotes around profile arg)
+.\mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 ### Frontend (React)
@@ -27,7 +30,10 @@ npm test                        # Run tests
 ```
 
 ### Database
-PostgreSQL running on localhost:5432. Main schema file: `database/postgresql_schema.sql`
+PostgreSQL running on localhost:5432. Schema files in `database/` folder:
+- `postgresql_schema.sql` - Full consolidated schema
+- `01_member.sql` through `10_task_assignee.sql` - Individual entity schemas
+- `migration_workflow.sql` - Workflow status migration
 
 Setup from scratch:
 ```sql
@@ -75,10 +81,21 @@ Key entities: Member, Team, TeamMember, Project, SynodosColumn, Task, Comment, C
 
 ### MyBatis Mapping Conventions
 - Mapper XMLs in `resources/mapper/` (one per entity, e.g., `task.xml`, `team.xml`)
-- Standard method names: `insert`, `listAll`, `listByColumn`, `content`, `update`, `delete`
+- Standard method names: `insert`, `update`, `delete`, `content` (get by ID), `listAll`, `listByColumn`, `listByTeam`, `getMaxPosition`
 - Column naming: Database uses `snake_case`, Java uses `camelCase` (auto-mapped by MyBatis)
 - Complex queries use `<resultMap>` for entity relations (e.g., Task with assignees/tags)
 - Use `@Param` annotations in DAO interfaces for named parameters
+
+### Task Workflow States
+Tasks use `workflow_status` field with values:
+- `WAITING` - Task created, assignee not yet accepted
+- `IN_PROGRESS` - Assignee accepted and working
+- `REVIEW` - Assignee completed, awaiting verifier review (requires verifier)
+- `DONE` - Fully completed (verifier approved if present)
+- `REJECTED` - Verifier rejected, needs rework (requires verifier)
+- `DECLINED` - Assignee declined the task
+
+Rejections store `rejection_reason`, `rejected_at`, and `rejected_by` fields.
 
 ### Service Layer Patterns
 Services follow consistent patterns:
@@ -95,8 +112,12 @@ Services follow consistent patterns:
 ### Frontend State Management
 - Component-level state with React Hooks (no Redux/Context API)
 - WebSocket updates sync state across connected users in real-time
-- Persistent state via localStorage: JWT token, current team, member info
+- Persistent state via localStorage: `token` (JWT), `member` (user info), `currentTeam`
 - Axios interceptors handle automatic token injection and 401 redirects to login
+
+### Frontend Environment Variables
+- `REACT_APP_API_URL` - Backend API base URL (default: `http://localhost:8081`)
+- `REACT_APP_WS_URL` - WebSocket endpoint (default: `/ws`)
 
 ### Data Flow
 1. Teams contain Projects
@@ -117,6 +138,11 @@ Services follow consistent patterns:
 **Persistent (Database):** `NotificationService` stores notifications in `notification` table for offline users
 Services trigger both channels when creating/updating tasks with assignees or verifiers.
 
+### Online Presence
+- `PresenceService` tracks online users per team
+- Users join/leave via `/app/presence/join/{teamId}` and `/app/presence/leave/{teamId}`
+- Query online members via `/api/presence/online/{teamId}`
+
 ### API Patterns
 Backend endpoints follow pattern: `/api/{resource}{action}` (e.g., `/api/taskwrite`, `/api/tasklist`)
 Frontend proxy configured to forward requests to backend on port 8081.
@@ -133,6 +159,15 @@ JWT-based authentication with tokens stored client-side. Configured in `Security
 - Node version: 18+
 - MyBatis: Maps underscore to camelCase automatically
 - Spring Boot init mode: `spring.sql.init.mode=always` (local dev), `never` (Docker/production)
+
+### Email Configuration
+- `email.environment=dev` - Logs emails to console (development)
+- `email.environment=prod` - Sends via SMTP (production)
+- For local SMTP testing, create `backend/src/main/resources/application-local.properties`:
+```properties
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-16-digit-app-password
+```
 
 ## Deployment
 For AWS EC2 deployment, use `docker-compose.aws.yml` with environment file:

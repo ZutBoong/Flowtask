@@ -97,14 +97,16 @@
 		SELECT COALESCE(MAX(position), 0) FROM task WHERE column_id = #{columnId}
 	</select>
 
-	<!-- 담당자별 태스크 목록 -->
+	<!-- 담당자별 태스크 목록 (task_assignee 테이블 기준) -->
 	<select id="listByAssignee" parameterType="int" resultType="task">
 		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
 			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
 			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by
 		FROM task t
 		LEFT JOIN member m ON t.assignee_no = m.no
-		WHERE t.assignee_no = #{memberNo}
+		WHERE t.task_id IN (
+			SELECT ta.task_id FROM task_assignee ta WHERE ta.member_no = #{memberNo}
+		)
 		ORDER BY
 			CASE t.priority
 				WHEN 'CRITICAL' THEN 1
