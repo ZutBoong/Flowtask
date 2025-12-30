@@ -29,6 +29,12 @@ public class Task {
 	private LocalDateTime rejectedAt; // 반려 시간
 	private Integer rejectedBy;      // 반려자 (FK to Member.no)
 
+	// 태스크 생성자 (알림용)
+	private Integer createdBy;       // 생성자 (FK to Member.no)
+
+	// 조인용 필드
+	private Integer teamId;          // 팀 ID (JOIN으로 조회)
+
 	// 복수 담당자 목록
 	private List<TaskAssignee> assignees;
 

@@ -162,7 +162,33 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
     const calendarDays = generateCalendarDays();
 
     return (
-        <div className="calendar-view">
+        <div className={`calendar-view ${selectedTask ? 'task-detail-open' : ''}`}>
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <div className="task-detail-panel">
+                    <div className="task-detail-header">
+                        <button
+                            className="back-btn"
+                            onClick={() => setSelectedTask(null)}
+                        >
+                            <i className="fa-solid fa-arrow-left"></i>
+                            <span>캘린더로</span>
+                        </button>
+                    </div>
+                    <TaskModal
+                        task={selectedTask}
+                        teamId={team?.teamId}
+                        loginMember={loginMember}
+                        onClose={() => setSelectedTask(null)}
+                        onSave={() => {
+                            fetchTasks();
+                            setSelectedTask(null);
+                        }}
+                        fullPanel={true}
+                    />
+                </div>
+            ) : (
+            <>
             {/* 캘린더 헤더 */}
             <div className="calendar-header">
                 <div className="calendar-nav">
@@ -247,20 +273,6 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                 </div>
             )}
 
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        fetchTasks();
-                        setSelectedTask(null);
-                    }}
-                />
-            )}
-
             {/* 날짜별 태스크 목록 모달 */}
             {selectedDate && (
                 <div className="day-tasks-modal-overlay" onClick={() => setSelectedDate(null)}>
@@ -308,6 +320,8 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
     );

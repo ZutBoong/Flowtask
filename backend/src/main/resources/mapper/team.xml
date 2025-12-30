@@ -101,4 +101,17 @@
 		SELECT COUNT(*) FROM team WHERE leader_no = #{memberNo}
 	</select>
 
+	<!-- GitHub 저장소 URL로 팀 조회 -->
+	<select id="findByGithubRepoUrl" parameterType="String" resultType="team">
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.github_repo_url, t.created_at,
+			   m.name as leader_name
+		FROM team t
+		JOIN member m ON t.leader_no = m.no
+		WHERE REPLACE(REPLACE(t.github_repo_url, '.git', ''), '/', '') = REPLACE(REPLACE(#{githubRepoUrl}, '.git', ''), '/', '')
+		   OR t.github_repo_url = #{githubRepoUrl}
+		   OR t.github_repo_url = CONCAT(#{githubRepoUrl}, '/')
+		   OR t.github_repo_url = CONCAT(#{githubRepoUrl}, '.git')
+		LIMIT 1
+	</select>
+
 </mapper>

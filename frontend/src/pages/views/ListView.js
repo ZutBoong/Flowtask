@@ -462,40 +462,54 @@ function ListView({
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className="list-view">
-                {/* 칼럼들 */}
-                <Droppable droppableId="columns" type="column">
-                    {(provided, snapshot) => (
-                        <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className={`columns-droppable ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
-                        >
-                            {columns.map((column, index) => renderColumn(column, index))}
-                            {provided.placeholder}
+            <div className={`list-view ${selectedTask ? 'task-detail-open' : ''}`}>
+                {/* 태스크 상세 패널 (전체화면) */}
+                {selectedTask ? (
+                    <div className="task-detail-panel">
+                        <div className="task-detail-header">
+                            <button
+                                className="back-btn"
+                                onClick={() => setSelectedTask(null)}
+                            >
+                                <i className="fa-solid fa-arrow-left"></i>
+                                <span>목록으로</span>
+                            </button>
                         </div>
-                    )}
-                </Droppable>
-
-                {/* 칼럼이 없을 경우 */}
-                {columns.length === 0 && (
-                    <div className="no-columns">
-                        <p>보드에서 칼럼을 먼저 생성해주세요.</p>
+                        <TaskModal
+                            task={selectedTask}
+                            teamId={team?.teamId}
+                            loginMember={loginMember}
+                            onClose={() => setSelectedTask(null)}
+                            onSave={() => {
+                                if (refreshData) refreshData();
+                                setSelectedTask(null);
+                            }}
+                            fullPanel={true}
+                        />
                     </div>
-                )}
+                ) : (
+                    <>
+                        {/* 칼럼들 */}
+                        <Droppable droppableId="columns" type="column">
+                            {(provided, snapshot) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className={`columns-droppable ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                                >
+                                    {columns.map((column, index) => renderColumn(column, index))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
 
-                {/* 태스크 상세 모달 */}
-                {selectedTask && (
-                    <TaskModal
-                        task={selectedTask}
-                        teamId={team?.teamId}
-                        loginMember={loginMember}
-                        onClose={() => setSelectedTask(null)}
-                        onSave={() => {
-                            if (refreshData) refreshData();
-                            setSelectedTask(null);
-                        }}
-                    />
+                        {/* 칼럼이 없을 경우 */}
+                        {columns.length === 0 && (
+                            <div className="no-columns">
+                                <p>보드에서 칼럼을 먼저 생성해주세요.</p>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* 태스크 생성 모달 */}

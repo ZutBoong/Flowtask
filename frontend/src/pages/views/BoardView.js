@@ -440,7 +440,39 @@ function BoardView({
     };
 
     return (
-        <div className="board-view">
+        <div className={`board-view ${selectedTask ? 'task-detail-open' : ''}`}>
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <div className="task-detail-panel">
+                    <div className="task-detail-header">
+                        <button
+                            className="back-btn"
+                            onClick={() => setSelectedTask(null)}
+                        >
+                            <i className="fa-solid fa-arrow-left"></i>
+                            <span>보드로</span>
+                        </button>
+                    </div>
+                    <TaskModal
+                        task={selectedTask}
+                        teamId={team?.teamId}
+                        loginMember={loginMember}
+                        isArchived={taskArchives[selectedTask.taskId] || false}
+                        onArchiveChange={(archived) => {
+                            setTaskArchives(prev => ({
+                                ...prev,
+                                [selectedTask.taskId]: archived
+                            }));
+                        }}
+                        onClose={() => setSelectedTask(null)}
+                        onSave={() => {
+                            if (refreshData) refreshData();
+                            setSelectedTask(null);
+                        }}
+                        fullPanel={true}
+                    />
+                </div>
+            ) : (
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="columns-wrapper">
                     <Droppable droppableId="board" direction="horizontal" type="column">
@@ -564,6 +596,7 @@ function BoardView({
                                                                                 </div>
                                                                             )}
                                                                             <div className="task-card-title">
+                                                                                <span className="task-id">#{task.taskId}</span>
                                                                                 {task.title}
                                                                             </div>
                                                                             <div className="task-card-meta">
@@ -620,26 +653,6 @@ function BoardView({
                     </Droppable>
                 </div>
             </DragDropContext>
-
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    isArchived={taskArchives[selectedTask.taskId] || false}
-                    onArchiveChange={(archived) => {
-                        setTaskArchives(prev => ({
-                            ...prev,
-                            [selectedTask.taskId]: archived
-                        }));
-                    }}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        if (refreshData) refreshData();
-                        setSelectedTask(null);
-                    }}
-                />
             )}
 
             {/* 태스크 생성 모달 */}

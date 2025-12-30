@@ -525,11 +525,37 @@ function TimelineView({
 
     return (
         <div
-            className={`timeline-view ${viewMode === 'week' ? 'week-view' : ''}`}
+            className={`timeline-view ${viewMode === 'week' ? 'week-view' : ''} ${selectedTask ? 'task-detail-open' : ''}`}
             onMouseMove={isDraggingScroll ? handleScrollDragMove : undefined}
             onMouseUp={isDraggingScroll ? handleScrollDragEnd : undefined}
             onMouseLeave={isDraggingScroll ? handleScrollDragEnd : undefined}
         >
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <div className="task-detail-panel">
+                    <div className="task-detail-header">
+                        <button
+                            className="back-btn"
+                            onClick={() => setSelectedTask(null)}
+                        >
+                            <i className="fa-solid fa-arrow-left"></i>
+                            <span>타임라인으로</span>
+                        </button>
+                    </div>
+                    <TaskModal
+                        task={selectedTask}
+                        teamId={team?.teamId}
+                        loginMember={loginMember}
+                        onClose={() => setSelectedTask(null)}
+                        onSave={() => {
+                            if (refreshData) refreshData();
+                            setSelectedTask(null);
+                        }}
+                        fullPanel={true}
+                    />
+                </div>
+            ) : (
+            <>
             {/* 타임라인 헤더 */}
             <div className="timeline-header">
                 <div className="timeline-nav">
@@ -701,19 +727,7 @@ function TimelineView({
                     }
                 </div>
             </div>
-
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        if (refreshData) refreshData();
-                        setSelectedTask(null);
-                    }}
-                />
+            </>
             )}
         </div>
     );

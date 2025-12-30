@@ -45,4 +45,7 @@ public interface TeamDao {
 
 	// 회원이 리더인 팀 수 조회
 	int countLeaderTeams(int memberNo);
+
+	// GitHub 저장소 URL로 팀 조회
+	Team findByGithubRepoUrl(String githubRepoUrl);
 }

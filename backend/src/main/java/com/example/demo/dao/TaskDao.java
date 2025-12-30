@@ -33,4 +33,8 @@ public interface TaskDao {
 
 	// 날짜 업데이트 (타임라인용)
 	int updateDates(Task task);
+
+	// 마감일 알림용 메서드
+	List<Task> listTasksApproachingDeadline(@Param("daysAhead") int daysAhead);
+	List<Task> listOverdueTasks();
 }

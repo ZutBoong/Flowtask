@@ -49,12 +49,19 @@ public class DataInitializer implements CommandLineRunner {
         // 0. 테이블 자동 생성
         createTablesIfNotExist();
 
+        // 데이터가 이미 존재하면 건너뛰기
+        Integer memberCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM member", Integer.class);
+        if (memberCount != null && memberCount > 0) {
+            logger.info("기존 데이터가 존재합니다. 샘플 데이터 생성을 건너뜁니다. (회원 수: {})", memberCount);
+            return;
+        }
+
         logger.info("샘플 데이터 생성 시작...");
 
         // 1. 기존 데이터 삭제 (외래키 순서 고려)
         clearAllData();
 
-        // 2. 회원 30명 생성
+        // 2. 회원 40명 생성 (admin 10명 + user 30명)
         createMembers();
 
         // 3. 팀 10개 생성
@@ -366,10 +373,17 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createMembers() {
-        logger.info("회원 30명 생성 중...");
+        logger.info("회원 40명 생성 중 (관리자 10명 + 일반 30명)...");
         members = new ArrayList<>();
 
-        String[] names = {
+        // 관리자 이름 (팀 리더용)
+        String[] adminNames = {
+            "관리자A", "관리자B", "관리자C", "관리자D", "관리자E",
+            "관리자F", "관리자G", "관리자H", "관리자I", "관리자J"
+        };
+
+        // 일반 회원 이름
+        String[] userNames = {
             "김철수", "이영희", "박민수", "정수진", "최동훈",
             "강서연", "윤재호", "임지은", "한승우", "오혜진",
             "서준영", "남궁민", "황지훈", "배수지", "신동엽",
@@ -378,23 +392,39 @@ public class DataInitializer implements CommandLineRunner {
             "설인아", "탁재훈", "라미란", "마동석", "사공민"
         };
 
+        // 1. 관리자 계정 생성 (admin1 ~ admin10)
+        for (int i = 1; i <= 10; i++) {
+            Member member = new Member();
+            member.setUserid("admin" + i);
+            member.setPassword(passwordEncoder.encode("1234"));
+            member.setName(adminNames[i - 1]);
+            member.setEmail("admin" + i + "@synodos.com");
+            member.setPhone("010-" + String.format("%04d", random.nextInt(10000)) + "-" + String.format("%04d", random.nextInt(10000)));
+            member.setEmailVerified(true);
+
+            memberDao.insert(member);
+
+            Member created = memberDao.findByUserid("admin" + i);
+            members.add(created);
+        }
+
+        // 2. 일반 회원 생성 (user1 ~ user30)
         for (int i = 1; i <= 30; i++) {
             Member member = new Member();
             member.setUserid("user" + i);
             member.setPassword(passwordEncoder.encode("1234"));
-            member.setName(names[i - 1]);
+            member.setName(userNames[i - 1]);
             member.setEmail("user" + i + "@synodos.com");
             member.setPhone("010-" + String.format("%04d", random.nextInt(10000)) + "-" + String.format("%04d", random.nextInt(10000)));
             member.setEmailVerified(true);
 
             memberDao.insert(member);
 
-            // 생성된 회원 조회하여 리스트에 추가
             Member created = memberDao.findByUserid("user" + i);
             members.add(created);
         }
 
-        logger.info("회원 30명 생성 완료");
+        logger.info("회원 40명 생성 완료 (admin1~10, user1~30)");
     }
 
     private void createTeams() {
@@ -420,8 +450,8 @@ public class DataInitializer implements CommandLineRunner {
         };
 
         for (int i = 0; i < 10; i++) {
-            // 무작위 팀장 선택
-            Member leader = members.get(random.nextInt(members.size()));
+            // 팀장은 admin1, admin2, ... admin10 순서대로 (members 리스트의 0~9번)
+            Member leader = members.get(i);
 
             Team team = new Team();
             team.setTeamName(teamNames[i]);

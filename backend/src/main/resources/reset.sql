@@ -1,10 +1,12 @@
--- 모든 테이블 삭제 후 새로 생성 (schema.sql에서 재생성됨)
+-- 모든 테이블 삭제 후 새로 생성 (DataInitializer에서 재생성됨)
 DROP TABLE IF EXISTS email_verification CASCADE;
 DROP TABLE IF EXISTS task_verifier CASCADE;
 DROP TABLE IF EXISTS task_assignee CASCADE;
+DROP TABLE IF EXISTS task_archive CASCADE;
+DROP TABLE IF EXISTS task_favorite CASCADE;
+DROP TABLE IF EXISTS task_commit CASCADE;
 DROP TABLE IF EXISTS comment CASCADE;
 DROP TABLE IF EXISTS chat_message CASCADE;
-DROP TABLE IF EXISTS task_favorite CASCADE;
 DROP TABLE IF EXISTS column_assignee CASCADE;
 DROP TABLE IF EXISTS notification CASCADE;
 DROP TABLE IF EXISTS file CASCADE;
@@ -15,7 +17,7 @@ DROP TABLE IF EXISTS team_member CASCADE;
 DROP TABLE IF EXISTS team CASCADE;
 DROP TABLE IF EXISTS member CASCADE;
 
--- 시퀀스도 삭제 (schema.sql에서 재생성됨)
+-- 시퀀스도 삭제 (DataInitializer에서 재생성됨)
 DROP SEQUENCE IF EXISTS member_seq CASCADE;
 DROP SEQUENCE IF EXISTS team_seq CASCADE;
 DROP SEQUENCE IF EXISTS project_seq CASCADE;
@@ -26,3 +28,5 @@ DROP SEQUENCE IF EXISTS chat_seq CASCADE;
 DROP SEQUENCE IF EXISTS notification_seq CASCADE;
 DROP SEQUENCE IF EXISTS file_seq CASCADE;
 DROP SEQUENCE IF EXISTS email_verification_seq CASCADE;
+DROP SEQUENCE IF EXISTS task_archive_seq CASCADE;
+DROP SEQUENCE IF EXISTS task_commit_seq CASCADE;
