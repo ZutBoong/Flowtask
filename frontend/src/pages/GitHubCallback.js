@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { handleGitHubCallback, handleGitHubLoginCallback } from '../api/githubIssueApi';
 import './GitHubCallback.css';
@@ -9,9 +9,15 @@ function GitHubCallback() {
     const [status, setStatus] = useState('processing'); // processing, success, error
     const [error, setError] = useState(null);
     const [mode, setMode] = useState('link'); // link or login
+    const processedRef = useRef(false);  // 중복 실행 방지
 
     useEffect(() => {
         const processCallback = async () => {
+            // 이미 처리된 경우 무시 (StrictMode 중복 실행 방지)
+            if (processedRef.current) {
+                return;
+            }
+            processedRef.current = true;
             const code = searchParams.get('code');
             const state = searchParams.get('state');
             const errorParam = searchParams.get('error');

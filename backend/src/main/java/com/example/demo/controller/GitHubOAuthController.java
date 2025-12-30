@@ -264,8 +264,15 @@ public class GitHubOAuthController {
                     member.setEmail(githubUser.login + "_" + UUID.randomUUID().toString().substring(0, 8) + "@github.user");
                 }
 
+                String newUserid = member.getUserid();  // insert 전에 userid 저장
                 memberDao.insert(member);
-                member = memberDao.findByGithubUsername(githubUser.login);  // 생성된 회원 다시 조회
+                member = memberDao.findByUserid(newUserid);  // userid로 다시 조회
+
+                // GitHub 정보 업데이트 (insert SQL에 github 필드가 없으므로 별도 업데이트)
+                member.setGithubUsername(githubUser.login);
+                member.setGithubAccessToken(accessToken);
+                memberDao.updateGitHubConnection(member);
+
                 log.info("GitHub 신규 회원 생성: {}", member.getUserid());
             } else {
                 // 기존 회원: 토큰 업데이트

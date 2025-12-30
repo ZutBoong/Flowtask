@@ -1,0 +1,34 @@
+# ===========================================
+# Local Development Configuration Example
+# 이 파일을 application-local.properties로 복사해서 사용하세요
+# cp application-local.properties.example application-local.properties
+# ===========================================
+
+# SMTP Configuration (Gmail App Password)
+# https://myaccount.google.com/apppasswords 에서 앱 비밀번호 생성
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-app-password
+
+# Gemini AI API Key
+# https://aistudio.google.com/app/apikey 에서 API 키 생성
+gemini.api.key=your-gemini-api-key
+
+# GitHub OAuth
+# https://github.com/settings/developers 에서 OAuth App 생성
+github.oauth.client-id=your-github-client-id
+github.oauth.client-secret=your-github-client-secret
+
+# Google OAuth
+# https://console.cloud.google.com 에서 OAuth 2.0 클라이언트 ID 생성
+spring.security.oauth2.client.registration.google.client-id=your-google-client-id
+spring.security.oauth2.client.registration.google.client-secret=your-google-client-secret
+
+# Naver OAuth
+# https://developers.naver.com 에서 애플리케이션 등록
+spring.security.oauth2.client.registration.naver.client-id=your-naver-client-id
+spring.security.oauth2.client.registration.naver.client-secret=your-naver-client-secret
+
+# Kakao OAuth
+# https://developers.kakao.com 에서 애플리케이션 등록
+spring.security.oauth2.client.registration.kakao.client-id=your-kakao-client-id
+spring.security.oauth2.client.registration.kakao.client-secret=your-kakao-client-secret
