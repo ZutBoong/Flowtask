@@ -6,6 +6,7 @@ public class DashboardSummaryDto {
     private long completed;
     private long incomplete;
     private long overdue;
+    
 
     public DashboardSummaryDto(long total, long completed, long incomplete, long overdue) {
         this.total = total;

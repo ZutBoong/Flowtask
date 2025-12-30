@@ -1,9 +1,13 @@
 package com.example.demo.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dao.DashboardMapper;
 import com.example.demo.dto.DashboardSummaryDto;
+import com.example.demo.dto.TaskCompletionTrendDto;
+import com.example.demo.dto.WorkloadByDayDto;
 
 @Service
 public class DashboardService {
@@ -25,4 +29,13 @@ public class DashboardService {
             total, completed, incomplete, overdue
         );
     }
+
+    public List<WorkloadByDayDto> getWorkloadByDay(Long teamId, int days) {
+        return dashboardMapper.selectWorkloadByDay(teamId, days);
+    }
+
+    public List<TaskCompletionTrendDto> getCompletionTrend(Long teamId) {
+    return dashboardMapper.getCompletionTrend(teamId);
+    }
+
 }
