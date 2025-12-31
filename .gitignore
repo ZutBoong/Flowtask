@@ -76,3 +76,5 @@ application-local.properties
 *.tmp
 *.temp
 *~
+
+docs
