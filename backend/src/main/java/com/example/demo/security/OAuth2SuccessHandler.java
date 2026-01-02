@@ -92,7 +92,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             providerId = (String) responseMap.get("id");
         }
 
-        /*
+        /* 
          * ===============================
          * KAKAO LOGIN
          * ===============================
@@ -173,6 +173,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             // → 프론트엔드에서 연동 모드 여부를 확인하고 처리
             UriComponentsBuilder builder = UriComponentsBuilder
                     .fromUriString("http://localhost:3000/oauth2/redirect")
+                    // .fromUriString("http://localhost/oauth2/redirect")
                     .queryParam("isNewUser", true)
                     .queryParam("provider", registrationId)
                     .queryParam("providerId", providerId)

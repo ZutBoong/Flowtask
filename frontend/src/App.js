@@ -15,7 +15,6 @@ import OAuth2Redirect from './pages/OAuth2Redirect';
 import NotificationsPage from './pages/NotificationsPage';
 import Invite from './pages/Invite';
 import GitHubCallback from './pages/GitHubCallback';
-import OAuth2Redirect from './pages/OAuth2Redirect';
 import SocialSignupComplete from './pages/SocialSignupComplete';
 import './App.css';
 
@@ -23,10 +22,7 @@ function AppContent() {
   const location = useLocation();
 
   const isOAuthRedirect = location.pathname === '/oauth2/redirect';
-<<<<<<< HEAD
-=======
   const isSocialSignupComplete = location.pathname === '/social-signup-complete';
->>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
   const isCalendarPage = location.pathname === '/calendar';
   const isTeamPage = location.pathname.startsWith('/team/');
   const isMyPage = location.pathname === '/mypage';
@@ -47,14 +43,6 @@ function AppContent() {
     return <SocialSignupComplete />;
   }
 
-<<<<<<< HEAD
-  // 🔥 반드시 최위에 두어야 한다!
-  if (isOAuthRedirect) {
-    return <OAuth2Redirect />;
-  }
-
-=======
->>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
   if (isTeamPage) {
     return (
       <Routes>

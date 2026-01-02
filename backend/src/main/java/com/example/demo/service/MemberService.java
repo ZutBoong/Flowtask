@@ -54,9 +54,28 @@ public class MemberService {
 	// JWT 로그인 (BCrypt 비밀번호 검증)
 	public Member authenticate(String userid, String rawPassword) {
 		Member member = dao.findByUserid(userid);
-		if (member != null && passwordEncoder.matches(rawPassword, member.getPassword())) {
+		if (member == null) return null;
+
+		String dbPassword = member.getPassword();
+
+		// ✅ 이미 BCrypt 인 경우
+		if (dbPassword.startsWith("$2")) {
+			if (passwordEncoder.matches(rawPassword, dbPassword)) {
+				return member;
+			}
+			return null;
+		}
+
+		// 🔥 과거 데이터 (평문)
+		if (dbPassword.equals(rawPassword)) {
+			String encoded = passwordEncoder.encode(rawPassword);
+			member.setPassword(encoded);
+			dao.updatePassword(member);
+
+			System.out.println("[PASSWORD MIGRATION] userid=" + userid);
 			return member;
 		}
+
 		return null;
 	}
 

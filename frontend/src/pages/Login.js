@@ -51,13 +51,6 @@ function Login() {
         }
     };
 
-<<<<<<< HEAD
-    {/* 작성자: 홍진기 
-    소셜 로그인: */}
-    const handleGoogleLogin = () => {
-        window.location.href =
-        'http://localhost:8081/oauth2/authorization/google'
-=======
     const handleGitHubLogin = () => {
         window.location.href = 'http://localhost:8081/oauth2/authorization/github';
     };
@@ -65,7 +58,6 @@ function Login() {
     // 소셜 로그인
     const handleGoogleLogin = () => {
         window.location.href = 'http://localhost:8081/oauth2/authorization/google';
->>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
     };
     const handleNaverLogin = () => {    //작성자 : 윤희망 OAuth2.0연동 Naver.Kakao
         window.location.href =
@@ -76,10 +68,6 @@ function Login() {
         'http://localhost:8081/oauth2/authorization/kakao'
     };
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
     return (
         <div className="auth-container">
             <div className="auth-box">
