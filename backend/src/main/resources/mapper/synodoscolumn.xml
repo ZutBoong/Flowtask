@@ -2,17 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.dao.SynodosColumnDao">
 
-	<!-- 컬럼 생성 -->
+	<!-- 컬럼 생성 (github_prefix 기본값: [컬럼명]) -->
 	<insert id="insert" parameterType="synodoscolumn">
-		INSERT INTO columns (column_id, title, position, team_id)
+		INSERT INTO columns (column_id, title, position, team_id, github_prefix)
 		VALUES (nextval('column_seq'), #{title},
 			(SELECT COALESCE(MAX(position), 0) + 1 FROM columns WHERE team_id = #{teamId}),
-			#{teamId})
+			#{teamId},
+			COALESCE(#{githubPrefix}, '[' || #{title} || ']'))
 	</insert>
 
 	<!-- 팀별 컬럼 목록 -->
 	<select id="listByTeam" parameterType="int" resultType="synodoscolumn">
-		SELECT column_id, title, position, team_id
+		SELECT column_id, title, position, team_id, github_prefix
 		FROM columns
 		WHERE team_id = #{teamId}
 		ORDER BY position ASC
@@ -20,14 +21,14 @@
 
 	<!-- 컬럼 목록 (전체 - 하위호환) -->
 	<select id="list" resultType="synodoscolumn">
-		SELECT column_id, title, position, team_id
+		SELECT column_id, title, position, team_id, github_prefix
 		FROM columns
 		ORDER BY position ASC
 	</select>
 
 	<!-- 컬럼 상세 -->
 	<select id="content" parameterType="int" resultType="synodoscolumn">
-		SELECT column_id, title, position, team_id
+		SELECT column_id, title, position, team_id, github_prefix
 		FROM columns
 		WHERE column_id = #{columnId}
 	</select>
@@ -35,7 +36,8 @@
 	<!-- 컬럼 수정 -->
 	<update id="update" parameterType="synodoscolumn">
 		UPDATE columns
-		SET title = #{title}
+		SET title = #{title},
+			github_prefix = #{githubPrefix}
 		WHERE column_id = #{columnId}
 	</update>
 
@@ -48,6 +50,13 @@
 	<update id="updatePosition" parameterType="synodoscolumn">
 		UPDATE columns
 		SET position = #{position}
+		WHERE column_id = #{columnId}
+	</update>
+
+	<!-- GitHub Prefix만 수정 -->
+	<update id="updateGithubPrefix" parameterType="synodoscolumn">
+		UPDATE columns
+		SET github_prefix = #{githubPrefix}
 		WHERE column_id = #{columnId}
 	</update>
 

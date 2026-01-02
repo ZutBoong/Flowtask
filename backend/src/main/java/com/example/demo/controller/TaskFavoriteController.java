@@ -56,4 +56,12 @@ public class TaskFavoriteController {
     public ResponseEntity<List<TaskFavorite>> getFavoritesByMember(@PathVariable int memberNo) {
         return ResponseEntity.ok(service.getFavoritesByMember(memberNo));
     }
+
+    // 멤버별 팀 내 즐겨찾기 목록
+    @GetMapping("/favorites/member/{memberNo}/team/{teamId}")
+    public ResponseEntity<List<TaskFavorite>> getFavoritesByMemberAndTeam(
+            @PathVariable int memberNo,
+            @PathVariable int teamId) {
+        return ResponseEntity.ok(service.getFavoritesByMemberAndTeam(memberNo, teamId));
+    }
 }

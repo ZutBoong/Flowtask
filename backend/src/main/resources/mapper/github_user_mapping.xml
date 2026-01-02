@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.GitHubUserMappingDao">
+
+    <!-- 기본 결과 맵 -->
+    <resultMap id="githubUserMappingMap" type="githubUserMapping">
+        <id property="id" column="id"/>
+        <result property="memberNo" column="member_no"/>
+        <result property="githubUsername" column="github_username"/>
+        <result property="githubId" column="github_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="memberName" column="member_name"/>
+        <result property="memberUserid" column="member_userid"/>
+        <result property="memberEmail" column="member_email"/>
+    </resultMap>
+
+    <!-- 삽입 -->
+    <insert id="insert" parameterType="githubUserMapping">
+        <selectKey keyProperty="id" resultType="int" order="BEFORE">
+            SELECT nextval('github_user_mapping_seq')
+        </selectKey>
+        INSERT INTO github_user_mapping (
+            id, member_no, github_username, github_id, created_at, updated_at
+        ) VALUES (
+            #{id}, #{memberNo}, #{githubUsername}, #{githubId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="int" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        LEFT JOIN member m ON gum.member_no = m.no
+        WHERE gum.id = #{id}
+    </select>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="githubUserMapping">
+        UPDATE github_user_mapping SET
+            github_username = #{githubUsername},
+            github_id = #{githubId},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM github_user_mapping WHERE id = #{id}
+    </delete>
+
+    <!-- 멤버 번호로 조회 -->
+    <select id="findByMemberNo" parameterType="int" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        LEFT JOIN member m ON gum.member_no = m.no
+        WHERE gum.member_no = #{memberNo}
+    </select>
+
+    <!-- GitHub 사용자명으로 조회 -->
+    <select id="findByGithubUsername" parameterType="String" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        LEFT JOIN member m ON gum.member_no = m.no
+        WHERE gum.github_username = #{githubUsername}
+    </select>
+
+    <!-- 팀의 모든 멤버 매핑 조회 -->
+    <select id="listByTeam" parameterType="int" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        INNER JOIN member m ON gum.member_no = m.no
+        INNER JOIN team_member tm ON m.no = tm.member_no
+        WHERE tm.team_id = #{teamId}
+        ORDER BY m.name
+    </select>
+
+    <!-- 전체 매핑 조회 -->
+    <select id="listAll" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        LEFT JOIN member m ON gum.member_no = m.no
+        ORDER BY m.name
+    </select>
+
+    <!-- GitHub 사용자명 목록으로 조회 -->
+    <select id="findByGithubUsernames" resultMap="githubUserMappingMap">
+        SELECT gum.*, m.name as member_name, m.userid as member_userid, m.email as member_email
+        FROM github_user_mapping gum
+        LEFT JOIN member m ON gum.member_no = m.no
+        WHERE gum.github_username IN
+        <foreach item="username" collection="usernames" open="(" separator="," close=")">
+            #{username}
+        </foreach>
+    </select>
+
+    <!-- 멤버 번호로 삭제 -->
+    <delete id="deleteByMemberNo" parameterType="int">
+        DELETE FROM github_user_mapping WHERE member_no = #{memberNo}
+    </delete>
+
+    <!-- 존재 여부 확인 -->
+    <select id="countByMemberNo" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM github_user_mapping WHERE member_no = #{memberNo}
+    </select>
+
+    <select id="countByGithubUsername" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM github_user_mapping WHERE github_username = #{githubUsername}
+    </select>
+
+</mapper>

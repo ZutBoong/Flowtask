@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.GitHubIssueSyncLogDao">
+
+    <!-- 기본 결과 맵 -->
+    <resultMap id="githubIssueSyncLogMap" type="githubIssueSyncLog">
+        <id property="id" column="id"/>
+        <result property="taskGitHubIssueId" column="task_github_issue_id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="issueNumber" column="issue_number"/>
+        <result property="teamId" column="team_id"/>
+        <result property="syncDirection" column="sync_direction"/>
+        <result property="syncType" column="sync_type"/>
+        <result property="fieldChanged" column="field_changed"/>
+        <result property="oldValue" column="old_value"/>
+        <result property="newValue" column="new_value"/>
+        <result property="syncStatus" column="sync_status"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="triggeredBy" column="triggered_by"/>
+        <result property="webhookDeliveryId" column="webhook_delivery_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 삽입 -->
+    <insert id="insert" parameterType="githubIssueSyncLog">
+        <selectKey keyProperty="id" resultType="int" order="BEFORE">
+            SELECT nextval('github_issue_sync_log_seq')
+        </selectKey>
+        INSERT INTO github_issue_sync_log (
+            id, task_github_issue_id, task_id, issue_number, team_id,
+            sync_direction, sync_type, field_changed, old_value, new_value,
+            sync_status, error_message, triggered_by, webhook_delivery_id, created_at
+        ) VALUES (
+            #{id}, #{taskGitHubIssueId}, #{taskId}, #{issueNumber}, #{teamId},
+            #{syncDirection}, #{syncType}, #{fieldChanged}, #{oldValue}, #{newValue},
+            #{syncStatus}, #{errorMessage}, #{triggeredBy}, #{webhookDeliveryId}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="int" resultMap="githubIssueSyncLogMap">
+        SELECT * FROM github_issue_sync_log WHERE id = #{id}
+    </select>
+
+    <!-- Task별 로그 조회 -->
+    <select id="listByTaskId" resultMap="githubIssueSyncLogMap">
+        SELECT * FROM github_issue_sync_log
+        WHERE task_id = #{taskId}
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- Team별 로그 조회 -->
+    <select id="listByTeamId" resultMap="githubIssueSyncLogMap">
+        SELECT * FROM github_issue_sync_log
+        WHERE team_id = #{teamId}
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 매핑별 로그 조회 -->
+    <select id="listByMappingId" resultMap="githubIssueSyncLogMap">
+        SELECT * FROM github_issue_sync_log
+        WHERE task_github_issue_id = #{mappingId}
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 실패한 로그 조회 -->
+    <select id="listFailedByTeam" resultMap="githubIssueSyncLogMap">
+        SELECT * FROM github_issue_sync_log
+        WHERE team_id = #{teamId} AND sync_status = 'FAILED'
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- Webhook delivery ID로 중복 체크 -->
+    <select id="countByWebhookDeliveryId" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM github_issue_sync_log
+        WHERE webhook_delivery_id = #{webhookDeliveryId}
+    </select>
+
+    <!-- 오래된 로그 삭제 -->
+    <delete id="deleteOlderThan" parameterType="int">
+        DELETE FROM github_issue_sync_log
+        WHERE created_at &lt; CURRENT_TIMESTAMP - INTERVAL '${days} days'
+    </delete>
+
+</mapper>

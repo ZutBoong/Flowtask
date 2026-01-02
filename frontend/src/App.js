@@ -14,12 +14,19 @@ import OAuth2Redirect from './pages/OAuth2Redirect';
 
 import NotificationsPage from './pages/NotificationsPage';
 import Invite from './pages/Invite';
+import GitHubCallback from './pages/GitHubCallback';
+import OAuth2Redirect from './pages/OAuth2Redirect';
+import SocialSignupComplete from './pages/SocialSignupComplete';
 import './App.css';
 
 function AppContent() {
   const location = useLocation();
 
   const isOAuthRedirect = location.pathname === '/oauth2/redirect';
+<<<<<<< HEAD
+=======
+  const isSocialSignupComplete = location.pathname === '/social-signup-complete';
+>>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
   const isCalendarPage = location.pathname === '/calendar';
   const isTeamPage = location.pathname.startsWith('/team/');
   const isMyPage = location.pathname === '/mypage';
@@ -27,13 +34,27 @@ function AppContent() {
   const isCreateTeam = location.pathname === '/create-team';
   const isNotifications = location.pathname === '/notifications';
   const isInvite = location.pathname.startsWith('/invite/');
-  const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password'].includes(location.pathname);
+  const isGitHubCallback = location.pathname === '/github/callback';
+  const hideHeader = ['/', '/login', '/register', '/find-id', '/find-password', '/social-signup-complete'].includes(location.pathname);
 
+  // OAuth 리다이렉트 처리
+  if (isOAuthRedirect) {
+    return <OAuth2Redirect />;
+  }
+
+  // 소셜 로그인 추가 정보 입력
+  if (isSocialSignupComplete) {
+    return <SocialSignupComplete />;
+  }
+
+<<<<<<< HEAD
   // 🔥 반드시 최위에 두어야 한다!
   if (isOAuthRedirect) {
     return <OAuth2Redirect />;
   }
 
+=======
+>>>>>>> 2c90abea6eadde73f49e0142de9f8c58674ed436
   if (isTeamPage) {
     return (
       <Routes>
@@ -60,6 +81,13 @@ function AppContent() {
     return (
       <Routes>
         <Route path="/invite/:teamCode" element={<Invite />} />
+      </Routes>
+    );
+  }
+  if (isGitHubCallback) {
+    return (
+      <Routes>
+        <Route path="/github/callback" element={<GitHubCallback />} />
       </Routes>
     );
   }

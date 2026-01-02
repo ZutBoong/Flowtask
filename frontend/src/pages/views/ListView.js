@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { taskwrite, taskupdate, taskdelete, taskposition, columnposition, tasklistByTeam } from '../../api/boardApi';
-import TaskModal from '../../components/TaskModal';
+import { taskwrite, taskupdate, taskdelete, taskposition, columnposition, tasklistByTeam, columnwrite, columnlistByTeam } from '../../api/boardApi';
+import TaskDetailView from '../../components/TaskDetailView';
 import TaskCreateModal from '../../components/TaskCreateModal';
 import './ListView.css';
 
@@ -35,6 +35,7 @@ function ListView({
     const [selectedTask, setSelectedTask] = useState(null);
     const [addingColumnTask, setAddingColumnTask] = useState(null);
     const [createTaskModalColumnId, setCreateTaskModalColumnId] = useState(null);
+    const [newColumnTitle, setNewColumnTitle] = useState('');
 
     // props 동기화
     useEffect(() => {
@@ -57,6 +58,30 @@ function ListView({
             ...prev,
             [columnId]: !prev[columnId]
         }));
+    };
+
+    // 칼럼 추가
+    const handleAddColumn = async () => {
+        if (!newColumnTitle.trim() || !team) return;
+
+        try {
+            await columnwrite({
+                title: newColumnTitle,
+                teamId: team.teamId
+            });
+            setNewColumnTitle('');
+            const columnsData = await columnlistByTeam(team.teamId);
+            const columnsArray = Array.isArray(columnsData) ? columnsData : [];
+            setColumns(columnsArray);
+            // 새로 추가된 칼럼은 기본적으로 펼침
+            const newColumn = columnsArray.find(c => c.title === newColumnTitle.trim());
+            if (newColumn) {
+                setExpandedColumns(prev => ({ ...prev, [newColumn.columnId]: true }));
+            }
+            if (refreshData) refreshData();
+        } catch (error) {
+            console.error('컬럼 추가 실패:', error);
+        }
     };
 
     // 필터 적용
@@ -158,10 +183,11 @@ function ListView({
 
             // 태스크 목록 새로 가져오기
             const tasksData = await tasklistByTeam(team.teamId);
-            setTasks(tasksData || []);
+            const tasksArray = Array.isArray(tasksData) ? tasksData : [];
+            setTasks(tasksArray);
 
             // 생성된 태스크 찾기
-            const newTask = tasksData.reduce((latest, task) => {
+            const newTask = tasksArray.reduce((latest, task) => {
                 if (task.columnId === taskData.columnId) {
                     if (!latest || task.taskId > latest.taskId) {
                         return task;
@@ -185,7 +211,7 @@ function ListView({
 
                 // 최종 업데이트된 태스크 목록 가져오기
                 const finalTasksData = await tasklistByTeam(team.teamId);
-                setTasks(finalTasksData || []);
+                setTasks(Array.isArray(finalTasksData) ? finalTasksData : []);
             }
 
             if (refreshData) refreshData();
@@ -462,40 +488,57 @@ function ListView({
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className="list-view">
-                {/* 칼럼들 */}
-                <Droppable droppableId="columns" type="column">
-                    {(provided, snapshot) => (
-                        <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className={`columns-droppable ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
-                        >
-                            {columns.map((column, index) => renderColumn(column, index))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-
-                {/* 칼럼이 없을 경우 */}
-                {columns.length === 0 && (
-                    <div className="no-columns">
-                        <p>보드에서 칼럼을 먼저 생성해주세요.</p>
-                    </div>
-                )}
-
-                {/* 태스크 상세 모달 */}
-                {selectedTask && (
-                    <TaskModal
+            <div className={`list-view ${selectedTask ? 'task-detail-open' : ''}`}>
+                {/* 태스크 상세 패널 (전체화면) */}
+                {selectedTask ? (
+                    <TaskDetailView
                         task={selectedTask}
                         teamId={team?.teamId}
                         loginMember={loginMember}
                         onClose={() => setSelectedTask(null)}
-                        onSave={() => {
+                        onUpdate={() => {
                             if (refreshData) refreshData();
-                            setSelectedTask(null);
                         }}
                     />
+                ) : (
+                    <>
+                        {/* 칼럼들 */}
+                        <Droppable droppableId="columns" type="column">
+                            {(provided, snapshot) => (
+                                <div
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className={`columns-droppable ${snapshot.isDraggingOver ? 'dragging-over' : ''}`}
+                                >
+                                    {columns.map((column, index) => renderColumn(column, index))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+
+                        {/* 칼럼 추가 UI */}
+                        <div className="add-column-section">
+                            <input
+                                type="text"
+                                placeholder="새 칼럼 이름"
+                                value={newColumnTitle}
+                                onChange={(e) => setNewColumnTitle(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleAddColumn();
+                                    }
+                                }}
+                            />
+                            <button onClick={handleAddColumn}>+ 칼럼 추가</button>
+                        </div>
+
+                        {/* 칼럼이 없을 경우 */}
+                        {columns.length === 0 && (
+                            <div className="no-columns">
+                                <p>위에서 칼럼을 추가해주세요.</p>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* 태스크 생성 모달 */}

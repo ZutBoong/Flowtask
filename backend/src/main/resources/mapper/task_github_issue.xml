@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.TaskGitHubIssueDao">
+
+    <!-- 기본 결과 맵 -->
+    <resultMap id="taskGitHubIssueMap" type="taskGitHubIssue">
+        <id property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="issueNumber" column="issue_number"/>
+        <result property="issueId" column="issue_id"/>
+        <result property="issueTitle" column="issue_title"/>
+        <result property="issueUrl" column="issue_url"/>
+        <result property="syncStatus" column="sync_status"/>
+        <result property="lastSyncedAt" column="last_synced_at"/>
+        <result property="synodosUpdatedAt" column="synodos_updated_at"/>
+        <result property="githubUpdatedAt" column="github_updated_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="taskTitle" column="task_title"/>
+        <result property="teamName" column="team_name"/>
+    </resultMap>
+
+    <!-- 삽입 -->
+    <insert id="insert" parameterType="taskGitHubIssue">
+        <selectKey keyProperty="id" resultType="int" order="BEFORE">
+            SELECT nextval('task_github_issue_seq')
+        </selectKey>
+        INSERT INTO task_github_issue (
+            id, task_id, team_id, issue_number, issue_id, issue_title, issue_url,
+            sync_status, last_synced_at, synodos_updated_at, github_updated_at, created_at
+        ) VALUES (
+            #{id}, #{taskId}, #{teamId}, #{issueNumber}, #{issueId}, #{issueTitle}, #{issueUrl},
+            #{syncStatus}, #{lastSyncedAt}, #{synodosUpdatedAt}, #{githubUpdatedAt}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="int" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.id = #{id}
+    </select>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="taskGitHubIssue">
+        UPDATE task_github_issue SET
+            issue_title = #{issueTitle},
+            issue_url = #{issueUrl},
+            sync_status = #{syncStatus},
+            last_synced_at = #{lastSyncedAt},
+            synodos_updated_at = #{synodosUpdatedAt},
+            github_updated_at = #{githubUpdatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM task_github_issue WHERE id = #{id}
+    </delete>
+
+    <!-- Task ID로 조회 -->
+    <select id="findByTaskId" parameterType="int" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.task_id = #{taskId}
+    </select>
+
+    <!-- Team + Issue Number로 조회 -->
+    <select id="findByTeamAndIssue" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.team_id = #{teamId} AND tgi.issue_number = #{issueNumber}
+    </select>
+
+    <!-- Team별 전체 조회 -->
+    <select id="listByTeam" parameterType="int" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.team_id = #{teamId}
+        ORDER BY tgi.created_at DESC
+    </select>
+
+    <!-- 상태별 조회 -->
+    <select id="listByStatus" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.team_id = #{teamId} AND tgi.sync_status = #{syncStatus}
+        ORDER BY tgi.created_at DESC
+    </select>
+
+    <!-- 충돌 목록 조회 -->
+    <select id="listConflicts" parameterType="int" resultMap="taskGitHubIssueMap">
+        SELECT tgi.*, t.title as task_title, tm.team_name
+        FROM task_github_issue tgi
+        LEFT JOIN task t ON tgi.task_id = t.task_id
+        LEFT JOIN team tm ON tgi.team_id = tm.team_id
+        WHERE tgi.team_id = #{teamId} AND tgi.sync_status = 'CONFLICT'
+        ORDER BY tgi.created_at DESC
+    </select>
+
+    <!-- 동기화 상태 업데이트 -->
+    <update id="updateSyncStatus">
+        UPDATE task_github_issue
+        SET sync_status = #{syncStatus}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Synodos 측 업데이트 시간 갱신 -->
+    <update id="updateSynodosTimestamp" parameterType="int">
+        UPDATE task_github_issue
+        SET synodos_updated_at = CURRENT_TIMESTAMP
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- GitHub 측 업데이트 시간 갱신 -->
+    <update id="updateGithubTimestamp">
+        UPDATE task_github_issue
+        SET github_updated_at = CURRENT_TIMESTAMP
+        WHERE team_id = #{teamId} AND issue_number = #{issueNumber}
+    </update>
+
+    <!-- 마지막 동기화 시간 갱신 -->
+    <update id="updateLastSyncedAt" parameterType="int">
+        UPDATE task_github_issue
+        SET last_synced_at = CURRENT_TIMESTAMP, sync_status = 'SYNCED'
+        WHERE id = #{id}
+    </update>
+
+    <!-- Task ID로 삭제 -->
+    <delete id="deleteByTaskId" parameterType="int">
+        DELETE FROM task_github_issue WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 존재 여부 확인 -->
+    <select id="countByTaskId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM task_github_issue WHERE task_id = #{taskId}
+    </select>
+
+    <select id="countByTeamAndIssue" resultType="int">
+        SELECT COUNT(*) FROM task_github_issue
+        WHERE team_id = #{teamId} AND issue_number = #{issueNumber}
+    </select>
+
+</mapper>

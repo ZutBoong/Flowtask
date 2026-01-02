@@ -126,6 +126,18 @@ GRANT ALL ON SCHEMA public TO flow;
 psql -U flow -d synodos -f database/postgresql_schema.sql
 ```
 
+### 데이터베이스 관리
+
+```bash
+# 데이터베이스 전체 리셋 (모든 테이블 삭제)
+psql -U flow -d synodos -f database/reset.sql
+
+# 샘플 데이터 추가 (테스트 계정, 팀, 태스크 등)
+psql -U flow -d synodos -f backend/src/main/resources/sample-data.sql
+```
+
+> **참고**: 백엔드 재시작 시 테이블 구조(schema.sql)는 자동 생성되지만, 샘플 데이터는 자동 생성되지 않습니다.
+
 ### 2. SMTP 설정 (이메일 인증용)
 
 Gmail 앱 비밀번호 발급:

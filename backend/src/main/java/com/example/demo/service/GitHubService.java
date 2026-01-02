@@ -301,6 +301,161 @@ public class GitHubService {
         }
     }
 
+    // ==================== 저장소 목록 및 Webhook 관리 ====================
+
+    /**
+     * 사용자의 GitHub 저장소 목록을 조회합니다.
+     */
+    public List<GitHubRepository> listUserRepositories(String accessToken) {
+        String apiUrl = "https://api.github.com/user/repos?per_page=100&sort=updated";
+        log.info("Fetching user repositories");
+
+        try {
+            HttpHeaders headers = createAuthHeaders(accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.GET, entity, String.class
+            );
+
+            List<GitHubRepository> repos = new ArrayList<>();
+            JsonNode jsonArray = objectMapper.readTree(response.getBody());
+
+            for (JsonNode node : jsonArray) {
+                GitHubRepository repo = new GitHubRepository();
+                repo.setId(node.path("id").asLong());
+                repo.setName(node.path("name").asText());
+                repo.setFullName(node.path("full_name").asText());
+                repo.setHtmlUrl(node.path("html_url").asText());
+                repo.setDescription(node.path("description").asText(null));
+                repo.setPrivateRepo(node.path("private").asBoolean());
+                repo.setOwner(node.path("owner").path("login").asText());
+                repos.add(repo);
+            }
+
+            return repos;
+        } catch (Exception e) {
+            log.error("Failed to fetch repositories: {}", e.getMessage());
+            throw new RuntimeException("저장소 목록을 가져오는데 실패했습니다.", e);
+        }
+    }
+
+    /**
+     * 저장소에 Webhook을 등록합니다.
+     */
+    public GitHubWebhook createWebhook(String accessToken, String owner, String repo, String webhookUrl, String secret) {
+        String apiUrl = String.format("https://api.github.com/repos/%s/%s/hooks", owner, repo);
+        log.info("Creating webhook for {}/{}", owner, repo);
+
+        try {
+            HttpHeaders headers = createAuthHeaders(accessToken);
+            headers.set("Content-Type", "application/json");
+
+            // Webhook 설정
+            Map<String, Object> config = Map.of(
+                "url", webhookUrl,
+                "content_type", "json",
+                "secret", secret != null ? secret : "",
+                "insecure_ssl", "0"
+            );
+
+            Map<String, Object> body = Map.of(
+                "name", "web",
+                "active", true,
+                "events", List.of("issues", "push", "issue_comment"),
+                "config", config
+            );
+
+            String jsonBody = objectMapper.writeValueAsString(body);
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.POST, entity, String.class
+            );
+
+            JsonNode node = objectMapper.readTree(response.getBody());
+            GitHubWebhook webhook = new GitHubWebhook();
+            webhook.setId(node.path("id").asLong());
+            webhook.setUrl(node.path("config").path("url").asText());
+            webhook.setActive(node.path("active").asBoolean());
+
+            log.info("Webhook created successfully: id={}", webhook.getId());
+            return webhook;
+        } catch (Exception e) {
+            log.error("Failed to create webhook: {}", e.getMessage());
+            // 이미 존재하는 경우 등 에러 처리
+            if (e.getMessage().contains("422") || e.getMessage().contains("already exists")) {
+                throw new RuntimeException("이미 Webhook이 등록되어 있습니다.", e);
+            }
+            throw new RuntimeException("Webhook 등록에 실패했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 저장소의 기존 Webhook 목록을 조회합니다.
+     */
+    public List<GitHubWebhook> listWebhooks(String accessToken, String owner, String repo) {
+        String apiUrl = String.format("https://api.github.com/repos/%s/%s/hooks", owner, repo);
+        log.info("Listing webhooks for {}/{}", owner, repo);
+
+        try {
+            HttpHeaders headers = createAuthHeaders(accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.GET, entity, String.class
+            );
+
+            List<GitHubWebhook> webhooks = new ArrayList<>();
+            JsonNode jsonArray = objectMapper.readTree(response.getBody());
+
+            for (JsonNode node : jsonArray) {
+                GitHubWebhook webhook = new GitHubWebhook();
+                webhook.setId(node.path("id").asLong());
+                webhook.setUrl(node.path("config").path("url").asText());
+                webhook.setActive(node.path("active").asBoolean());
+                webhooks.add(webhook);
+            }
+
+            return webhooks;
+        } catch (Exception e) {
+            log.error("Failed to list webhooks: {}", e.getMessage());
+            throw new RuntimeException("Webhook 목록을 가져오는데 실패했습니다.", e);
+        }
+    }
+
+    /**
+     * Webhook을 삭제합니다.
+     */
+    public void deleteWebhook(String accessToken, String owner, String repo, long hookId) {
+        String apiUrl = String.format("https://api.github.com/repos/%s/%s/hooks/%d", owner, repo, hookId);
+        log.info("Deleting webhook {} for {}/{}", hookId, owner, repo);
+
+        try {
+            HttpHeaders headers = createAuthHeaders(accessToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            restTemplate.exchange(apiUrl, HttpMethod.DELETE, entity, String.class);
+            log.info("Webhook deleted successfully");
+        } catch (Exception e) {
+            log.error("Failed to delete webhook: {}", e.getMessage());
+            throw new RuntimeException("Webhook 삭제에 실패했습니다.", e);
+        }
+    }
+
+    /**
+     * 인증 헤더를 생성합니다.
+     */
+    private HttpHeaders createAuthHeaders(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent", "Synodos-App");
+        headers.set("Accept", "application/vnd.github.v3+json");
+        headers.set("Authorization", "Bearer " + accessToken);
+        return headers;
+    }
+
+    // ==================== DTO Classes ====================
+
     /**
      * 저장소 정보를 담는 클래스
      */
@@ -359,5 +514,29 @@ public class GitHubService {
         public String getDate() { return date; }
         public String getHtmlUrl() { return htmlUrl; }
         public String getShortSha() { return sha.substring(0, 7); }
+    }
+
+    /**
+     * GitHub 저장소 정보
+     */
+    @lombok.Data
+    public static class GitHubRepository {
+        private long id;
+        private String name;
+        private String fullName;
+        private String htmlUrl;
+        private String description;
+        private boolean privateRepo;
+        private String owner;
+    }
+
+    /**
+     * GitHub Webhook 정보
+     */
+    @lombok.Data
+    public static class GitHubWebhook {
+        private long id;
+        private String url;
+        private boolean active;
     }
 }

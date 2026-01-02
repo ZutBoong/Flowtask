@@ -79,6 +79,8 @@ function NotificationsPage() {
             if (selectedNotification?.notificationId === notificationId) {
                 setSelectedNotification(prev => ({ ...prev, isRead: true }));
             }
+            // 사이드바 알림 배지 갱신
+            window.dispatchEvent(new CustomEvent('notificationRead'));
         } catch (error) {
             console.error('읽음 처리 실패:', error);
         }
@@ -91,6 +93,8 @@ function NotificationsPage() {
             if (selectedNotification) {
                 setSelectedNotification(prev => ({ ...prev, isRead: true }));
             }
+            // 사이드바 알림 배지 갱신
+            window.dispatchEvent(new CustomEvent('notificationRead'));
         } catch (error) {
             console.error('모두 읽음 처리 실패:', error);
         }
@@ -103,6 +107,8 @@ function NotificationsPage() {
             if (selectedNotification?.notificationId === notificationId) {
                 setSelectedNotification(null);
             }
+            // 사이드바 알림 배지 갱신
+            window.dispatchEvent(new CustomEvent('notificationRead'));
         } catch (error) {
             console.error('알림 삭제 실패:', error);
         }
@@ -114,6 +120,8 @@ function NotificationsPage() {
             await deleteAllNotifications(loginMember.no);
             setNotifications([]);
             setSelectedNotification(null);
+            // 사이드바 알림 배지 갱신
+            window.dispatchEvent(new CustomEvent('notificationRead'));
         } catch (error) {
             console.error('모든 알림 삭제 실패:', error);
         }

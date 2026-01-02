@@ -276,6 +276,12 @@ export const getTaskFavorites = async (memberNo) => {
     return response.data;
 };
 
+// 멤버별 팀 내 즐겨찾기한 태스크 목록
+export const getTaskFavoritesByTeam = async (memberNo, teamId) => {
+    const response = await axiosInstance.get(`${API_PATH}/task/favorites/member/${memberNo}/team/${teamId}`);
+    return response.data;
+};
+
 // ========== Task Archives API ==========
 
 // 태스크 아카이브 생성

@@ -406,6 +406,109 @@
     transform: none !important;
 }
 
+/* 소셜 로그인 구분선 */
+.social-divider {
+    display: flex;
+    align-items: center;
+    margin: 28px 0;
+}
+
+.social-divider::before,
+.social-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+}
+
+.social-divider span {
+    padding: 0 16px;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: default;
+}
+
+/* 소셜 로그인 버튼 컨테이너 */
+.social-login-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+/* 원형 소셜 버튼 공통 */
+.social-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.social-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.social-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.social-btn svg {
+    flex-shrink: 0;
+}
+
+/* GitHub 버튼 */
+.social-btn.github {
+    background: #24292e;
+    color: white;
+}
+
+.social-btn.github:hover:not(:disabled) {
+    background: #1b1f23;
+    box-shadow: 0 6px 20px rgba(36, 41, 46, 0.4);
+}
+
+/* Google 버튼 */
+.social-btn.google {
+    background: white;
+    border: 1px solid #e2e8f0;
+}
+
+.social-btn.google:hover:not(:disabled) {
+    background: #f8fafc;
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.3);
+}
+
+/* Naver 버튼 */
+.social-btn.naver {
+    background: #03C75A;
+    color: white;
+}
+
+.social-btn.naver:hover:not(:disabled) {
+    background: #02b351;
+    box-shadow: 0 6px 20px rgba(3, 199, 90, 0.4);
+}
+
+/* Kakao 버튼 */
+.social-btn.kakao {
+    background: #FEE500;
+    color: #000000;
+}
+
+.social-btn.kakao:hover:not(:disabled) {
+    background: #f5dc00;
+    box-shadow: 0 6px 20px rgba(254, 229, 0, 0.5);
+}
+
 /* ===== 반응형: 태블릿 (768px ~ 1023px) ===== */
 @media (min-width: 768px) and (max-width: 1023px) {
     .auth-box {
@@ -558,5 +661,29 @@
         padding: 14px 32px;
         font-size: 15px;
         width: 100%;
+    }
+
+    /* 소셜 로그인 모바일 */
+    .social-divider {
+        margin: 20px 0;
+    }
+
+    .social-divider span {
+        font-size: 12px;
+        padding: 0 12px;
+    }
+
+    .social-login-buttons {
+        gap: 12px;
+    }
+
+    .social-btn {
+        width: 46px;
+        height: 46px;
+    }
+
+    .social-btn svg {
+        width: 20px;
+        height: 20px;
     }
 }

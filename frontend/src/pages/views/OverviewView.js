@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTaskFavorites, toggleTaskFavorite } from '../../api/boardApi';
+import { getTaskFavoritesByTeam, toggleTaskFavorite } from '../../api/boardApi';
 import { useNavigate } from 'react-router-dom';
 import TeamHeader from '../../components/TeamHeader';
 import './OverviewView.css';
@@ -43,17 +43,18 @@ function OverviewView({ team, tasks, teamMembers, loginMember, isLeader, updateT
 
     // 즐겨찾기한 태스크 로드 (개요 탭 진입 시 새로고침)
     useEffect(() => {
-        if (loginMember && activeTab === 'overview') {
+        if (loginMember && team && activeTab === 'overview') {
             loadFavoriteTasks();
         }
-    }, [loginMember, activeTab]);
+    }, [loginMember, team, activeTab]);
 
     const loadFavoriteTasks = async () => {
         try {
-            const favorites = await getTaskFavorites(loginMember.no);
-            setFavoriteTasks(favorites || []);
+            const favorites = await getTaskFavoritesByTeam(loginMember.no, team.teamId);
+            setFavoriteTasks(Array.isArray(favorites) ? favorites : []);
         } catch (error) {
             console.error('즐겨찾기 로드 실패:', error);
+            setFavoriteTasks([]);
         }
     };
 

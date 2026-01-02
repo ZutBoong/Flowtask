@@ -4,9 +4,12 @@
 
 	<!-- 태스크 생성 -->
 	<insert id="insert" parameterType="task">
+		<selectKey keyProperty="taskId" resultType="int" order="BEFORE">
+			SELECT nextval('task_seq')
+		</selectKey>
 		INSERT INTO task (task_id, column_id, title, description, position, created_at,
 			assignee_no, priority, start_date, due_date, workflow_status)
-		VALUES (nextval('task_seq'), #{columnId}, #{title}, #{description, jdbcType=VARCHAR},
+		VALUES (#{taskId}, #{columnId}, #{title}, #{description, jdbcType=VARCHAR},
 			#{position}, CURRENT_TIMESTAMP,
 			#{assigneeNo, jdbcType=INTEGER}, #{priority, jdbcType=VARCHAR},
 			COALESCE(#{startDate, jdbcType=DATE}, CURRENT_DATE),
@@ -191,5 +194,35 @@
 			due_date = #{dueDate, jdbcType=TIMESTAMP}
 		WHERE task_id = #{taskId}
 	</update>
+
+	<!-- 마감일 임박 태스크 조회 (N일 이내, 완료되지 않은 태스크) -->
+	<select id="listTasksApproachingDeadline" parameterType="int" resultType="task">
+		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by,
+			c.team_id
+		FROM task t
+		JOIN columns c ON t.column_id = c.column_id
+		LEFT JOIN member m ON t.assignee_no = m.no
+		WHERE t.due_date IS NOT NULL
+		AND t.due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + #{daysAhead}
+		AND t.workflow_status NOT IN ('DONE', 'DECLINED')
+		ORDER BY t.due_date ASC
+	</select>
+
+	<!-- 마감일 초과 태스크 조회 (완료되지 않은 태스크) -->
+	<select id="listOverdueTasks" resultType="task">
+		SELECT t.task_id, t.column_id, t.title, t.description, t.position, t.created_at,
+			t.assignee_no, m.name as assignee_name, t.priority, t.start_date, t.due_date,
+			t.workflow_status, t.rejection_reason, t.rejected_at, t.rejected_by,
+			c.team_id
+		FROM task t
+		JOIN columns c ON t.column_id = c.column_id
+		LEFT JOIN member m ON t.assignee_no = m.no
+		WHERE t.due_date IS NOT NULL
+		AND t.due_date &lt; CURRENT_DATE
+		AND t.workflow_status NOT IN ('DONE', 'DECLINED')
+		ORDER BY t.due_date ASC
+	</select>
 
 </mapper>

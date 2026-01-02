@@ -87,6 +87,8 @@ function CreateTeam() {
 
             if (result.success) {
                 alert(`팀이 생성되었습니다!\n팀 코드: ${result.teamCode}`);
+                // 사이드바 팀 목록 갱신
+                window.dispatchEvent(new CustomEvent('teamUpdated'));
                 // 생성된 팀으로 이동
                 navigate(`/team/${result.teamId}?view=overview`);
             } else {

@@ -1,8 +1,18 @@
 -- =============================================
--- Synodos - 전체 스키마 초기화
+-- Synodos - 전체 스키마 초기화 (수동 설치용)
 -- PostgreSQL 15+ 호환
+-- =============================================
 --
--- 사용법:
+-- ⚠️ 참고: 이 폴더의 파일들은 수동 설치/참조용입니다!
+--
+-- 실제 자동 DB 업데이트는 아래 파일에서 관리됩니다:
+--   backend/src/main/resources/schema.sql  (테이블 생성/변경)
+--   backend/src/main/resources/data.sql    (샘플 데이터)
+--
+-- Spring Boot 시작 시 위 파일들이 자동으로 실행됩니다.
+-- 스키마 변경 시 반드시 backend/src/main/resources/schema.sql을 수정하세요.
+--
+-- 수동 사용법:
 --   psql -U flow -d synodos -f init_all.sql
 -- =============================================
 

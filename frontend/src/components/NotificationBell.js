@@ -49,9 +49,10 @@ function NotificationBell({ memberNo }) {
         setLoading(true);
         try {
             const data = await getNotifications(memberNo);
-            setNotifications(data || []);
+            setNotifications(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('알림 목록 조회 실패:', error);
+            setNotifications([]);
         } finally {
             setLoading(false);
         }

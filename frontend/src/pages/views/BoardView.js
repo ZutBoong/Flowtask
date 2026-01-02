@@ -6,7 +6,7 @@ import {
     tasklistByTeam, columnlistByTeam
 } from '../../api/boardApi';
 import { addTaskFavorite, removeTaskFavorite, checkTaskFavorite, getTaskFavorites, archiveTask, unarchiveTask, getTaskArchives } from '../../api/boardApi';
-import TaskModal from '../../components/TaskModal';
+import TaskDetailView from '../../components/TaskDetailView';
 import TaskCreateModal from '../../components/TaskCreateModal';
 import './BoardView.css';
 
@@ -46,6 +46,7 @@ function BoardView({
 
     // 컬럼 기능 관련 상태
     const [columnMenuOpen, setColumnMenuOpen] = useState(null);
+    const [editingColumnPrefix, setEditingColumnPrefix] = useState(null); // GitHub 명령어 편집 중인 컬럼
 
     // 태스크 즐겨찾기 관련 상태
     const [taskFavorites, setTaskFavorites] = useState({});  // { taskId: boolean }
@@ -325,7 +326,7 @@ function BoardView({
             });
             setNewColumnTitle('');
             const columnsData = await columnlistByTeam(team.teamId);
-            setColumns(columnsData || []);
+            setColumns(Array.isArray(columnsData) ? columnsData : []);
         } catch (error) {
             console.error('컬럼 추가 실패:', error);
         }
@@ -341,6 +342,21 @@ function BoardView({
             setEditingColumn(null);
         } catch (error) {
             console.error('컬럼 수정 실패:', error);
+        }
+    };
+
+    // GitHub 명령어 수정
+    const handleUpdateColumnPrefix = async (columnId, newPrefix) => {
+        try {
+            const column = columns.find(col => col.columnId === columnId);
+            await columnupdate({ columnId, title: column.title, githubPrefix: newPrefix });
+            setColumns(prev => prev.map(col =>
+                col.columnId === columnId ? { ...col, githubPrefix: newPrefix } : col
+            ));
+            setEditingColumnPrefix(null);
+            setColumnMenuOpen(null);
+        } catch (error) {
+            console.error('GitHub 명령어 수정 실패:', error);
         }
     };
 
@@ -373,7 +389,7 @@ function BoardView({
 
             // 태스크 목록 새로 가져오기
             const tasksData = await tasklistByTeam(team.teamId);
-            setTasks(tasksData || []);
+            setTasks(Array.isArray(tasksData) ? tasksData : []);
 
             // 생성된 태스크 찾기
             const newTask = tasksData.reduce((latest, task) => {
@@ -400,7 +416,7 @@ function BoardView({
 
                 // 최종 업데이트된 태스크 목록 가져오기
                 const finalTasksData = await tasklistByTeam(team.teamId);
-                setTasks(finalTasksData || []);
+                setTasks(Array.isArray(finalTasksData) ? finalTasksData : []);
             }
         } catch (error) {
             console.error('태스크 추가 실패:', error);
@@ -440,7 +456,19 @@ function BoardView({
     };
 
     return (
-        <div className="board-view">
+        <div className={`board-view ${selectedTask ? 'task-detail-open' : ''}`}>
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <TaskDetailView
+                    task={selectedTask}
+                    teamId={team?.teamId}
+                    loginMember={loginMember}
+                    onClose={() => setSelectedTask(null)}
+                    onUpdate={() => {
+                        if (refreshData) refreshData();
+                    }}
+                />
+            ) : (
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="columns-wrapper">
                     <Droppable droppableId="board" direction="horizontal" type="column">
@@ -500,6 +528,34 @@ function BoardView({
                                                                     </button>
                                                                     {columnMenuOpen === column.columnId && (
                                                                         <div className="column-menu-dropdown">
+                                                                            <div className="menu-item github-prefix-item">
+                                                                                <label>GitHub 명령어</label>
+                                                                                {editingColumnPrefix === column.columnId ? (
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        defaultValue={column.githubPrefix || `[${column.title}]`}
+                                                                                        placeholder={`[${column.title}]`}
+                                                                                        onBlur={(e) => handleUpdateColumnPrefix(column.columnId, e.target.value)}
+                                                                                        onKeyPress={(e) => {
+                                                                                            if (e.key === 'Enter') {
+                                                                                                handleUpdateColumnPrefix(column.columnId, e.target.value);
+                                                                                            }
+                                                                                        }}
+                                                                                        onClick={(e) => e.stopPropagation()}
+                                                                                        autoFocus
+                                                                                    />
+                                                                                ) : (
+                                                                                    <span
+                                                                                        className="prefix-value"
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            setEditingColumnPrefix(column.columnId);
+                                                                                        }}
+                                                                                    >
+                                                                                        {column.githubPrefix || `[${column.title}]`}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
                                                                             <button
                                                                                 className="menu-delete-btn"
                                                                                 onClick={() => {
@@ -564,6 +620,7 @@ function BoardView({
                                                                                 </div>
                                                                             )}
                                                                             <div className="task-card-title">
+                                                                                <span className="task-id">#{task.taskId}</span>
                                                                                 {task.title}
                                                                             </div>
                                                                             <div className="task-card-meta">
@@ -620,26 +677,6 @@ function BoardView({
                     </Droppable>
                 </div>
             </DragDropContext>
-
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    isArchived={taskArchives[selectedTask.taskId] || false}
-                    onArchiveChange={(archived) => {
-                        setTaskArchives(prev => ({
-                            ...prev,
-                            [selectedTask.taskId]: archived
-                        }));
-                    }}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        if (refreshData) refreshData();
-                        setSelectedTask(null);
-                    }}
-                />
             )}
 
             {/* 태스크 생성 모달 */}

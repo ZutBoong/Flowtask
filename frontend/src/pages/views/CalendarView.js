@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { tasklistByDateRange } from '../../api/boardApi';
-import TaskModal from '../../components/TaskModal';
+import TaskDetailView from '../../components/TaskDetailView';
 import './CalendarView.css';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -44,9 +44,10 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                 formatDateForApi(startDate),
                 formatDateForApi(endDate)
             );
-            setTasks(data || []);
+            setTasks(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('캘린더 데이터 로드 실패:', error);
+            setTasks([]);
         } finally {
             setLoading(false);
         }
@@ -162,7 +163,20 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
     const calendarDays = generateCalendarDays();
 
     return (
-        <div className="calendar-view">
+        <div className={`calendar-view ${selectedTask ? 'task-detail-open' : ''}`}>
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <TaskDetailView
+                    task={selectedTask}
+                    teamId={team?.teamId}
+                    loginMember={loginMember}
+                    onClose={() => setSelectedTask(null)}
+                    onUpdate={() => {
+                        fetchTasks();
+                    }}
+                />
+            ) : (
+            <>
             {/* 캘린더 헤더 */}
             <div className="calendar-header">
                 <div className="calendar-nav">
@@ -247,20 +261,6 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                 </div>
             )}
 
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        fetchTasks();
-                        setSelectedTask(null);
-                    }}
-                />
-            )}
-
             {/* 날짜별 태스크 목록 모달 */}
             {selectedDate && (
                 <div className="day-tasks-modal-overlay" onClick={() => setSelectedDate(null)}>
@@ -308,6 +308,8 @@ function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filter
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
     );

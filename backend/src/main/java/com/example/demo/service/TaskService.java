@@ -4,14 +4,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.example.demo.dao.TaskDao;
 import com.example.demo.dao.SynodosColumnDao;
 import com.example.demo.dao.TaskAssigneeDao;
 import com.example.demo.dao.TaskVerifierDao;
+import com.example.demo.dao.TaskGitHubIssueDao;
+import com.example.demo.dao.TeamDao;
+import com.example.demo.dao.MemberDao;
 import com.example.demo.model.Task;
 import com.example.demo.model.SynodosColumn;
+import com.example.demo.model.TaskGitHubIssue;
+import com.example.demo.model.Team;
+import com.example.demo.model.Member;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+@Slf4j
 @Service
 public class TaskService {
 
@@ -32,6 +43,68 @@ public class TaskService {
 
 	@Autowired
 	private NotificationService persistentNotificationService;
+
+	@Autowired
+	private TaskGitHubIssueDao taskGitHubIssueDao;
+
+	@Autowired
+	private GitHubIssueSyncService gitHubIssueSyncService;
+
+	@Autowired
+	private MemberDao memberDao;
+
+	@Autowired
+	private TeamDao teamDao;
+
+	// Helper method to get current member's no from security context
+	private Integer getCurrentMemberNo() {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth != null && auth.getCredentials() instanceof Integer) {
+				return (Integer) auth.getCredentials();
+			}
+		} catch (Exception e) {
+			log.debug("Could not get current member no: {}", e.getMessage());
+		}
+		return null;
+	}
+
+	// Helper method to sync task to GitHub if linked
+	private void syncToGitHubIfLinked(int taskId) {
+		log.info("[GitHub Sync] Starting sync check for task #{}", taskId);
+		try {
+			// Check if task has linked GitHub issue
+			TaskGitHubIssue mapping = taskGitHubIssueDao.findByTaskId(taskId);
+			if (mapping == null) {
+				log.info("[GitHub Sync] No GitHub issue linked to task #{}, skipping", taskId);
+				return; // No linked issue, nothing to sync
+			}
+			log.info("[GitHub Sync] Found mapping: task #{} -> issue #{}", taskId, mapping.getIssueNumber());
+
+			// Get current member's no
+			Integer memberNo = getCurrentMemberNo();
+			if (memberNo == null) {
+				log.warn("[GitHub Sync] No authenticated member, skipping GitHub sync for task #{}", taskId);
+				return;
+			}
+			log.info("[GitHub Sync] Current member: #{}", memberNo);
+
+			// Check if member has GitHub account linked
+			Member member = memberDao.findByNo(memberNo);
+			if (member == null || member.getGithubAccessToken() == null) {
+				log.warn("[GitHub Sync] Member #{} has no GitHub account linked, skipping sync", memberNo);
+				return;
+			}
+			log.info("[GitHub Sync] Member has GitHub token, proceeding with sync");
+
+			// Sync to GitHub
+			gitHubIssueSyncService.syncTaskToGitHub(taskId, memberNo);
+			log.info("[GitHub Sync] SUCCESS: Synced Task #{} to GitHub Issue #{}", taskId, mapping.getIssueNumber());
+		} catch (Exception e) {
+			// Log but don't fail the main operation
+			log.error("[GitHub Sync] FAILED to sync task #{} to GitHub: {}", taskId, e.getMessage(), e);
+		}
+	}
 
 	// Helper method to populate assignees for a single task
 	private void populateAssignees(Task task) {
@@ -82,15 +155,60 @@ public class TaskService {
 		if (result == 1) {
 			SynodosColumn column = columnDao.content(task.getColumnId());
 			if (column != null) {
+				int teamId = column.getTeamId();
+
 				// Fetch the latest task in this column to get the created one
 				List<Task> tasks = dao.listByColumn(task.getColumnId());
 				if (!tasks.isEmpty()) {
 					Task created = tasks.get(tasks.size() - 1);
-					notificationService.notifyTaskCreated(created, column.getTeamId());
+					notificationService.notifyTaskCreated(created, teamId);
+
+					// GitHub Issue 자동 생성
+					createGitHubIssueIfEnabled(created.getTaskId(), teamId);
 				}
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * 팀 설정이 활성화된 경우 GitHub Issue 자동 생성
+	 */
+	private void createGitHubIssueIfEnabled(int taskId, int teamId) {
+		try {
+			// 팀 설정 확인
+			Team team = teamDao.findById(teamId);
+			if (team == null || !Boolean.TRUE.equals(team.getGithubIssueSyncEnabled())) {
+				log.debug("GitHub Issue sync disabled for team #{}", teamId);
+				return;
+			}
+
+			if (team.getGithubRepoUrl() == null || team.getGithubRepoUrl().isEmpty()) {
+				log.debug("No GitHub repo configured for team #{}", teamId);
+				return;
+			}
+
+			// 현재 사용자 확인
+			Integer memberNo = getCurrentMemberNo();
+			if (memberNo == null) {
+				log.debug("No authenticated member, skipping GitHub Issue creation for task #{}", taskId);
+				return;
+			}
+
+			// 사용자의 GitHub 연동 확인
+			Member member = memberDao.findByNo(memberNo);
+			if (member == null || member.getGithubAccessToken() == null) {
+				log.debug("Member #{} has no GitHub account linked, skipping Issue creation", memberNo);
+				return;
+			}
+
+			// GitHub Issue 생성
+			gitHubIssueSyncService.createIssueFromTask(taskId, teamId, memberNo);
+			log.info("Auto-created GitHub Issue from Task #{} for team #{}", taskId, teamId);
+		} catch (Exception e) {
+			// 실패해도 태스크 생성은 성공으로 처리
+			log.warn("Failed to auto-create GitHub Issue for task #{}: {}", taskId, e.getMessage());
+		}
 	}
 
 	public List<Task> listByColumn(int columnId) {
@@ -127,6 +245,8 @@ public class TaskService {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -155,6 +275,8 @@ public class TaskService {
 					}
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -217,6 +339,8 @@ public class TaskService {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -233,6 +357,8 @@ public class TaskService {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -247,6 +373,8 @@ public class TaskService {
 					notificationService.notifyTaskUpdated(updated, column.getTeamId());
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -280,6 +408,8 @@ public class TaskService {
 					}
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}
@@ -313,6 +443,8 @@ public class TaskService {
 					notificationService.notifyTaskDatesChanged(updated, column.getTeamId());
 				}
 			}
+			// GitHub 자동 동기화
+			syncToGitHubIfLinked(task.getTaskId());
 		}
 		return result;
 	}

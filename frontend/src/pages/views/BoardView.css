@@ -9,6 +9,53 @@
     background: transparent;
 }
 
+/* 태스크 상세 패널 모드 */
+.board-view.task-detail-open {
+    padding: 0;
+}
+
+/* 태스크 상세 패널 */
+.board-view .task-detail-panel {
+    background: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.board-view .task-detail-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    flex-shrink: 0;
+}
+
+.board-view .task-detail-header .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.board-view .task-detail-header .back-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+.board-view .task-detail-header .back-btn i {
+    font-size: 12px;
+}
+
 /* ===== 컬럼 래퍼 ===== */
 .board-view .columns-wrapper {
     position: relative;
@@ -214,6 +261,50 @@
     color: #dc2626;
 }
 
+/* GitHub 명령어 설정 */
+.board-view .column-menu-dropdown .github-prefix-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.board-view .column-menu-dropdown .github-prefix-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.board-view .column-menu-dropdown .github-prefix-item .prefix-value {
+    display: block;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.board-view .column-menu-dropdown .github-prefix-item .prefix-value:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.board-view .column-menu-dropdown .github-prefix-item input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1e293b;
+    outline: none;
+    box-sizing: border-box;
+}
+
 /* ===== 태스크 컨테이너 ===== */
 .board-view .tasks-container {
     min-height: 60px;
@@ -298,7 +389,18 @@
     color: #1e293b;
     word-break: break-word;
     line-height: 1.5;
-    padding-right: 50px;
+}
+
+.board-view .task-card-title .task-id {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #667eea;
+    background: #eef2ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .board-view .task-card-meta {

@@ -1,0 +1,422 @@
+.github-issue-link {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.github-issue-link.loading {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.github-issue-link.loading i {
+    margin-right: 6px;
+}
+
+/* GitHub Not Connected */
+.github-not-connected {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.github-not-connected > i {
+    font-size: 32px;
+    color: #9ca3af;
+}
+
+.github-not-connected > span {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.connect-github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #24292f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.connect-github-btn:hover {
+    background: #32383f;
+}
+
+.connect-github-btn i {
+    font-size: 16px;
+}
+
+/* Error Message */
+.issue-link-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.issue-link-error button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.issue-link-error button:hover {
+    color: #991b1b;
+}
+
+/* Linked Issue Display */
+.linked-issue {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.issue-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.issue-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #1f2937;
+    text-decoration: none;
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.issue-link:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.issue-link i {
+    font-size: 14px;
+}
+
+.sync-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.last-synced {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.issue-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.issue-actions .action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.issue-actions .action-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.issue-actions .action-btn.sync:hover:not(:disabled) {
+    color: #3b82f6;
+}
+
+.issue-actions .action-btn.unlink:hover:not(:disabled) {
+    color: #ef4444;
+}
+
+.issue-actions .action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* No Issue Display */
+.no-issue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.no-issue-text {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.no-issue-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.no-issue-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.no-issue-actions .link-btn {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.no-issue-actions .link-btn:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.no-issue-actions .create-btn {
+    background: #1f2937;
+    border: 1px solid #1f2937;
+    color: white;
+}
+
+.no-issue-actions .create-btn:hover:not(:disabled) {
+    background: #374151;
+}
+
+.no-issue-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Modal Overlay */
+.issue-link-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.issue-link-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.modal-header .close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-header .close-btn:hover {
+    background: #f1f5f9;
+    color: #374151;
+}
+
+.modal-body {
+    flex: 1;
+    padding: 16px 20px;
+    overflow-y: auto;
+}
+
+.loading-issues,
+.no-issues {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    color: #64748b;
+}
+
+.loading-issues i,
+.no-issues i {
+    font-size: 24px;
+}
+
+.no-issues p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Issues List */
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.issue-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.issue-item:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.issue-item.selected {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.issue-number {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.issue-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.issue-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 6px;
+}
+
+.issue-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.label-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    background-color: #64748b;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.modal-footer button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.modal-footer .cancel-btn {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.modal-footer .cancel-btn:hover {
+    background: #f3f4f6;
+}
+
+.modal-footer .confirm-btn {
+    background: #3b82f6;
+    border: 1px solid #3b82f6;
+    color: white;
+}
+
+.modal-footer .confirm-btn:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.modal-footer .confirm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

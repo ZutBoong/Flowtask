@@ -50,15 +50,12 @@ public class TaskVerifierService {
 				if (task != null) {
 					SynodosColumn column = columnDao.content(task.getColumnId());
 					if (column != null) {
-						persistentNotificationService.sendNotification(
+						persistentNotificationService.notifyTaskVerifier(
 							verifier.getMemberNo(),
 							senderNo,
-							"TASK_VERIFIER",
-							"검증 요청",
-							"'" + task.getTitle() + "' 태스크의 검증자로 지정되었습니다",
-							column.getTeamId(),
-							task.getColumnId(),
-							task.getTaskId()
+							task.getTaskId(),
+							task.getTitle(),
+							column.getTeamId()
 						);
 					}
 				}
@@ -130,15 +127,12 @@ public class TaskVerifierService {
 					boolean wasVerifier = existingVerifiers.stream()
 						.anyMatch(ev -> ev.getMemberNo() == memberNo);
 					if (!wasVerifier) {
-						persistentNotificationService.sendNotification(
+						persistentNotificationService.notifyTaskVerifier(
 							memberNo,
 							senderNo,
-							"TASK_VERIFIER",
-							"검증 요청",
-							"'" + task.getTitle() + "' 태스크의 검증자로 지정되었습니다",
-							column.getTeamId(),
-							task.getColumnId(),
-							task.getTaskId()
+							task.getTaskId(),
+							task.getTitle(),
+							column.getTeamId()
 						);
 					}
 				}

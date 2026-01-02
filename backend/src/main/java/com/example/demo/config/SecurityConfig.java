@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.security.CustomAuthorizationRequestResolver;
 import com.example.demo.security.JwtAuthenticationFilter;
 import com.example.demo.security.OAuth2SuccessHandler;
 
@@ -10,8 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,12 +31,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    private final ClientRegistrationRepository clientRegistrationRepository;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
-            OAuth2SuccessHandler oAuth2SuccessHandler
+            OAuth2SuccessHandler oAuth2SuccessHandler,
+            ClientRegistrationRepository clientRegistrationRepository
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.clientRegistrationRepository = clientRegistrationRepository;
+
     }
 
     @Bean
@@ -56,12 +66,31 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            // 4️⃣ OAuth2 로그인 ⭐⭐⭐
+
+            // 4️⃣ OAuth2 로그인 (exceptionHandling보다 먼저 설정)
             .oauth2Login(oauth -> oauth
+                .authorizationEndpoint(authorization -> authorization
+                    .authorizationRequestResolver(
+                        new CustomAuthorizationRequestResolver(clientRegistrationRepository)
+                    )
+                )
                 .successHandler(oAuth2SuccessHandler)
             )
 
-            // 5️⃣ 인가 설정
+            // 5️⃣ API 요청에 대해 401 반환 (OAuth 리다이렉트 방지)
+            .exceptionHandling(exception -> exception
+                // API 경로는 무조건 401 반환 (OAuth 리다이렉트 방지)
+                .defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    new AntPathRequestMatcher("/api/**")
+                )
+                // 그 외 경로는 OAuth2 로그인 페이지로 리다이렉트
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendRedirect("/oauth2/authorization/github");
+                })
+            )
+
+            // 6️⃣ 인가 설정
             .authorizeHttpRequests(auth -> auth
                 // OAuth2 관련 경로 (필수)
                 .requestMatchers(
@@ -69,25 +98,40 @@ public class SecurityConfig {
                     "/oauth2/**"
                 ).permitAll()
 
-                // 기존 로그인 / 회원가입 API (있다면)
+
+                // 회원 인증 관련 API (로그인, 회원가입 등)
                 .requestMatchers(
-                    "/api/auth/**"
+                    "/api/member/login",
+                    "/api/member/register",
+                    "/api/member/social-register",
+                    "/api/member/check-userid",
+                    "/api/member/check-email",
+                    "/api/member/find-userid",
+                    "/api/member/find-password",
+                    "/api/member/reset-password",
+                    "/api/email/**"
                 ).permitAll()
 
-                .requestMatchers("/api/team/**").authenticated()
-                .requestMatchers("/api/board/**").authenticated()
-                .requestMatchers("/api/member/**").authenticated()
+                // WebSocket
+                .requestMatchers("/ws/**").permitAll()
+
+                // 프로필 이미지 조회 (공개)
+                .requestMatchers("/api/member/profile-image/**").permitAll()
+
+                // GitHub OAuth (로그인용)
+                .requestMatchers("/api/github/oauth/login/**").permitAll()
+
+                // GitHub Webhook (인증 없이 접근 허용)
+                .requestMatchers("/api/webhook/**").permitAll()
 
                 // 그 외는 인증 필요
                 .anyRequest().authenticated()
             )
 
-            // 6️⃣ JWT 필터
             .addFilterBefore(
                 jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class
             );
-
 
         return http.build();
     }

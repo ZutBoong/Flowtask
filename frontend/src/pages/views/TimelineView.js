@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import TaskModal from '../../components/TaskModal';
+import TaskDetailView from '../../components/TaskDetailView';
 import './TimelineView.css';
 
 
@@ -525,11 +525,24 @@ function TimelineView({
 
     return (
         <div
-            className={`timeline-view ${viewMode === 'week' ? 'week-view' : ''}`}
+            className={`timeline-view ${viewMode === 'week' ? 'week-view' : ''} ${selectedTask ? 'task-detail-open' : ''}`}
             onMouseMove={isDraggingScroll ? handleScrollDragMove : undefined}
             onMouseUp={isDraggingScroll ? handleScrollDragEnd : undefined}
             onMouseLeave={isDraggingScroll ? handleScrollDragEnd : undefined}
         >
+            {/* 태스크 상세 패널 (전체화면) */}
+            {selectedTask ? (
+                <TaskDetailView
+                    task={selectedTask}
+                    teamId={team?.teamId}
+                    loginMember={loginMember}
+                    onClose={() => setSelectedTask(null)}
+                    onUpdate={() => {
+                        if (refreshData) refreshData();
+                    }}
+                />
+            ) : (
+            <>
             {/* 타임라인 헤더 */}
             <div className="timeline-header">
                 <div className="timeline-nav">
@@ -701,19 +714,7 @@ function TimelineView({
                     }
                 </div>
             </div>
-
-            {/* 태스크 상세 모달 */}
-            {selectedTask && (
-                <TaskModal
-                    task={selectedTask}
-                    teamId={team?.teamId}
-                    loginMember={loginMember}
-                    onClose={() => setSelectedTask(null)}
-                    onSave={() => {
-                        if (refreshData) refreshData();
-                        setSelectedTask(null);
-                    }}
-                />
+            </>
             )}
         </div>
     );

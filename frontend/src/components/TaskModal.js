@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { taskupdate, updateTaskAssignees, updateTaskVerifiers, archiveTask, unarchiveTask, toggleTaskFavorite, checkTaskFavorite } from '../api/boardApi';
+import { taskupdate, updateTaskAssignees, updateTaskVerifiers } from '../api/boardApi';
 import { getTeamMembers, getTeam } from '../api/teamApi';
 import { uploadFile, getFilesByTask, deleteFile, formatFileSize, getFileIcon } from '../api/fileApi';
-import { analyzeCode } from '../api/analysisApi';
 import CommentSection from './CommentSection';
 import CommitBrowser from './CommitBrowser';
 import LinkedCommits from './LinkedCommits';
 import './TaskModal.css';
 
-function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: propIsArchived, onArchiveChange }) {
+function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
     // 오늘 날짜 기본값
     const today = new Date().toISOString().split('T')[0];
 
@@ -17,7 +16,7 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
         title: task?.title || '',
         description: task?.description || '',
         assigneeNo: task?.assigneeNo || null,
-        priority: task?.priority || 'MEDIUM',
+        priority: task?.priority || null, // 우선순위 미설정이면 null
         startDate: task?.startDate || today,
         dueDate: task?.dueDate || ''
     });
@@ -40,26 +39,12 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
 
-    // 즐겨찾기 상태
-    const [isFavorite, setIsFavorite] = useState(false);
-
-    // AI 코드 분석 상태
-    const [githubUrl, setGithubUrl] = useState('');
-    const [analyzing, setAnalyzing] = useState(false);
     const commentSectionRef = useRef(null);  // CommentSection 새로고침용
 
     // GitHub 커밋 연결 상태
     const [showCommitBrowser, setShowCommitBrowser] = useState(false);
     const [hasGithubRepo, setHasGithubRepo] = useState(false);
     const linkedCommitsRef = useRef(null);
-
-    // 아카이브 상태 (props에서 초기값 받음)
-    const [isArchived, setIsArchived] = useState(propIsArchived || false);
-
-    // props 변경 시 아카이브 상태 동기화
-    useEffect(() => {
-        setIsArchived(propIsArchived || false);
-    }, [propIsArchived]);
 
     useEffect(() => {
         if (teamId) {
@@ -68,7 +53,6 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
         }
         if (task?.taskId) {
             fetchFiles();
-            fetchFavoriteStatus();
         }
         // 기존 task 데이터에서 시간 추출
         if (task?.startDate) {
@@ -90,32 +74,13 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
         }
     };
 
-    const fetchFavoriteStatus = async () => {
-        if (!task?.taskId || !loginMember?.no) return;
-        try {
-            const result = await checkTaskFavorite(task.taskId, loginMember.no);
-            setIsFavorite(result.isFavorite);
-        } catch (error) {
-            console.error('즐겨찾기 상태 확인 실패:', error);
-        }
-    };
-
-    const handleToggleFavorite = async () => {
-        if (!task?.taskId || !loginMember?.no) return;
-        try {
-            const result = await toggleTaskFavorite(task.taskId, loginMember.no);
-            setIsFavorite(result.isFavorite);
-        } catch (error) {
-            console.error('즐겨찾기 토글 실패:', error);
-        }
-    };
-
     const fetchTeamMembers = async () => {
         try {
             const members = await getTeamMembers(teamId);
-            setTeamMembers(members || []);
+            setTeamMembers(Array.isArray(members) ? members : []);
         } catch (error) {
             console.error('팀 멤버 조회 실패:', error);
+            setTeamMembers([]);
         }
     };
 
@@ -124,9 +89,10 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
         if (!task?.taskId) return;
         try {
             const fileList = await getFilesByTask(task.taskId);
-            setFiles(fileList || []);
+            setFiles(Array.isArray(fileList) ? fileList : []);
         } catch (error) {
             console.error('파일 목록 조회 실패:', error);
+            setFiles([]);
         }
     };
 
@@ -265,87 +231,25 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
         return (hours === '00' && minutes === '00') ? '' : `${hours}:${minutes}`;
     };
 
-    const handleArchiveToggle = async () => {
-        if (!loginMember) return;
-
-        try {
-            if (isArchived) {
-                // 아카이브 해제
-                await unarchiveTask(form.taskId, loginMember.no);
-                setIsArchived(false);
-                if (onArchiveChange) {
-                    onArchiveChange(false);
-                }
-            } else {
-                // 아카이브 설정
-                await archiveTask(form.taskId, loginMember.no, '');
-                setIsArchived(true);
-                if (onArchiveChange) {
-                    onArchiveChange(true);
-                }
-            }
-        } catch (error) {
-            console.error('태스크 아카이브 토글 실패:', error);
-        }
-    };
-
-    // AI 코드 분석
-    const handleAnalyzeCode = async () => {
-        if (!githubUrl.trim() || !task?.taskId || !loginMember?.no) return;
-
-        setAnalyzing(true);
-        try {
-            await analyzeCode(task.taskId, githubUrl.trim(), loginMember.no);
-            setGithubUrl('');
-            // 댓글 섹션 새로고침
-            if (commentSectionRef.current) {
-                commentSectionRef.current.refresh();
-            }
-        } catch (error) {
-            console.error('코드 분석 실패:', error);
-            const errorMsg = error.response?.data || error.message || '알 수 없는 오류';
-            if (errorMsg.includes('429') || errorMsg.includes('quota')) {
-                alert('API 할당량을 초과했습니다. 잠시 후 다시 시도해주세요.');
-            } else {
-                alert('코드 분석 실패: ' + errorMsg);
-            }
-        } finally {
-            setAnalyzing(false);
-        }
-    };
-
+    // 모달 모드
     return (
         <div className="task-modal-overlay" onClick={onClose}>
             <div className="task-modal-container" onClick={e => e.stopPropagation()}>
                 <div className="task-modal-header">
-                    <h3>태스크 수정</h3>
+                    <div className="header-title-row">
+                        <h3>태스크 수정</h3>
+                        {form.taskId > 0 && (
+                            <span className="task-id-badge">#{form.taskId}</span>
+                        )}
+                    </div>
                     <div className="header-actions">
                         <button
                             className={`urgent-btn ${form.priority === 'URGENT' ? 'active' : ''}`}
-                            onClick={() => setForm(prev => ({ ...prev, priority: prev.priority === 'URGENT' ? 'MEDIUM' : 'URGENT' }))}
+                            onClick={() => setForm(prev => ({ ...prev, priority: prev.priority === 'URGENT' ? null : 'URGENT' }))}
                             title={form.priority === 'URGENT' ? '긴급 해제' : '긴급 설정'}
                         >
                             <i className="fa-solid fa-triangle-exclamation"></i>
                         </button>
-                        {form.taskId > 0 && (
-                            <>
-                                <button
-                                    className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-                                    onClick={handleToggleFavorite}
-                                    title={isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
-                                >
-                                    <i className={isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'}></i>
-                                </button>
-                                <button
-                                    className={`archive-btn ${isArchived ? 'active' : ''}`}
-                                    onClick={handleArchiveToggle}
-                                    disabled={loading}
-                                    title={isArchived ? '아카이브 해제' : '아카이브'}
-                                >
-                                    <i className={isArchived ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'}></i>
-                                </button>
-                            </>
-                        )}
                         <button className="close-btn" onClick={onClose}><i className="fa-solid fa-x"></i></button>
                     </div>
                 </div>
@@ -553,34 +457,6 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember, isArchived: pro
                                 taskId={form.taskId}
                                 canEdit={true}
                             />
-                        </section>
-                    )}
-
-                    {/* AI 코드 분석 섹션 */}
-                    {form.taskId > 0 && (
-                        <section className="analysis-section">
-                            <h2>AI 코드 분석</h2>
-                            <div className="analysis-input-wrapper">
-                                <input
-                                    type="text"
-                                    className="github-url-input"
-                                    placeholder="GitHub URL을 입력하세요 (예: https://github.com/owner/repo/blob/main/file.js)"
-                                    value={githubUrl}
-                                    onChange={(e) => setGithubUrl(e.target.value)}
-                                    disabled={analyzing}
-                                />
-                                <button
-                                    type="button"
-                                    className="analyze-btn"
-                                    onClick={handleAnalyzeCode}
-                                    disabled={analyzing || !githubUrl.trim()}
-                                >
-                                    {analyzing ? '분석중...' : '🔍 AI 분석'}
-                                </button>
-                            </div>
-                            <p className="analysis-hint">
-                                Public GitHub 저장소의 파일 또는 커밋 URL을 입력하면 AI가 코드를 분석합니다.
-                            </p>
                         </section>
                     )}
 

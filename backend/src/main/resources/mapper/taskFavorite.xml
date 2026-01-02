@@ -42,4 +42,18 @@
         WHERE member_no = #{memberNo}
     </select>
 
+    <!-- 멤버별 팀 내 즐겨찾기 목록 (태스크 정보 포함) -->
+    <select id="listByMemberAndTeam" resultType="taskFavorite">
+        SELECT tf.task_id, tf.member_no, tf.created_at,
+               t.title, t.description, t.workflow_status, t.priority, t.due_date,
+               t.column_id, c.title as column_title,
+               c.team_id, tm.team_name
+        FROM task_favorite tf
+        JOIN task t ON tf.task_id = t.task_id
+        JOIN columns c ON t.column_id = c.column_id
+        JOIN team tm ON c.team_id = tm.team_id
+        WHERE tf.member_no = #{memberNo} AND c.team_id = #{teamId}
+        ORDER BY tf.created_at DESC
+    </select>
+
 </mapper>

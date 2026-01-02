@@ -190,4 +190,14 @@ public class MemberService {
 		}
 		return false;
 	}
+
+	// 소셜 로그인 - provider + provider_id로 회원 조회
+	public Member findByProviderAndProviderId(String provider, String providerId) {
+		return dao.findByProviderAndProviderId(provider, providerId);
+	}
+
+	// GitHub 연동 정보 업데이트
+	public int updateGitHubConnection(Member member) {
+		return dao.updateGitHubConnection(member);
+	}
 }

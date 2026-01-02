@@ -1,6 +1,17 @@
 -- =============================================
--- Synodos - PostgreSQL Schema
--- Docker + Spring Boot 공용
+-- Synodos - PostgreSQL Schema (참조용)
+-- =============================================
+--
+-- ⚠️ 중요: 이 파일은 참조/백업용입니다!
+--
+-- 실제 자동 DB 업데이트는 아래 파일에서 관리됩니다:
+--   backend/src/main/resources/schema.sql  (테이블 생성/변경)
+--   backend/src/main/resources/data.sql    (샘플 데이터)
+--
+-- Spring Boot 시작 시 위 파일들이 자동으로 실행됩니다.
+-- 스키마 변경이 필요하면 backend/src/main/resources/schema.sql을 수정하세요.
+--
+-- 이 파일은 전체 스키마 구조 확인 및 수동 설치 시 참고용으로 사용됩니다.
 -- =============================================
 
 -- ========================================
@@ -27,6 +38,11 @@ CREATE TABLE IF NOT EXISTS member (
     phone VARCHAR(20),
     email_verified BOOLEAN DEFAULT FALSE,
     profile_image VARCHAR(500),
+    provider VARCHAR(20),
+    provider_id VARCHAR(100),
+    github_username VARCHAR(100),
+    github_access_token VARCHAR(500),
+    github_connected_at TIMESTAMP,
     register TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -48,8 +64,58 @@ BEGIN
     END IF;
 END $$;
 
+-- 기존 테이블에 GitHub 관련 컬럼 추가 (없는 경우)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'member' AND column_name = 'github_username') THEN
+        ALTER TABLE member ADD COLUMN github_username VARCHAR(100);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'member' AND column_name = 'github_access_token') THEN
+        ALTER TABLE member ADD COLUMN github_access_token VARCHAR(500);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'member' AND column_name = 'github_connected_at') THEN
+        ALTER TABLE member ADD COLUMN github_connected_at TIMESTAMP;
+    END IF;
+END $$;
+
+-- 기존 테이블에 소셜 로그인 관련 컬럼 추가 (없는 경우)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'member' AND column_name = 'provider') THEN
+        ALTER TABLE member ADD COLUMN provider VARCHAR(20);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'member' AND column_name = 'provider_id') THEN
+        ALTER TABLE member ADD COLUMN provider_id VARCHAR(100);
+    END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_member_userid ON member(userid);
 CREATE INDEX IF NOT EXISTS idx_member_email ON member(email);
+
+-- ========================================
+-- 회원 소셜 연동 테이블
+-- ========================================
+CREATE SEQUENCE IF NOT EXISTS member_social_link_seq START WITH 1 INCREMENT BY 1;
+
+CREATE TABLE IF NOT EXISTS member_social_link (
+    id INTEGER PRIMARY KEY DEFAULT nextval('member_social_link_seq'),
+    member_no INTEGER NOT NULL REFERENCES member(no) ON DELETE CASCADE,
+    provider VARCHAR(20) NOT NULL,
+    provider_id VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    name VARCHAR(100),
+    linked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_member_provider UNIQUE(member_no, provider),
+    CONSTRAINT unique_provider_id UNIQUE(provider, provider_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_member_social_link_member ON member_social_link(member_no);
+CREATE INDEX IF NOT EXISTS idx_member_social_link_provider ON member_social_link(provider, provider_id);
 
 -- ========================================
 -- 팀 테이블
@@ -61,15 +127,35 @@ CREATE TABLE IF NOT EXISTS team (
     leader_no INTEGER NOT NULL REFERENCES member(no),
     description TEXT,
     github_repo_url VARCHAR(500),
+    github_access_token VARCHAR(500),
+    github_issue_sync_enabled BOOLEAN DEFAULT FALSE,
+    github_default_column_id INTEGER,
+    github_column_mappings TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 기존 테이블에 github_repo_url 컬럼 추가 (없는 경우)
+-- 기존 테이블에 GitHub 관련 컬럼 추가 (없는 경우)
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                    WHERE table_name = 'team' AND column_name = 'github_repo_url') THEN
         ALTER TABLE team ADD COLUMN github_repo_url VARCHAR(500);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'team' AND column_name = 'github_access_token') THEN
+        ALTER TABLE team ADD COLUMN github_access_token VARCHAR(500);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'team' AND column_name = 'github_issue_sync_enabled') THEN
+        ALTER TABLE team ADD COLUMN github_issue_sync_enabled BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'team' AND column_name = 'github_default_column_id') THEN
+        ALTER TABLE team ADD COLUMN github_default_column_id INTEGER;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'team' AND column_name = 'github_column_mappings') THEN
+        ALTER TABLE team ADD COLUMN github_column_mappings TEXT;
     END IF;
 END $$;
 
@@ -115,7 +201,7 @@ CREATE TABLE IF NOT EXISTS task (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Issue tracker fields
     assignee_no INTEGER REFERENCES member(no) ON DELETE SET NULL,
-    priority VARCHAR(20) DEFAULT 'MEDIUM',
+    priority VARCHAR(20),
     start_date TIMESTAMP,
     due_date TIMESTAMP,
     -- Workflow fields

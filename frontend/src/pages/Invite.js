@@ -40,6 +40,8 @@ function Invite() {
             if (result.success) {
                 setTeamInfo(result);
                 setStatus('success');
+                // 사이드바 팀 목록 갱신
+                window.dispatchEvent(new CustomEvent('teamUpdated'));
             } else {
                 setErrorMessage(result.message || '팀 가입에 실패했습니다.');
                 setStatus('error');

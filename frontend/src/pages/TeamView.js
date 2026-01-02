@@ -200,9 +200,9 @@ function TeamView() {
             ]);
 
             setTeam(teamData);
-            setColumns(columnsData || []);
-            setTasks(tasksData || []);
-            setTeamMembers(membersData || []);
+            setColumns(Array.isArray(columnsData) ? columnsData : []);
+            setTasks(Array.isArray(tasksData) ? tasksData : []);
+            setTeamMembers(Array.isArray(membersData) ? membersData : []);
 
             // localStorage에 현재 팀 저장
             if (teamData) {

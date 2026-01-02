@@ -10,4 +10,5 @@ public class SynodosColumn {
 	private String title;
 	private int position;
 	private int teamId;
+	private String githubPrefix; // GitHub Issue 제목 명령어 (예: [버그], [기능])
 }

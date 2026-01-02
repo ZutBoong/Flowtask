@@ -76,3 +76,7 @@ application-local.properties
 *.tmp
 *.temp
 *~
+
+docs
+
+backend/uploads

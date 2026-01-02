@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -18,8 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.model.Member;
+import com.example.demo.model.MemberSocialLink;
 import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.MemberService;
+import com.example.demo.dao.MemberSocialLinkDao;
 import com.example.demo.dao.TeamDao;
 
 @RestController
@@ -29,14 +32,17 @@ public class MemberController {
 	private final MemberService service;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final TeamDao teamDao;
+	private final MemberSocialLinkDao socialLinkDao;
 
 	@Value("${synodos.upload.path:uploads}")
 	private String uploadPath;
 
-	public MemberController(MemberService service, JwtTokenProvider jwtTokenProvider, TeamDao teamDao) {
+	public MemberController(MemberService service, JwtTokenProvider jwtTokenProvider,
+							TeamDao teamDao, MemberSocialLinkDao socialLinkDao) {
 		this.service = service;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.teamDao = teamDao;
+		this.socialLinkDao = socialLinkDao;
 	}
 
 	// 회원가입
@@ -103,7 +109,8 @@ public class MemberController {
 					authenticatedMember.getUserid(),
 					authenticatedMember.getName(),
 					authenticatedMember.getEmail(),
-					authenticatedMember.isEmailVerified()
+					authenticatedMember.isEmailVerified(),
+					authenticatedMember.getGithubUsername()  // GitHub 연동 정보 포함
 			);
 		} else {
 			return AuthResponse.fail("아이디 또는 비밀번호가 일치하지 않습니다.");
@@ -185,19 +192,11 @@ public class MemberController {
 		return result;
 	}
 
-	// 회원 정보 수정 (마이페이지)
+	// 회원 정보 수정 (마이페이지) - 이름, 전화번호만 수정 (이메일은 별도)
 	@PutMapping("member/update")
 	public Map<String, Object> updateProfile(@RequestBody Member member) {
 		System.out.println("회원 정보 수정 요청: " + member);
 		Map<String, Object> result = new HashMap<>();
-
-		// 이메일 중복 체크 (본인 제외)
-		int emailCount = service.checkEmailExcludeSelf(member);
-		if (emailCount > 0) {
-			result.put("success", false);
-			result.put("message", "이미 사용 중인 이메일입니다.");
-			return result;
-		}
 
 		int updateResult = service.update(member);
 		if (updateResult == 1) {
@@ -448,6 +447,199 @@ public class MemberController {
 		} else {
 			result.put("success", false);
 			result.put("message", "삭제할 프로필 이미지가 없습니다.");
+		}
+
+		return result;
+	}
+
+	// 소셜 회원가입 (신규 가입)
+	@PostMapping("member/social-register")
+	public Map<String, Object> socialRegister(@RequestBody Map<String, Object> request) {
+		String userid = (String) request.get("userid");
+		String email = (String) request.get("email");
+		String phone = (String) request.get("phone");
+		String name = (String) request.get("name");
+		String provider = (String) request.get("provider");
+		String providerId = (String) request.get("providerId");
+
+		System.out.println("소셜 회원가입 - userid: " + userid + ", email: " + email + ", provider: " + provider);
+		Map<String, Object> result = new HashMap<>();
+
+		// 아이디 중복 체크
+		int useridCount = service.checkUserid(userid);
+		if (useridCount > 0) {
+			result.put("success", false);
+			result.put("message", "이미 사용 중인 아이디입니다.");
+			return result;
+		}
+
+		// 이메일 중복 체크
+		int emailCount = service.checkEmail(email);
+		if (emailCount > 0) {
+			result.put("success", false);
+			result.put("message", "이미 사용 중인 이메일입니다.");
+			return result;
+		}
+
+		// 이미 가입된 소셜 계정인지 체크
+		Member existingMember = service.findByProviderAndProviderId(provider, providerId);
+		if (existingMember != null) {
+			result.put("success", false);
+			result.put("message", "이미 가입된 계정입니다.");
+			return result;
+		}
+
+		// 회원 생성
+		Member member = new Member();
+		member.setUserid(userid);
+		member.setPassword(java.util.UUID.randomUUID().toString()); // 소셜 로그인은 비밀번호 불필요
+		member.setName(name);
+		member.setEmail(email);
+		member.setPhone(phone);
+		member.setEmailVerified(true); // 소셜 로그인은 이메일 인증 완료로 처리
+		member.setProvider(provider);
+		member.setProviderId(providerId);
+
+		int insertResult = service.insert(member);
+		if (insertResult == 1) {
+			// 가입 후 조회
+			Member registeredMember = service.findByProviderAndProviderId(provider, providerId);
+			registeredMember.setPassword(null);
+
+			// JWT 토큰 발급
+			String token = jwtTokenProvider.generateToken(
+					registeredMember.getUserid(),
+					registeredMember.getNo(),
+					registeredMember.getName()
+			);
+
+			result.put("success", true);
+			result.put("message", "회원가입이 완료되었습니다.");
+			result.put("member", registeredMember);
+			result.put("token", token);
+		} else {
+			result.put("success", false);
+			result.put("message", "회원가입에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// ==========================================
+	// 소셜 계정 연동 API
+	// ==========================================
+
+	// 소셜 연동 목록 조회
+	@GetMapping("member/social-links/{memberNo}")
+	public Map<String, Object> getSocialLinks(@PathVariable int memberNo) {
+		Map<String, Object> result = new HashMap<>();
+
+		List<MemberSocialLink> links = socialLinkDao.findByMemberNo(memberNo);
+
+		// 기본 가입 방식 조회
+		Member member = service.findByNo(memberNo);
+		String primaryProvider = member != null ? member.getProvider() : null;
+
+		result.put("success", true);
+		result.put("links", links);
+		result.put("primaryProvider", primaryProvider); // 최초 가입 방식
+
+		return result;
+	}
+
+	// 소셜 계정 연동
+	@PostMapping("member/social-link")
+	public Map<String, Object> linkSocialAccount(@RequestBody Map<String, Object> request) {
+		int memberNo = (Integer) request.get("memberNo");
+		String provider = (String) request.get("provider");
+		String providerId = (String) request.get("providerId");
+		String email = (String) request.get("email");
+		String name = (String) request.get("name");
+		// GitHub 연동 시 추가 파라미터
+		String githubUsername = (String) request.get("githubUsername");
+		String githubAccessToken = (String) request.get("githubAccessToken");
+
+		System.out.println("[Social Link] 요청 - memberNo: " + memberNo + ", provider: " + provider);
+		System.out.println("[Social Link] GitHub - username: " + githubUsername +
+			", accessToken: " + (githubAccessToken != null ? "있음 (길이: " + githubAccessToken.length() + ")" : "없음"));
+		Map<String, Object> result = new HashMap<>();
+
+		// 이미 다른 계정에 연동된 소셜 계정인지 확인
+		MemberSocialLink existingLink = socialLinkDao.findByProviderAndProviderId(provider, providerId);
+		if (existingLink != null) {
+			result.put("success", false);
+			result.put("message", "이미 다른 계정에 연동된 소셜 계정입니다.");
+			return result;
+		}
+
+		// 이미 해당 provider로 연동되어 있는지 확인
+		MemberSocialLink myLink = socialLinkDao.findByMemberNoAndProvider(memberNo, provider);
+		if (myLink != null) {
+			result.put("success", false);
+			result.put("message", "이미 " + provider + " 계정이 연동되어 있습니다.");
+			return result;
+		}
+
+		// 연동 추가
+		MemberSocialLink link = new MemberSocialLink();
+		link.setMemberNo(memberNo);
+		link.setProvider(provider);
+		link.setProviderId(providerId);
+		link.setEmail(email);
+		link.setName(name);
+
+		int insertResult = socialLinkDao.insert(link);
+		if (insertResult == 1) {
+			// GitHub 연동인 경우, member 테이블의 github_username, github_access_token도 저장
+			if ("github".equals(provider) && githubUsername != null && githubAccessToken != null) {
+				try {
+					Member member = service.findByNo(memberNo);
+					if (member != null) {
+						member.setGithubUsername(githubUsername);
+						member.setGithubAccessToken(githubAccessToken);
+						service.updateGitHubConnection(member);
+						System.out.println("GitHub credentials 저장 완료: " + githubUsername);
+					}
+				} catch (Exception e) {
+					System.err.println("GitHub credentials 저장 실패: " + e.getMessage());
+				}
+			}
+
+			List<MemberSocialLink> links = socialLinkDao.findByMemberNo(memberNo);
+			result.put("success", true);
+			result.put("message", provider + " 계정이 연동되었습니다.");
+			result.put("links", links);
+		} else {
+			result.put("success", false);
+			result.put("message", "연동에 실패했습니다.");
+		}
+
+		return result;
+	}
+
+	// 소셜 계정 연동 해제
+	@DeleteMapping("member/social-link/{memberNo}/{provider}")
+	public Map<String, Object> unlinkSocialAccount(@PathVariable int memberNo, @PathVariable String provider) {
+		System.out.println("소셜 연동 해제 요청 - memberNo: " + memberNo + ", provider: " + provider);
+		Map<String, Object> result = new HashMap<>();
+
+		// 최초 가입 방식과 동일한 provider는 해제 불가
+		Member member = service.findByNo(memberNo);
+		if (member != null && provider.equals(member.getProvider())) {
+			result.put("success", false);
+			result.put("message", "가입 시 사용한 소셜 계정은 연동 해제할 수 없습니다.");
+			return result;
+		}
+
+		int deleteResult = socialLinkDao.delete(memberNo, provider);
+		if (deleteResult == 1) {
+			List<MemberSocialLink> links = socialLinkDao.findByMemberNo(memberNo);
+			result.put("success", true);
+			result.put("message", provider + " 계정 연동이 해제되었습니다.");
+			result.put("links", links);
+		} else {
+			result.put("success", false);
+			result.put("message", "연동 해제에 실패했습니다.");
 		}
 
 		return result;

@@ -87,6 +87,13 @@ public class TeamService {
 
 	// 팀 정보 수정
 	public int updateTeam(Team team) {
+		// GitHub 저장소 URL이 설정되면 Issue 동기화 자동 활성화
+		if (team.getGithubRepoUrl() != null && !team.getGithubRepoUrl().trim().isEmpty()) {
+			team.setGithubIssueSyncEnabled(true);
+		} else {
+			// URL이 비어있으면 동기화 비활성화
+			team.setGithubIssueSyncEnabled(false);
+		}
 		return dao.updateTeam(team);
 	}
 

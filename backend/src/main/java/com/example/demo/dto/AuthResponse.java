@@ -22,10 +22,11 @@ public class AuthResponse {
 		private String name;
 		private String email;
 		private boolean emailVerified;
+		private String githubUsername;  // GitHub 연동 정보
 	}
 
-	public static AuthResponse success(String token, int no, String userid, String name, String email, boolean emailVerified) {
-		return new AuthResponse(true, "로그인 성공", token, new MemberInfo(no, userid, name, email, emailVerified));
+	public static AuthResponse success(String token, int no, String userid, String name, String email, boolean emailVerified, String githubUsername) {
+		return new AuthResponse(true, "로그인 성공", token, new MemberInfo(no, userid, name, email, emailVerified, githubUsername));
 	}
 
 	public static AuthResponse fail(String message) {

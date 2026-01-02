@@ -4,9 +4,14 @@
 
 	<!-- 회원가입 -->
 	<insert id="insert" parameterType="member">
-		INSERT INTO member (no, userid, password, name, email, phone, email_verified, register)
-		VALUES (nextval('member_seq'), #{userid}, #{password}, #{name}, #{email}, #{phone}, #{emailVerified}, CURRENT_TIMESTAMP)
+		INSERT INTO member (no, userid, password, name, email, phone, email_verified, provider, provider_id, register)
+		VALUES (nextval('member_seq'), #{userid}, #{password}, #{name}, #{email}, #{phone}, #{emailVerified}, #{provider}, #{providerId}, CURRENT_TIMESTAMP)
 	</insert>
+
+	<!-- 소셜 로그인 - provider + provider_id로 회원 조회 -->
+	<select id="findByProviderAndProviderId" parameterType="map" resultType="member">
+		SELECT * FROM member WHERE provider = #{provider} AND provider_id = #{providerId}
+	</select>
 
 	<!-- 아이디 중복 체크 -->
 	<select id="checkUserid" parameterType="String" resultType="int">
@@ -52,7 +57,6 @@
 	<update id="update" parameterType="member">
 		UPDATE member
 		SET name = #{name},
-			email = #{email},
 			phone = #{phone}
 		WHERE no = #{no}
 	</update>
@@ -96,5 +100,29 @@
 	<update id="updateProfileImage" parameterType="member">
 		UPDATE member SET profile_image = #{profileImage} WHERE no = #{no}
 	</update>
+
+	<!-- GitHub 연동 정보 업데이트 -->
+	<update id="updateGitHubConnection" parameterType="member">
+		UPDATE member
+		SET github_username = #{githubUsername},
+			github_access_token = #{githubAccessToken},
+			github_connected_at = CURRENT_TIMESTAMP
+		WHERE no = #{no}
+	</update>
+
+	<!-- GitHub 연동 해제 -->
+	<update id="disconnectGitHub" parameterType="int">
+		UPDATE member
+		SET github_username = NULL,
+			github_access_token = NULL,
+			github_connected_at = NULL
+		WHERE no = #{no}
+	</update>
+
+	<!-- GitHub 사용자명으로 회원 조회 -->
+	<select id="findByGithubUsername" parameterType="String" resultType="member">
+		SELECT * FROM member WHERE github_username = #{githubUsername}
+	</select>
+
 
 </mapper>

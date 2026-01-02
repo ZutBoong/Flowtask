@@ -62,6 +62,9 @@ public class TaskWorkflowService {
 		if (assigneeDao.allAssigneesAccepted(taskId)) {
 			task.setWorkflowStatus(STATUS_IN_PROGRESS);
 			taskDao.updateWorkflowStatus(task);
+
+			// 태스크 생성자에게 수락 알림
+			notifyCreatorForAccept(task, memberNo);
 		}
 
 		// 알림 및 업데이트된 태스크 반환
@@ -286,15 +289,12 @@ public class TaskWorkflowService {
 		if (column != null) {
 			verifierDao.listByTask(task.getTaskId()).forEach(v -> {
 				if (v.getMemberNo() != senderNo) {
-					persistentNotificationService.sendNotification(
+					persistentNotificationService.notifyTaskReview(
 						v.getMemberNo(),
 						senderNo,
-						"TASK_REVIEW",
-						"검토 요청",
-						"'" + task.getTitle() + "' 태스크의 검토가 요청되었습니다",
-						column.getTeamId(),
-						task.getColumnId(),
-						task.getTaskId()
+						task.getTaskId(),
+						task.getTitle(),
+						column.getTeamId()
 					);
 				}
 			});
@@ -307,15 +307,12 @@ public class TaskWorkflowService {
 		if (column != null) {
 			assigneeDao.listByTask(task.getTaskId()).forEach(a -> {
 				if (a.getMemberNo() != senderNo) {
-					persistentNotificationService.sendNotification(
+					persistentNotificationService.notifyTaskApproved(
 						a.getMemberNo(),
 						senderNo,
-						"TASK_DONE",
-						"태스크 완료",
-						"'" + task.getTitle() + "' 태스크가 승인되어 완료되었습니다",
-						column.getTeamId(),
-						task.getColumnId(),
-						task.getTaskId()
+						task.getTaskId(),
+						task.getTitle(),
+						column.getTeamId()
 					);
 				}
 			});
@@ -328,15 +325,13 @@ public class TaskWorkflowService {
 		if (column != null) {
 			assigneeDao.listByTask(task.getTaskId()).forEach(a -> {
 				if (a.getMemberNo() != senderNo) {
-					persistentNotificationService.sendNotification(
+					persistentNotificationService.notifyTaskRejected(
 						a.getMemberNo(),
 						senderNo,
-						"TASK_REJECTED",
-						"태스크 반려",
-						"'" + task.getTitle() + "' 태스크가 반려되었습니다: " + reason,
-						column.getTeamId(),
-						task.getColumnId(),
-						task.getTaskId()
+						task.getTaskId(),
+						task.getTitle(),
+						reason,
+						column.getTeamId()
 					);
 				}
 			});
@@ -349,18 +344,30 @@ public class TaskWorkflowService {
 		if (column != null) {
 			assigneeDao.listByTask(task.getTaskId()).forEach(a -> {
 				if (a.getMemberNo() != senderNo) {
-					persistentNotificationService.sendNotification(
+					persistentNotificationService.notifyTaskDeclined(
 						a.getMemberNo(),
 						senderNo,
-						"TASK_DECLINED",
-						"태스크 거부",
-						"'" + task.getTitle() + "' 태스크가 거부되었습니다: " + reason,
-						column.getTeamId(),
-						task.getColumnId(),
-						task.getTaskId()
+						task.getTaskId(),
+						task.getTitle(),
+						reason,
+						column.getTeamId()
 					);
 				}
 			});
+		}
+	}
+
+	// 태스크 생성자에게 수락 알림
+	private void notifyCreatorForAccept(Task task, int senderNo) {
+		SynodosColumn column = columnDao.content(task.getColumnId());
+		if (column != null && task.getCreatedBy() != null && task.getCreatedBy() != senderNo) {
+			persistentNotificationService.notifyTaskAccepted(
+				task.getCreatedBy(),
+				senderNo,
+				task.getTaskId(),
+				task.getTitle(),
+				column.getTeamId()
+			);
 		}
 	}
 }

@@ -19,8 +19,10 @@
 
 	<!-- 팀 코드로 팀 조회 -->
 	<select id="findByCode" parameterType="String" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.github_repo_url, t.created_at,
-			   m.name as leader_name
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description,
+			   t.github_repo_url, t.github_access_token, t.github_issue_sync_enabled,
+			   t.github_default_column_id, t.github_column_mappings,
+			   t.created_at, m.name as leader_name
 		FROM team t
 		JOIN member m ON t.leader_no = m.no
 		WHERE t.team_code = #{teamCode}
@@ -28,8 +30,10 @@
 
 	<!-- 팀 ID로 팀 조회 -->
 	<select id="findById" parameterType="int" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.github_repo_url, t.created_at,
-			   m.name as leader_name
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description,
+			   t.github_repo_url, t.github_access_token, t.github_issue_sync_enabled,
+			   t.github_default_column_id, t.github_column_mappings,
+			   t.created_at, m.name as leader_name
 		FROM team t
 		JOIN member m ON t.leader_no = m.no
 		WHERE t.team_id = #{teamId}
@@ -37,8 +41,10 @@
 
 	<!-- 내가 속한 팀 목록 -->
 	<select id="findMyTeams" parameterType="int" resultType="team">
-		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description, t.github_repo_url, t.created_at,
-			   m.name as leader_name
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description,
+			   t.github_repo_url, t.github_access_token, t.github_issue_sync_enabled,
+			   t.github_default_column_id, t.github_column_mappings,
+			   t.created_at, m.name as leader_name
 		FROM team t
 		JOIN team_member tm ON t.team_id = tm.team_id
 		JOIN member m ON t.leader_no = m.no
@@ -78,7 +84,11 @@
 		UPDATE team
 		SET team_name = #{teamName},
 			description = #{description, jdbcType=VARCHAR},
-			github_repo_url = #{githubRepoUrl, jdbcType=VARCHAR}
+			github_repo_url = #{githubRepoUrl, jdbcType=VARCHAR},
+			github_access_token = #{githubAccessToken, jdbcType=VARCHAR},
+			github_issue_sync_enabled = #{githubIssueSyncEnabled, jdbcType=BOOLEAN},
+			github_default_column_id = #{githubDefaultColumnId, jdbcType=INTEGER},
+			github_column_mappings = #{githubColumnMappings, jdbcType=VARCHAR}
 		WHERE team_id = #{teamId}
 	</update>
 
@@ -99,6 +109,21 @@
 	<!-- 회원이 리더인 팀 수 조회 -->
 	<select id="countLeaderTeams" parameterType="int" resultType="int">
 		SELECT COUNT(*) FROM team WHERE leader_no = #{memberNo}
+	</select>
+
+	<!-- GitHub 저장소 URL로 팀 조회 -->
+	<select id="findByGithubRepoUrl" parameterType="String" resultType="team">
+		SELECT t.team_id, t.team_name, t.team_code, t.leader_no, t.description,
+			   t.github_repo_url, t.github_access_token, t.github_issue_sync_enabled,
+			   t.github_default_column_id, t.github_column_mappings,
+			   t.created_at, m.name as leader_name
+		FROM team t
+		JOIN member m ON t.leader_no = m.no
+		WHERE REPLACE(REPLACE(t.github_repo_url, '.git', ''), '/', '') = REPLACE(REPLACE(#{githubRepoUrl}, '.git', ''), '/', '')
+		   OR t.github_repo_url = #{githubRepoUrl}
+		   OR t.github_repo_url = CONCAT(#{githubRepoUrl}, '/')
+		   OR t.github_repo_url = CONCAT(#{githubRepoUrl}, '.git')
+		LIMIT 1
 	</select>
 
 </mapper>

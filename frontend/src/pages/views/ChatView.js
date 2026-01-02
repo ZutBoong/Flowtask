@@ -21,10 +21,12 @@ function ChatView({ team, teamMembers, loginMember }) {
         setLoading(true);
         try {
             const data = await getRecentMessages(teamId, 100);
-            setMessages(data || []);
-            setHasMore((data || []).length >= 100);
+            const messagesArray = Array.isArray(data) ? data : [];
+            setMessages(messagesArray);
+            setHasMore(messagesArray.length >= 100);
         } catch (error) {
             console.error('Failed to load messages:', error);
+            setMessages([]);
         } finally {
             setLoading(false);
         }

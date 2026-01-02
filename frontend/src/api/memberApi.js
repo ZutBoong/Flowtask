@@ -138,3 +138,27 @@ export const deleteProfileImage = async (memberNo) => {
 export const getProfileImageUrl = (memberNo) => {
     return `/api/member/profile-image/${memberNo}`;
 };
+
+// 소셜 회원가입
+export const socialRegister = async (data) => {
+    const response = await axiosInstance.post('/api/member/social-register', data);
+    return response.data;
+};
+
+// 소셜 연동 목록 조회
+export const getSocialLinks = async (memberNo) => {
+    const response = await axiosInstance.get(`/api/member/social-links/${memberNo}`);
+    return response.data;
+};
+
+// 소셜 계정 연동
+export const linkSocialAccount = async (data) => {
+    const response = await axiosInstance.post('/api/member/social-link', data);
+    return response.data;
+};
+
+// 소셜 계정 연동 해제
+export const unlinkSocialAccount = async (memberNo, provider) => {
+    const response = await axiosInstance.delete(`/api/member/social-link/${memberNo}/${provider}`);
+    return response.data;
+};

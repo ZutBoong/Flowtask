@@ -23,9 +23,10 @@ const CommentSection = forwardRef(({ taskId, loginMember }, ref) => {
     const fetchComments = async () => {
         try {
             const data = await getCommentsByTask(taskId);
-            setComments(data || []);
+            setComments(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('댓글 조회 실패:', error);
+            setComments([]);
         }
     };
 

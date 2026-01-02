@@ -59,7 +59,52 @@
     font-size: 18px;
     font-weight: 700;
     color: white;
+}
+
+.header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex: 1;
+}
+
+.task-id-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-id-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.copy-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.copy-btn i {
+    font-size: 12px;
 }
 
 .header-actions {
@@ -960,87 +1005,6 @@ section h4 {
     font-size: 11px;
 }
 
-/* ===== AI 코드 분석 섹션 ===== */
-.analysis-section {
-    margin-bottom: 24px;
-}
-
-.analysis-input-wrapper {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 8px;
-}
-
-.github-url-input {
-    flex: 1;
-    padding: 12px 14px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 13px;
-    background: #f8fafc;
-    transition: all 0.2s ease;
-}
-
-.github-url-input:hover {
-    border-color: #cbd5e1;
-    background: white;
-}
-
-.github-url-input:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-}
-
-.github-url-input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.analyze-btn {
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    white-space: nowrap;
-}
-
-.analyze-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.analyze-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.analysis-hint {
-    margin: 0;
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-/* 모바일 대응 */
-@media (max-width: 767px) {
-    .analysis-input-wrapper {
-        flex-direction: column;
-    }
-
-    .analyze-btn {
-        width: 100%;
-    }
-}
-
 /* ===== 댓글 섹션 ===== */
 .comments-section {
     min-height: 150px;
@@ -1389,4 +1353,250 @@ section h4 {
 
 .urgent-toggle.active .urgent-icon {
     color: white;
+}
+
+/* ===== 전체 패널 모드 (ListView에서 사용) ===== */
+.task-panel-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: white;
+    overflow: hidden;
+}
+
+.task-panel-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+    flex-shrink: 0;
+}
+
+.task-panel-header-inner {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-panel-header .header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.task-panel-header .header-title-row h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* 패널 모드: 태스크 ID 배지 */
+.task-panel-header .task-id-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+/* 패널 모드: 복사 버튼 */
+.task-panel-header .copy-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.task-panel-header .copy-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.task-panel-header .copy-btn i {
+    font-size: 13px;
+}
+
+.task-panel-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 패널 모드: 액션 버튼 스타일 재정의 */
+.task-panel-header .header-actions .favorite-btn,
+.task-panel-header .header-actions .archive-btn,
+.task-panel-header .header-actions .urgent-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: #64748b;
+}
+
+.task-panel-header .header-actions .favorite-btn:hover {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    color: #f59e0b;
+}
+
+.task-panel-header .header-actions .favorite-btn.active {
+    background: #fef3c7;
+    border-color: #fbbf24;
+    color: #f59e0b;
+}
+
+.task-panel-header .header-actions .archive-btn:hover {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    color: #7c3aed;
+}
+
+.task-panel-header .header-actions .archive-btn.active {
+    background: #ede9fe;
+    border-color: #a78bfa;
+    color: #7c3aed;
+}
+
+.task-panel-header .header-actions .urgent-btn:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
+}
+
+.task-panel-header .header-actions .urgent-btn.active {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #ef4444;
+}
+
+.task-panel-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.task-panel-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.task-panel-scroll-area::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.task-panel-scroll-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.task-panel-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.task-panel-content {
+    padding: 32px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.task-panel-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 32px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+.task-panel-footer-inner {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.task-panel-footer .save-btn {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.task-panel-footer .save-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.task-panel-footer .save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 패널 모드 반응형 */
+@media (max-width: 767px) {
+    .task-panel-header {
+        padding: 16px 20px;
+    }
+
+    .task-panel-header-inner {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .task-panel-header .header-title-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .task-panel-header .header-title-row h3 {
+        font-size: 16px;
+    }
+
+    .task-panel-header .task-id-actions {
+        flex-wrap: wrap;
+    }
+
+    .task-panel-content {
+        padding: 20px;
+    }
+
+    .task-panel-footer {
+        padding: 16px 20px;
+    }
+
+    .task-panel-footer-inner {
+        width: 100%;
+    }
+
+    .task-panel-footer .save-btn {
+        width: 100%;
+        padding: 14px;
+    }
 }

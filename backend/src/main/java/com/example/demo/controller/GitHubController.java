@@ -40,7 +40,7 @@ public class GitHubController {
     @GetMapping("/branches/{teamId}")
     public ResponseEntity<?> getBranches(@PathVariable int teamId) {
         try {
-            Team team = teamService.getTeamById(teamId);
+            Team team = teamService.findById(teamId);
             if (team == null) {
                 return ResponseEntity.badRequest().body("팀을 찾을 수 없습니다.");
             }
@@ -74,7 +74,7 @@ public class GitHubController {
             @RequestParam(defaultValue = "main") String branch,
             @RequestParam(defaultValue = "1") int page) {
         try {
-            Team team = teamService.getTeamById(teamId);
+            Team team = teamService.findById(teamId);
             if (team == null) {
                 return ResponseEntity.badRequest().body("팀을 찾을 수 없습니다.");
             }

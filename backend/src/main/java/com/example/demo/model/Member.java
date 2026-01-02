@@ -16,4 +16,13 @@ public class Member {
 	private boolean emailVerified;
 	private String profileImage;
 	private Date register;
+
+	// 소셜 로그인
+	private String provider;              // google, naver, kakao, null(일반)
+	private String providerId;            // OAuth provider에서 받은 고유 ID
+
+	// GitHub 연동
+	private String githubUsername;
+	private String githubAccessToken;
+	private Date githubConnectedAt;
 }

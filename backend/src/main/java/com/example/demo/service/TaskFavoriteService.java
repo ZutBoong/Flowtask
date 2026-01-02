@@ -27,6 +27,10 @@ public class TaskFavoriteService {
         return dao.listByMember(memberNo);
     }
 
+    public List<TaskFavorite> getFavoritesByMemberAndTeam(int memberNo, int teamId) {
+        return dao.listByMemberAndTeam(memberNo, teamId);
+    }
+
     public boolean isFavorite(int taskId, int memberNo) {
         return dao.findOne(taskId, memberNo) != null;
     }

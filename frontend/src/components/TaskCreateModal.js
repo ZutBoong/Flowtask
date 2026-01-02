@@ -9,7 +9,7 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        priority: 'MEDIUM',
+        priority: null, // 우선순위 미설정
         startDate: today,
         dueDate: '',
         assignees: [],
@@ -87,7 +87,7 @@ function TaskCreateModal({ columnId, teamId, teamMembers, onClose, onCreate }) {
                     <div className="header-actions">
                         <button
                             className={`urgent-btn ${formData.priority === 'URGENT' ? 'active' : ''}`}
-                            onClick={() => handleChange('priority', formData.priority === 'URGENT' ? 'MEDIUM' : 'URGENT')}
+                            onClick={() => handleChange('priority', formData.priority === 'URGENT' ? null : 'URGENT')}
                             title={formData.priority === 'URGENT' ? '긴급 해제' : '긴급 설정'}
                         >
                             <i className="fa-solid fa-triangle-exclamation"></i>

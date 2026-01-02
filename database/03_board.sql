@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS task (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Issue tracker fields
     assignee_no INTEGER REFERENCES member(no) ON DELETE SET NULL,
-    priority VARCHAR(20) DEFAULT 'MEDIUM',
+    priority VARCHAR(20),
     due_date TIMESTAMP,
     status VARCHAR(30) DEFAULT 'OPEN',
     -- Verifier fields

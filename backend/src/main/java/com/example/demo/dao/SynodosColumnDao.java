@@ -13,4 +13,5 @@ public interface SynodosColumnDao {
 	int update(SynodosColumn column);
 	int delete(int columnId);
 	int updatePosition(SynodosColumn column);
+	int updateGithubPrefix(SynodosColumn column);
 }

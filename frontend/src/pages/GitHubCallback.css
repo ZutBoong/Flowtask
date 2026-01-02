@@ -1,0 +1,87 @@
+.github-callback-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.github-callback-card {
+    background: white;
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 100%;
+}
+
+.github-icon {
+    font-size: 64px;
+    color: #24292f;
+    margin-bottom: 24px;
+}
+
+.spinner {
+    font-size: 32px;
+    color: #3b82f6;
+    margin-bottom: 16px;
+}
+
+.success-icon {
+    font-size: 48px;
+    color: #10b981;
+    margin-bottom: 16px;
+}
+
+.error-icon {
+    font-size: 48px;
+    color: #ef4444;
+    margin-bottom: 16px;
+}
+
+.github-callback-card h2 {
+    font-size: 24px;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+}
+
+.github-callback-card p {
+    font-size: 15px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.github-callback-card .redirect-text {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.github-callback-card .error-message {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.retry-btn {
+    margin-top: 24px;
+    padding: 12px 32px;
+    background: #24292f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.retry-btn:hover {
+    background: #374151;
+}

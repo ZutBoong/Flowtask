@@ -126,15 +126,11 @@
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
 }
 
 .notifications-icon-btn {
@@ -145,15 +141,11 @@
     position: absolute;
     top: 4px;
     right: 4px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 8px;
-    min-width: 14px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
 }
 
 /* 액션 버튼들 */
