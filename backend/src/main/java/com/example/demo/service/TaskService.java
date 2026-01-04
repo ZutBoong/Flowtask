@@ -175,39 +175,43 @@ public class TaskService {
 	 * 팀 설정이 활성화된 경우 GitHub Issue 자동 생성
 	 */
 	private void createGitHubIssueIfEnabled(int taskId, int teamId) {
+		log.info("[GitHub Auto-Sync] Task #{} 생성됨, GitHub Issue 자동 생성 시도...", taskId);
 		try {
 			// 팀 설정 확인
 			Team team = teamDao.findById(teamId);
 			if (team == null || !Boolean.TRUE.equals(team.getGithubIssueSyncEnabled())) {
-				log.debug("GitHub Issue sync disabled for team #{}", teamId);
+				log.info("[GitHub Auto-Sync] 스킵: 팀 #{} - githubIssueSyncEnabled={}",
+					teamId, team != null ? team.getGithubIssueSyncEnabled() : "null");
 				return;
 			}
 
 			if (team.getGithubRepoUrl() == null || team.getGithubRepoUrl().isEmpty()) {
-				log.debug("No GitHub repo configured for team #{}", teamId);
+				log.info("[GitHub Auto-Sync] 스킵: 팀 #{} - githubRepoUrl 없음", teamId);
 				return;
 			}
 
 			// 현재 사용자 확인
 			Integer memberNo = getCurrentMemberNo();
 			if (memberNo == null) {
-				log.debug("No authenticated member, skipping GitHub Issue creation for task #{}", taskId);
+				log.info("[GitHub Auto-Sync] 스킵: 인증된 사용자 없음 (memberNo=null)");
 				return;
 			}
 
 			// 사용자의 GitHub 연동 확인
 			Member member = memberDao.findByNo(memberNo);
 			if (member == null || member.getGithubAccessToken() == null) {
-				log.debug("Member #{} has no GitHub account linked, skipping Issue creation", memberNo);
+				log.info("[GitHub Auto-Sync] 스킵: 멤버 #{} - GitHub 연동 안됨 (token={})",
+					memberNo, member != null ? (member.getGithubAccessToken() != null ? "있음" : "없음") : "null");
 				return;
 			}
 
+			log.info("[GitHub Auto-Sync] 조건 충족! Task #{} → GitHub Issue 생성 시작", taskId);
 			// GitHub Issue 생성
 			gitHubIssueSyncService.createIssueFromTask(taskId, teamId, memberNo);
-			log.info("Auto-created GitHub Issue from Task #{} for team #{}", taskId, teamId);
+			log.info("[GitHub Auto-Sync] 성공: Task #{} → GitHub Issue 생성 완료", taskId);
 		} catch (Exception e) {
 			// 실패해도 태스크 생성은 성공으로 처리
-			log.warn("Failed to auto-create GitHub Issue for task #{}: {}", taskId, e.getMessage());
+			log.warn("[GitHub Auto-Sync] 실패: Task #{} - {}", taskId, e.getMessage());
 		}
 	}
 

@@ -83,6 +83,8 @@ public class GitHubWebhookController {
                 return handlePushEvent(rawPayload, deliveryId);
             case "issues":
                 return handleIssuesEvent(rawPayload, deliveryId);
+            case "issue_comment":
+                return handleIssueCommentEvent(rawPayload, deliveryId);
             case "ping":
                 return ResponseEntity.ok(Map.of("message", "pong", "status", "Webhook configured successfully"));
             default:
@@ -127,6 +129,52 @@ public class GitHubWebhookController {
 
         } catch (Exception e) {
             log.error("Failed to process push webhook: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Webhook processing failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Issue Comment 이벤트 처리
+     */
+    private ResponseEntity<?> handleIssueCommentEvent(String rawPayload, String deliveryId) {
+        GitHubIssuePayload payload;
+        try {
+            payload = objectMapper.readValue(rawPayload, GitHubIssuePayload.class);
+        } catch (Exception e) {
+            log.error("Failed to parse issue_comment payload: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Invalid payload format"));
+        }
+
+        try {
+            // Repository URL로 팀 찾기
+            String repoUrl = payload.getRepository().getHtmlUrl();
+            Team team = findTeamByRepoUrl(repoUrl);
+
+            if (team == null) {
+                log.info("No team found for repo: {}", repoUrl);
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "No team configured for this repository"
+                ));
+            }
+
+            // 댓글 동기화 처리
+            issueSyncService.processCommentWebhook(payload, team.getTeamId(), deliveryId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("event", "issue_comment");
+            response.put("action", payload.getAction());
+            response.put("issueNumber", payload.getIssue().getNumber());
+            response.put("commentId", payload.getComment().getId());
+            response.put("teamId", team.getTeamId());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Failed to process issue_comment webhook: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Webhook processing failed: " + e.getMessage()));
         }

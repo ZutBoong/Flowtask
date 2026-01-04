@@ -53,11 +53,18 @@ public class GitHubService {
      * 브랜치 목록을 조회합니다.
      */
     public List<GitHubBranch> listBranches(String owner, String repo) {
+        return listBranches(null, owner, repo);
+    }
+
+    /**
+     * 브랜치 목록을 조회합니다 (인증 포함).
+     */
+    public List<GitHubBranch> listBranches(String accessToken, String owner, String repo) {
         String apiUrl = String.format("https://api.github.com/repos/%s/%s/branches?per_page=100", owner, repo);
         log.info("Fetching branches from: {}", apiUrl);
 
         try {
-            HttpHeaders headers = createGitHubHeaders();
+            HttpHeaders headers = accessToken != null ? createAuthHeaders(accessToken) : createGitHubHeaders();
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
@@ -76,7 +83,7 @@ public class GitHubService {
             return branches;
         } catch (Exception e) {
             log.error("Failed to fetch branches: {}", e.getMessage());
-            throw new RuntimeException("브랜치 목록을 가져오는데 실패했습니다. Public repository인지 확인해주세요.", e);
+            throw new RuntimeException("브랜치 목록을 가져오는데 실패했습니다: " + e.getMessage(), e);
         }
     }
 
@@ -538,5 +545,166 @@ public class GitHubService {
         private long id;
         private String url;
         private boolean active;
+    }
+
+    // ==================== 브랜치 그래프 시각화 API ====================
+
+    /**
+     * 저장소의 기본 브랜치를 조회합니다.
+     */
+    public String getDefaultBranch(String accessToken, String owner, String repo) {
+        String apiUrl = String.format("https://api.github.com/repos/%s/%s", owner, repo);
+        log.info("Fetching default branch for {}/{}", owner, repo);
+
+        try {
+            HttpHeaders headers = accessToken != null ? createAuthHeaders(accessToken) : createGitHubHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.GET, entity, String.class
+            );
+
+            JsonNode node = objectMapper.readTree(response.getBody());
+            return node.path("default_branch").asText("main");
+        } catch (Exception e) {
+            log.error("Failed to fetch default branch: {}", e.getMessage());
+            return "main"; // 기본값
+        }
+    }
+
+    /**
+     * 커밋 목록을 parent 정보와 함께 조회합니다 (그래프 시각화용).
+     */
+    public List<GitHubGraphCommit> listCommitsWithParents(String accessToken, String owner, String repo, String branch, int depth) {
+        String apiUrl = String.format(
+            "https://api.github.com/repos/%s/%s/commits?sha=%s&per_page=%d",
+            owner, repo, branch, depth
+        );
+        log.info("Fetching commits with parents for {}/{} branch {} (depth={})", owner, repo, branch, depth);
+
+        try {
+            HttpHeaders headers = accessToken != null ? createAuthHeaders(accessToken) : createGitHubHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.GET, entity, String.class
+            );
+
+            List<GitHubGraphCommit> commits = new ArrayList<>();
+            JsonNode jsonArray = objectMapper.readTree(response.getBody());
+
+            for (JsonNode node : jsonArray) {
+                GitHubGraphCommit commit = new GitHubGraphCommit();
+                commit.setSha(node.path("sha").asText());
+                commit.setShortSha(node.path("sha").asText().substring(0, 7));
+
+                String message = node.path("commit").path("message").asText();
+                // 첫 줄만 사용
+                int newlineIndex = message.indexOf('\n');
+                if (newlineIndex > 0) {
+                    message = message.substring(0, newlineIndex);
+                }
+                if (message.length() > 60) {
+                    message = message.substring(0, 57) + "...";
+                }
+                commit.setMessage(message);
+
+                commit.setAuthorName(node.path("commit").path("author").path("name").asText());
+                commit.setAuthorLogin(node.path("author").path("login").asText(""));
+                commit.setDate(node.path("commit").path("author").path("date").asText());
+                commit.setHtmlUrl(node.path("html_url").asText());
+                commit.setBranch(branch);
+
+                // Parent 커밋 SHA 목록 추출
+                List<String> parents = new ArrayList<>();
+                JsonNode parentsNode = node.path("parents");
+                if (parentsNode.isArray()) {
+                    for (JsonNode parent : parentsNode) {
+                        parents.add(parent.path("sha").asText());
+                    }
+                }
+                commit.setParents(parents);
+
+                commits.add(commit);
+            }
+
+            return commits;
+        } catch (Exception e) {
+            log.error("Failed to fetch commits with parents: {}", e.getMessage());
+            throw new RuntimeException("커밋 목록을 가져오는데 실패했습니다.", e);
+        }
+    }
+
+    /**
+     * 두 브랜치를 비교하여 분기점(merge base)과 ahead/behind 정보를 조회합니다.
+     */
+    public GitHubBranchComparison compareBranches(String accessToken, String owner, String repo, String baseBranch, String headBranch) {
+        String apiUrl = String.format(
+            "https://api.github.com/repos/%s/%s/compare/%s...%s",
+            owner, repo, baseBranch, headBranch
+        );
+        log.info("Comparing branches {}/{}: {} vs {}", owner, repo, baseBranch, headBranch);
+
+        try {
+            HttpHeaders headers = accessToken != null ? createAuthHeaders(accessToken) : createGitHubHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, HttpMethod.GET, entity, String.class
+            );
+
+            JsonNode node = objectMapper.readTree(response.getBody());
+
+            GitHubBranchComparison comparison = new GitHubBranchComparison();
+            comparison.setBaseBranch(baseBranch);
+            comparison.setHeadBranch(headBranch);
+            comparison.setMergeBaseSha(node.path("merge_base_commit").path("sha").asText());
+            comparison.setAheadBy(node.path("ahead_by").asInt(0));
+            comparison.setBehindBy(node.path("behind_by").asInt(0));
+            comparison.setStatus(node.path("status").asText());
+            comparison.setTotalCommits(node.path("total_commits").asInt(0));
+
+            return comparison;
+        } catch (Exception e) {
+            log.error("Failed to compare branches: {}", e.getMessage());
+            // 비교 실패 시 빈 결과 반환
+            GitHubBranchComparison comparison = new GitHubBranchComparison();
+            comparison.setBaseBranch(baseBranch);
+            comparison.setHeadBranch(headBranch);
+            comparison.setMergeBaseSha(null);
+            comparison.setAheadBy(0);
+            comparison.setBehindBy(0);
+            return comparison;
+        }
+    }
+
+    /**
+     * 그래프 시각화용 커밋 정보 (parent 포함)
+     */
+    @lombok.Data
+    public static class GitHubGraphCommit {
+        private String sha;
+        private String shortSha;
+        private String message;
+        private String authorName;
+        private String authorLogin;
+        private String date;
+        private String htmlUrl;
+        private String branch;
+        private List<String> parents;
+    }
+
+    /**
+     * 브랜치 비교 결과
+     */
+    @lombok.Data
+    public static class GitHubBranchComparison {
+        private String baseBranch;
+        private String headBranch;
+        private String mergeBaseSha;
+        private int aheadBy;
+        private int behindBy;
+        private String status;  // ahead, behind, identical, diverged
+        private int totalCommits;
     }
 }

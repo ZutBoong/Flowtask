@@ -77,7 +77,16 @@ function OAuth2Redirect() {
 
             // 신규 회원 (회원가입 필요)
             if (isNewUser) {
-                const signupUrl = `/social-signup-complete?provider=${provider}&providerId=${providerId}&name=${encodeURIComponent(socialName || '')}&email=${socialEmail || ''}&needsEmailInput=${needsEmailInput}`;
+                let signupUrl = `/social-signup-complete?provider=${provider}&providerId=${providerId}&name=${encodeURIComponent(socialName || '')}&email=${socialEmail || ''}&needsEmailInput=${needsEmailInput}`;
+
+                // GitHub 로그인인 경우 GitHub 정보도 전달
+                if (provider === 'github' && githubUsername) {
+                    signupUrl += `&githubUsername=${encodeURIComponent(githubUsername)}`;
+                    if (githubAccessToken) {
+                        signupUrl += `&githubAccessToken=${encodeURIComponent(githubAccessToken)}`;
+                    }
+                }
+
                 navigate(signupUrl, { replace: true });
                 return;
             }

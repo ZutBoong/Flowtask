@@ -34,7 +34,9 @@ function BoardView({
     updateColumn,
     addColumn,
     removeColumn,
-    refreshData
+    refreshData,
+    selectedTaskId,
+    onSelectTask
 }) {
     // 로컬 상태 (드래그 등 즉각적인 UI 반응용)
     const [columns, setColumns] = useState(propColumns || []);
@@ -42,7 +44,14 @@ function BoardView({
     const [newColumnTitle, setNewColumnTitle] = useState('');
     const [newTaskTitle, setNewTaskTitle] = useState({});
     const [editingColumn, setEditingColumn] = useState(null);
-    const [selectedTask, setSelectedTask] = useState(null);
+
+    // URL의 selectedTaskId로부터 실제 task 객체 찾기
+    const selectedTask = selectedTaskId ? propTasks?.find(t => t.taskId === selectedTaskId) : null;
+
+    // Task 선택/해제 핸들러
+    const setSelectedTask = (task) => {
+        onSelectTask?.(task?.taskId || null);
+    };
 
     // 컬럼 기능 관련 상태
     const [columnMenuOpen, setColumnMenuOpen] = useState(null);

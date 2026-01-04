@@ -13,13 +13,20 @@ const PRIORITY_COLORS = {
     LOW: '#6b7280'
 };
 
-function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filters, refreshData }) {
+function CalendarView({ team, tasks: propTasks, teamMembers, loginMember, filters, refreshData, selectedTaskId, onSelectTask }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [tasks, setTasks] = useState(propTasks || []);
     const [loading, setLoading] = useState(false);
-    const [selectedTask, setSelectedTask] = useState(null);
     const [viewMode, setViewMode] = useState('month');
     const [selectedDate, setSelectedDate] = useState(null); // 더보기 클릭 시 해당 날짜
+
+    // URL의 selectedTaskId로부터 실제 task 객체 찾기
+    const selectedTask = selectedTaskId ? propTasks?.find(t => t.taskId === selectedTaskId) : null;
+
+    // Task 선택/해제 핸들러
+    const setSelectedTask = (task) => {
+        onSelectTask?.(task?.taskId || null);
+    };
 
     // props 변경 시 로컬 상태 동기화
     useEffect(() => {

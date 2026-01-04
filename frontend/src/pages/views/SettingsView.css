@@ -1,0 +1,867 @@
+/* ===== Settings View Container ===== */
+.settings-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background: #f8fafc;
+    overflow: hidden;
+}
+
+/* ===== 사이드 네비게이션 ===== */
+.sv-sidebar {
+    width: 240px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    padding: 24px 0;
+    flex-shrink: 0;
+}
+
+.sv-sidebar-title {
+    padding: 0 24px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sv-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.sv-nav-item:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.sv-nav-item.active {
+    background: linear-gradient(90deg, #e0e7ff 0%, #f1f5f9 100%);
+    color: #4338ca;
+    border-left: 3px solid #4338ca;
+    padding-left: 21px;
+}
+
+.sv-nav-item.danger {
+    color: #dc2626;
+}
+
+.sv-nav-item.danger:hover {
+    background: #fef2f2;
+}
+
+.sv-nav-item.danger.active {
+    background: linear-gradient(90deg, #fee2e2 0%, #fef2f2 100%);
+    border-left-color: #dc2626;
+}
+
+.sv-nav-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* ===== 메인 콘텐츠 ===== */
+.sv-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+}
+
+.sv-section {
+    max-width: 720px;
+    animation: svFadeIn 0.25s ease;
+}
+
+@keyframes svFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sv-section-header {
+    margin-bottom: 24px;
+}
+
+.sv-section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+}
+
+.sv-section-desc {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* ===== 카드 ===== */
+.sv-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.sv-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sv-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sv-card-title svg {
+    color: #64748b;
+}
+
+.sv-card-body {
+    padding: 22px;
+}
+
+.sv-card-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sv-card-row:first-child {
+    padding-top: 0;
+}
+
+.sv-card-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.sv-row-info {
+    flex: 1;
+}
+
+.sv-row-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.sv-row-value {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.sv-row-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ===== 입력 필드 ===== */
+.sv-input-group {
+    margin-bottom: 20px;
+}
+
+.sv-input-group:last-child {
+    margin-bottom: 0;
+}
+
+.sv-input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.sv-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+}
+
+.sv-input:focus {
+    outline: none;
+    border-color: #4338ca;
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+}
+
+.sv-input:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+}
+
+.sv-textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* ===== 버튼 ===== */
+.sv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sv-btn.primary {
+    background: #4338ca;
+    color: white;
+}
+
+.sv-btn.primary:hover {
+    background: #3730a3;
+}
+
+.sv-btn.secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.sv-btn.secondary:hover {
+    background: #e2e8f0;
+}
+
+.sv-btn.danger {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.sv-btn.danger:hover {
+    background: #fee2e2;
+}
+
+.sv-btn.danger-solid {
+    background: #dc2626;
+    color: white;
+}
+
+.sv-btn.danger-solid:hover {
+    background: #b91c1c;
+}
+
+.sv-btn.sm {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+.sv-btn.github {
+    background: #24292f;
+    color: white;
+}
+
+.sv-btn.github:hover {
+    background: #32383f;
+}
+
+.sv-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sv-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* ===== 토글 스위치 ===== */
+.sv-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.sv-toggle-info {
+    flex: 1;
+}
+
+.sv-toggle-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.sv-toggle-desc {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.sv-toggle-switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.sv-toggle-switch.on {
+    background: #4338ca;
+}
+
+.sv-toggle-switch.off {
+    background: #cbd5e1;
+}
+
+.sv-toggle-switch:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.sv-toggle-switch:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sv-toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: left 0.2s ease;
+}
+
+.sv-toggle-switch.on .sv-toggle-slider {
+    left: 27px;
+}
+
+.sv-toggle-switch.off .sv-toggle-slider {
+    left: 3px;
+}
+
+/* ===== 초대 코드 ===== */
+.sv-code-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.sv-code {
+    flex: 1;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #1e293b;
+}
+
+.sv-code-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ===== 멤버 목록 ===== */
+.sv-members-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.sv-member-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sv-member-item:last-child {
+    border-bottom: none;
+}
+
+.sv-member-avatar {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.sv-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv-member-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sv-member-id {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.sv-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sv-badge.leader {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+}
+
+.sv-badge.member {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* ===== 위험 구역 ===== */
+.sv-danger-card {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.sv-danger-card .sv-card-body {
+    text-align: center;
+    padding: 40px;
+}
+
+.sv-danger-icon {
+    margin-bottom: 16px;
+    color: #dc2626;
+}
+
+.sv-danger-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.sv-danger-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0 0 10px 0;
+}
+
+.sv-danger-desc {
+    font-size: 14px;
+    color: #b91c1c;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+}
+
+/* ===== GitHub 섹션 ===== */
+.sv-github-connected {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sv-github-repo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sv-github-repo a {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    text-decoration: none;
+}
+
+.sv-github-repo a:hover {
+    color: #4338ca;
+    text-decoration: underline;
+}
+
+.sv-github-empty {
+    text-align: center;
+    padding: 24px;
+    color: #64748b;
+}
+
+.sv-github-empty p {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+}
+
+/* ===== Select ===== */
+.sv-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    background: white;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sv-select:focus {
+    outline: none;
+    border-color: #4338ca;
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+}
+
+.sv-select:disabled {
+    background: #f8fafc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ===== 일괄 동기화 ===== */
+.sv-sync-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sv-sync-buttons .sv-btn {
+    flex: 1;
+    min-width: 160px;
+}
+
+.sv-count-badge {
+    background: #4338ca;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.sv-sync-result {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #166534;
+}
+
+/* ===== 컬럼 매핑 ===== */
+.sv-mapping-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.sv-mapping-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.sv-mapping-prefix {
+    padding: 4px 10px;
+    background: #e0e7ff;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4338ca;
+    font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.sv-mapping-arrow {
+    color: #94a3b8;
+}
+
+.sv-mapping-column {
+    flex: 1;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.sv-mapping-delete {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee2e2;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    color: #dc2626;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sv-mapping-delete:hover {
+    background: #fecaca;
+    transform: scale(1.1);
+}
+
+.sv-mapping-add {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sv-mapping-add .sv-input {
+    flex: 1;
+}
+
+.sv-mapping-add .sv-select {
+    flex: 1.5;
+}
+
+/* ===== 저장소 선택 모달 ===== */
+.sv-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    animation: svFadeIn 0.15s ease;
+}
+
+.sv-modal {
+    background: white;
+    border-radius: 16px;
+    width: 94%;
+    max-width: 480px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.sv-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sv-modal-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sv-modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sv-modal-close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.sv-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.sv-repo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sv-repo-item:hover {
+    background: #f1f5f9;
+}
+
+.sv-repo-item.disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.sv-repo-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv-repo-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sv-repo-desc {
+    font-size: 12px;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 2px;
+}
+
+.sv-private-badge {
+    padding: 3px 8px;
+    background: #fef3c7;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #92400e;
+    text-transform: uppercase;
+}
+
+.sv-loading, .sv-empty {
+    padding: 50px 24px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.sv-hint {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+.sv-hint.warning {
+    color: #f59e0b;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 900px) {
+    .sv-sidebar {
+        width: 200px;
+    }
+
+    .sv-main {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 767px) {
+    .settings-view {
+        flex-direction: column;
+    }
+
+    .sv-sidebar {
+        width: 100%;
+        padding: 12px 0;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .sv-sidebar-title {
+        display: none;
+    }
+
+    .sv-nav-item {
+        padding: 10px 16px;
+        white-space: nowrap;
+        border-left: none !important;
+        border-bottom: 2px solid transparent;
+    }
+
+    .sv-nav-item.active {
+        border-bottom-color: #4338ca;
+        background: transparent;
+        padding-left: 16px;
+    }
+
+    .sv-main {
+        padding: 20px 16px;
+    }
+
+    .sv-sync-buttons {
+        flex-direction: column;
+    }
+
+    .sv-sync-buttons .sv-btn {
+        min-width: 100%;
+    }
+
+    .sv-mapping-add {
+        flex-wrap: wrap;
+    }
+
+    .sv-mapping-add .sv-input,
+    .sv-mapping-add .sv-select {
+        flex: 1 1 100%;
+    }
+
+    .sv-mapping-add .sv-btn {
+        width: 100%;
+        margin-top: 4px;
+    }
+}

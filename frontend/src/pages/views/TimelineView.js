@@ -11,7 +11,9 @@ function TimelineView({
     loginMember,
     filters,
     updateTask,
-    refreshData
+    refreshData,
+    selectedTaskId,
+    onSelectTask
 }) {
     const [tasks, setTasks] = useState(propTasks || []);
     const [columns, setColumns] = useState(propColumns || []);
@@ -24,11 +26,18 @@ function TimelineView({
         start.setHours(0, 0, 0, 0);
         return start;
     });
-    const [selectedTask, setSelectedTask] = useState(null);
     const [isDraggingScroll, setIsDraggingScroll] = useState(false);
     const [scrollStartX, setScrollStartX] = useState(0);
     const [scrollStartLeft, setScrollStartLeft] = useState(0);
     const [sortBy, setSortBy] = useState('column'); // 'column', 'startDate', 'dueDate'
+
+    // URL의 selectedTaskId로부터 실제 task 객체 찾기
+    const selectedTask = selectedTaskId ? propTasks?.find(t => t.taskId === selectedTaskId) : null;
+
+    // Task 선택/해제 핸들러
+    const setSelectedTask = (task) => {
+        onSelectTask?.(task?.taskId || null);
+    };
 
     const timelineRef = useRef(null);
     const dateAreaRef = useRef(null);

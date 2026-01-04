@@ -439,4 +439,121 @@ public class GitHubIssueService {
         private List<String> assignees;
         private Integer milestone;
     }
+
+    // ==================== Issue Comments ====================
+
+    /**
+     * Issue 댓글 목록 조회
+     */
+    public List<GitHubComment> listComments(String owner, String repo, String token, int issueNumber) {
+        String apiUrl = String.format("%s/repos/%s/%s/issues/%d/comments?per_page=100",
+            GITHUB_API_BASE, owner, repo, issueNumber);
+        log.debug("Listing comments from {}/{} issue #{}", owner, repo, issueNumber);
+
+        try {
+            HttpEntity<String> entity = new HttpEntity<>(createHeaders(token));
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
+
+            List<GitHubComment> comments = new ArrayList<>();
+            JsonNode jsonArray = objectMapper.readTree(response.getBody());
+            for (JsonNode node : jsonArray) {
+                comments.add(parseComment(node));
+            }
+            return comments;
+        } catch (Exception e) {
+            log.error("Failed to list comments: {}", e.getMessage());
+            throw new RuntimeException("댓글 목록 조회 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Issue 댓글 생성
+     */
+    public GitHubComment createComment(String owner, String repo, String token, int issueNumber, String body) {
+        String apiUrl = String.format("%s/repos/%s/%s/issues/%d/comments",
+            GITHUB_API_BASE, owner, repo, issueNumber);
+        log.info("Creating comment on {}/{} issue #{}", owner, repo, issueNumber);
+
+        try {
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("body", body);
+
+            HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestBody), createHeaders(token));
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
+
+            JsonNode node = objectMapper.readTree(response.getBody());
+            return parseComment(node);
+        } catch (Exception e) {
+            log.error("Failed to create comment: {}", e.getMessage());
+            throw new RuntimeException("댓글 생성 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Issue 댓글 수정
+     */
+    public GitHubComment updateComment(String owner, String repo, String token, long commentId, String body) {
+        String apiUrl = String.format("%s/repos/%s/%s/issues/comments/%d",
+            GITHUB_API_BASE, owner, repo, commentId);
+        log.info("Updating comment {} on {}/{}", commentId, owner, repo);
+
+        try {
+            ObjectNode requestBody = objectMapper.createObjectNode();
+            requestBody.put("body", body);
+
+            HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(requestBody), createHeaders(token));
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PATCH, entity, String.class);
+
+            JsonNode node = objectMapper.readTree(response.getBody());
+            return parseComment(node);
+        } catch (Exception e) {
+            log.error("Failed to update comment: {}", e.getMessage());
+            throw new RuntimeException("댓글 수정 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Issue 댓글 삭제
+     */
+    public void deleteComment(String owner, String repo, String token, long commentId) {
+        String apiUrl = String.format("%s/repos/%s/%s/issues/comments/%d",
+            GITHUB_API_BASE, owner, repo, commentId);
+        log.info("Deleting comment {} on {}/{}", commentId, owner, repo);
+
+        try {
+            HttpEntity<String> entity = new HttpEntity<>(createHeaders(token));
+            restTemplate.exchange(apiUrl, HttpMethod.DELETE, entity, String.class);
+        } catch (Exception e) {
+            log.error("Failed to delete comment: {}", e.getMessage());
+            throw new RuntimeException("댓글 삭제 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private GitHubComment parseComment(JsonNode node) {
+        GitHubComment comment = new GitHubComment();
+        comment.setId(node.path("id").asLong());
+        comment.setBody(node.path("body").asText());
+        comment.setCreatedAt(node.path("created_at").asText());
+        comment.setUpdatedAt(node.path("updated_at").asText());
+        comment.setHtmlUrl(node.path("html_url").asText());
+
+        JsonNode userNode = node.path("user");
+        if (!userNode.isMissingNode()) {
+            comment.setUserLogin(userNode.path("login").asText());
+            comment.setUserId(userNode.path("id").asLong());
+        }
+
+        return comment;
+    }
+
+    @Data
+    public static class GitHubComment {
+        private long id;
+        private String body;
+        private String createdAt;
+        private String updatedAt;
+        private String htmlUrl;
+        private String userLogin;
+        private long userId;
+    }
 }

@@ -26,16 +26,25 @@ function ListView({
     addTask,
     updateTask,
     removeTask,
-    refreshData
+    refreshData,
+    selectedTaskId,
+    onSelectTask
 }) {
     const [tasks, setTasks] = useState(propTasks || []);
     const [columns, setColumns] = useState(propColumns || []);
     const [expandedColumns, setExpandedColumns] = useState({});
     const [newTaskTitle, setNewTaskTitle] = useState({});
-    const [selectedTask, setSelectedTask] = useState(null);
     const [addingColumnTask, setAddingColumnTask] = useState(null);
     const [createTaskModalColumnId, setCreateTaskModalColumnId] = useState(null);
     const [newColumnTitle, setNewColumnTitle] = useState('');
+
+    // URL의 selectedTaskId로부터 실제 task 객체 찾기
+    const selectedTask = selectedTaskId ? propTasks?.find(t => t.taskId === selectedTaskId) : null;
+
+    // Task 선택/해제 핸들러
+    const setSelectedTask = (task) => {
+        onSelectTask?.(task?.taskId || null);
+    };
 
     // props 동기화
     useEffect(() => {

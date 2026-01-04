@@ -17,28 +17,65 @@ public class TeamController {
 	@Autowired
 	private TeamService service;
 
-	// 팀 생성
+	// 팀 생성 (GitHub 저장소 연동 지원)
 	@PostMapping("/create")
-	public Map<String, Object> createTeam(@RequestBody Team team) {
-		System.out.println("팀 생성 요청: " + team);
+	public Map<String, Object> createTeam(@RequestBody Map<String, Object> request) {
+		System.out.println("팀 생성 요청: " + request);
 		Map<String, Object> result = new HashMap<>();
 
-		int insertResult = service.createTeam(team);
-		if (insertResult == 1) {
-			// 팀장을 멤버로 추가
-			TeamMember leader = new TeamMember();
-			leader.setTeamId(team.getTeamId());
-			leader.setMemberNo(team.getLeaderNo());
-			leader.setRole("LEADER");
-			service.addMember(leader);
+		try {
+			// 요청에서 팀 정보 추출
+			Team team = new Team();
+			team.setTeamName((String) request.get("teamName"));
+			team.setDescription((String) request.get("description"));
+			team.setLeaderNo((Integer) request.get("leaderNo"));
 
-			result.put("success", true);
-			result.put("message", "팀이 생성되었습니다.");
-			result.put("teamCode", team.getTeamCode());
-			result.put("teamId", team.getTeamId());
-		} else {
+			// GitHub 관련 파라미터 (선택)
+			String githubRepoFullName = (String) request.get("githubRepoFullName");
+			String webhookUrl = (String) request.get("webhookUrl");
+
+			// 팀 생성 + GitHub 연동
+			Map<String, Object> createResult = service.createTeamWithGitHub(team, githubRepoFullName, webhookUrl);
+
+			if ((Boolean) createResult.get("teamCreated")) {
+				int teamId = (Integer) createResult.get("teamId");
+				String teamCode = (String) createResult.get("teamCode");
+
+				// 팀장을 멤버로 추가
+				TeamMember leader = new TeamMember();
+				leader.setTeamId(teamId);
+				leader.setMemberNo(team.getLeaderNo());
+				leader.setRole("LEADER");
+				service.addMember(leader);
+
+				// 초대된 멤버 추가
+				@SuppressWarnings("unchecked")
+				java.util.List<Integer> memberNos = (java.util.List<Integer>) request.get("memberNos");
+				if (memberNos != null) {
+					for (Integer memberNo : memberNos) {
+						TeamMember member = new TeamMember();
+						member.setTeamId(teamId);
+						member.setMemberNo(memberNo);
+						member.setRole("MEMBER");
+						service.addMemberWithNotification(member, team.getLeaderNo());
+					}
+				}
+
+				result.put("success", true);
+				result.put("message", "팀이 생성되었습니다.");
+				result.put("teamCode", teamCode);
+				result.put("teamId", teamId);
+				result.put("githubConnected", createResult.get("githubConnected"));
+				result.put("webhookCreated", createResult.get("webhookCreated"));
+			} else {
+				result.put("success", false);
+				result.put("message", "팀 생성에 실패했습니다.");
+			}
+		} catch (Exception e) {
+			System.err.println("팀 생성 오류: " + e.getMessage());
+			e.printStackTrace();
 			result.put("success", false);
-			result.put("message", "팀 생성에 실패했습니다.");
+			result.put("message", "팀 생성 중 오류가 발생했습니다.");
 		}
 		return result;
 	}

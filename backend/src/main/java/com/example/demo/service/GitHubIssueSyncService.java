@@ -62,6 +62,9 @@ public class GitHubIssueSyncService {
     @Autowired
     private MemberDao memberDao;
 
+    @Autowired
+    private CommentDao commentDao;
+
     // ==================== Synodos → GitHub ====================
 
     /**
@@ -269,6 +272,123 @@ public class GitHubIssueSyncService {
     }
 
     /**
+     * GitHub Issue Comment Webhook 이벤트 처리
+     */
+    @Transactional
+    public void processCommentWebhook(GitHubIssuePayload payload, int teamId, String webhookDeliveryId) {
+        String action = payload.getAction();
+        int issueNumber = payload.getIssue().getNumber();
+        GitHubIssuePayload.Comment githubComment = payload.getComment();
+
+        log.info("Processing comment webhook: action={}, issue=#{}, commentId={}, team={}",
+            action, issueNumber, githubComment.getId(), teamId);
+
+        // Issue-Task 매핑 조회
+        TaskGitHubIssue mapping = taskGitHubIssueDao.findByTeamAndIssue(teamId, issueNumber);
+        if (mapping == null) {
+            log.debug("No task linked to issue #{}, skipping comment sync", issueNumber);
+            return;
+        }
+
+        switch (action) {
+            case "created":
+                handleCommentCreated(payload, mapping, teamId);
+                break;
+            case "edited":
+                handleCommentEdited(payload, mapping);
+                break;
+            case "deleted":
+                handleCommentDeleted(payload, mapping);
+                break;
+            default:
+                log.debug("Ignoring comment action: {}", action);
+        }
+    }
+
+    /**
+     * GitHub 댓글 생성 → Synodos 댓글 생성
+     */
+    private void handleCommentCreated(GitHubIssuePayload payload, TaskGitHubIssue mapping, int teamId) {
+        GitHubIssuePayload.Comment githubComment = payload.getComment();
+
+        // 이미 동기화된 댓글인지 확인
+        Comment existing = commentDao.findByGithubCommentId(githubComment.getId());
+        if (existing != null) {
+            log.debug("Comment {} already synced to Synodos comment #{}", githubComment.getId(), existing.getCommentId());
+            return;
+        }
+
+        // GitHub 사용자 → Synodos 멤버 매핑
+        String githubLogin = githubComment.getUser().getLogin();
+        GitHubUserMapping userMapping = gitHubUserMappingDao.findByGithubUsername(githubLogin);
+
+        int authorNo;
+        if (userMapping != null) {
+            authorNo = userMapping.getMemberNo();
+        } else {
+            // 매핑된 사용자가 없으면 팀 리더로 설정
+            Team team = teamDao.findById(teamId);
+            authorNo = team != null ? team.getLeaderNo() : 1;
+            log.info("No user mapping for GitHub user {}, using team leader", githubLogin);
+        }
+
+        // 댓글 내용에 GitHub 출처 표시
+        String body = githubComment.getBody();
+        if (!body.contains("*From GitHub*")) {
+            body = body + "\n\n---\n*From GitHub @" + githubLogin + "*";
+        }
+
+        // Synodos 댓글 생성
+        Comment comment = new Comment();
+        comment.setTaskId(mapping.getTaskId());
+        comment.setAuthorNo(authorNo);
+        comment.setContent(body);
+        comment.setGithubCommentId(githubComment.getId());
+
+        commentDao.insert(comment);
+        log.info("Created Synodos comment #{} from GitHub comment {}", comment.getCommentId(), githubComment.getId());
+    }
+
+    /**
+     * GitHub 댓글 수정 → Synodos 댓글 수정
+     */
+    private void handleCommentEdited(GitHubIssuePayload payload, TaskGitHubIssue mapping) {
+        GitHubIssuePayload.Comment githubComment = payload.getComment();
+
+        Comment comment = commentDao.findByGithubCommentId(githubComment.getId());
+        if (comment == null) {
+            log.debug("No Synodos comment linked to GitHub comment {}", githubComment.getId());
+            return;
+        }
+
+        String githubLogin = githubComment.getUser().getLogin();
+        String body = githubComment.getBody();
+        if (!body.contains("*From GitHub*")) {
+            body = body + "\n\n---\n*From GitHub @" + githubLogin + "*";
+        }
+
+        comment.setContent(body);
+        commentDao.update(comment);
+        log.info("Updated Synodos comment #{} from GitHub comment {}", comment.getCommentId(), githubComment.getId());
+    }
+
+    /**
+     * GitHub 댓글 삭제 → Synodos 댓글 삭제
+     */
+    private void handleCommentDeleted(GitHubIssuePayload payload, TaskGitHubIssue mapping) {
+        GitHubIssuePayload.Comment githubComment = payload.getComment();
+
+        Comment comment = commentDao.findByGithubCommentId(githubComment.getId());
+        if (comment == null) {
+            log.debug("No Synodos comment linked to GitHub comment {}", githubComment.getId());
+            return;
+        }
+
+        commentDao.delete(comment.getCommentId());
+        log.info("Deleted Synodos comment #{} (GitHub comment {})", comment.getCommentId(), githubComment.getId());
+    }
+
+    /**
      * Issue 생성 → Task 자동 생성
      */
     private void handleIssueOpened(GitHubIssuePayload payload, int teamId, TaskGitHubIssue mapping, String webhookDeliveryId) {
@@ -325,8 +445,9 @@ public class GitHubIssueSyncService {
             GitHubIssueSyncLog.DIRECTION_PULL, GitHubIssueSyncLog.TYPE_CREATE,
             null, null, task.getTitle(), GitHubIssueSyncLog.STATUS_SUCCESS, webhookDeliveryId);
 
-        // WebSocket 알림
-        boardNotificationService.notifyTaskCreated(task, teamId);
+        // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+        Task fullTask = getTaskWithRelations(task.getTaskId());
+        boardNotificationService.notifyTaskCreated(fullTask, teamId);
 
         log.info("Created Task #{} from GitHub Issue #{}", task.getTaskId(), payload.getIssue().getNumber());
     }
@@ -420,8 +541,9 @@ public class GitHubIssueSyncService {
             taskGitHubIssueDao.updateGithubTimestamp(mapping.getTeamId(), issue.getNumber());
             taskGitHubIssueDao.updateLastSyncedAt(mapping.getId());
 
-            // WebSocket 알림
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+            // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+            Task fullTask = getTaskWithRelations(task.getTaskId());
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
@@ -446,7 +568,9 @@ public class GitHubIssueSyncService {
                 GitHubIssueSyncLog.DIRECTION_PULL, GitHubIssueSyncLog.TYPE_UPDATE,
                 "workflow_status", oldStatus, "DONE", GitHubIssueSyncLog.STATUS_SUCCESS, webhookDeliveryId);
 
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+            // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+            Task fullTask = getTaskWithRelations(task.getTaskId());
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
@@ -471,7 +595,9 @@ public class GitHubIssueSyncService {
                 GitHubIssueSyncLog.DIRECTION_PULL, GitHubIssueSyncLog.TYPE_UPDATE,
                 "workflow_status", oldStatus, "WAITING", GitHubIssueSyncLog.STATUS_SUCCESS, webhookDeliveryId);
 
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+            // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+            Task fullTask = getTaskWithRelations(task.getTaskId());
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
@@ -525,7 +651,10 @@ public class GitHubIssueSyncService {
         if (changed) {
             taskGitHubIssueDao.updateGithubTimestamp(mapping.getTeamId(), issue.getNumber());
             taskGitHubIssueDao.updateLastSyncedAt(mapping.getId());
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+
+            // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+            Task fullTask = getTaskWithRelations(task.getTaskId());
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
@@ -573,9 +702,10 @@ public class GitHubIssueSyncService {
         taskGitHubIssueDao.updateGithubTimestamp(mapping.getTeamId(), issue.getNumber());
         taskGitHubIssueDao.updateLastSyncedAt(mapping.getId());
 
-        Task task = taskDao.content(mapping.getTaskId());
-        if (task != null) {
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+        // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+        Task fullTask = getTaskWithRelations(mapping.getTaskId());
+        if (fullTask != null) {
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
@@ -606,11 +736,26 @@ public class GitHubIssueSyncService {
             taskGitHubIssueDao.updateGithubTimestamp(mapping.getTeamId(), payload.getIssue().getNumber());
             taskGitHubIssueDao.updateLastSyncedAt(mapping.getId());
 
-            boardNotificationService.notifyTaskUpdated(task, mapping.getTeamId());
+            // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+            Task fullTask = getTaskWithRelations(task.getTaskId());
+            boardNotificationService.notifyTaskUpdated(fullTask, mapping.getTeamId());
         }
     }
 
     // ==================== Helper Methods ====================
+
+    /**
+     * Task에 relations(assignees, verifiers) 채우기
+     * WebSocket 알림 전에 완전한 Task 객체를 전송하기 위함
+     */
+    private Task getTaskWithRelations(int taskId) {
+        Task task = taskDao.content(taskId);
+        if (task != null) {
+            task.setAssignees(taskAssigneeDao.listByTask(taskId));
+            task.setVerifiers(taskVerifierDao.listByTask(taskId));
+        }
+        return task;
+    }
 
     /**
      * GitHub 변경을 적용할지 확인 (최신 우선 정책)
@@ -974,8 +1119,9 @@ public class GitHubIssueSyncService {
 
                 taskGitHubIssueDao.insert(mapping);
 
-                // WebSocket 알림
-                boardNotificationService.notifyTaskCreated(task, teamId);
+                // WebSocket 알림 (relations 포함된 완전한 Task 전송)
+                Task fullTask = getTaskWithRelations(task.getTaskId());
+                boardNotificationService.notifyTaskCreated(fullTask, teamId);
 
                 result.setSuccessCount(result.getSuccessCount() + 1);
                 log.info("Imported GitHub Issue #{} as Task #{}", issue.getNumber(), task.getTaskId());

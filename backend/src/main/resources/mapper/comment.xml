@@ -7,14 +7,14 @@
 		<selectKey keyProperty="commentId" resultType="int" order="BEFORE">
 			SELECT nextval('comment_seq')
 		</selectKey>
-		INSERT INTO comment (comment_id, task_id, author_no, content, created_at, updated_at)
-		VALUES (#{commentId}, #{taskId}, #{authorNo}, #{content}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		INSERT INTO comment (comment_id, task_id, author_no, content, github_comment_id, created_at, updated_at)
+		VALUES (#{commentId}, #{taskId}, #{authorNo}, #{content}, #{githubCommentId}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	</insert>
 
 	<!-- 태스크별 댓글 목록 -->
 	<select id="listByTask" parameterType="int" resultType="comment">
 		SELECT c.comment_id, c.task_id, c.author_no, m.name as author_name, m.userid as author_userid,
-			c.content, c.created_at, c.updated_at
+			c.content, c.created_at, c.updated_at, c.github_comment_id
 		FROM comment c
 		JOIN member m ON c.author_no = m.no
 		WHERE c.task_id = #{taskId}
@@ -24,7 +24,7 @@
 	<!-- 댓글 상세 -->
 	<select id="content" parameterType="int" resultType="comment">
 		SELECT c.comment_id, c.task_id, c.author_no, m.name as author_name, m.userid as author_userid,
-			c.content, c.created_at, c.updated_at
+			c.content, c.created_at, c.updated_at, c.github_comment_id
 		FROM comment c
 		JOIN member m ON c.author_no = m.no
 		WHERE c.comment_id = #{commentId}
@@ -46,5 +46,21 @@
 	<select id="countByTask" parameterType="int" resultType="int">
 		SELECT COUNT(*) FROM comment WHERE task_id = #{taskId}
 	</select>
+
+	<!-- GitHub 댓글 ID로 검색 -->
+	<select id="findByGithubCommentId" parameterType="long" resultType="comment">
+		SELECT c.comment_id, c.task_id, c.author_no, m.name as author_name, m.userid as author_userid,
+			c.content, c.created_at, c.updated_at, c.github_comment_id
+		FROM comment c
+		JOIN member m ON c.author_no = m.no
+		WHERE c.github_comment_id = #{githubCommentId}
+	</select>
+
+	<!-- GitHub 댓글 ID 업데이트 -->
+	<update id="updateGithubCommentId">
+		UPDATE comment
+		SET github_comment_id = #{githubCommentId}
+		WHERE comment_id = #{commentId}
+	</update>
 
 </mapper>

@@ -21,6 +21,20 @@ cd backend
 .\mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
+### Claude Code Bash 환경 (중요)
+이 프로젝트는 Windows 환경이지만 Claude Code의 Bash는 Unix-like 환경입니다.
+Windows 경로와 명령어를 실행할 때는 반드시 `cmd /c`로 감싸서 실행해야 합니다:
+```bash
+# 백엔드 컴파일
+cmd /c "cd /d C:\Synodos\backend && mvnw.cmd compile -q"
+
+# 백엔드 테스트
+cmd /c "cd /d C:\Synodos\backend && mvnw.cmd test -q"
+
+# 프론트엔드 빌드
+cmd /c "cd /d C:\Synodos\frontend && npm run build"
+```
+
 ### Frontend (React)
 ```bash
 cd frontend

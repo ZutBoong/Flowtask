@@ -15,4 +15,5 @@ public class Comment {
 	private String content;
 	private Date createdAt;
 	private Date updatedAt;
+	private Long githubCommentId;  // GitHub Issue Comment ID (동기화용)
 }

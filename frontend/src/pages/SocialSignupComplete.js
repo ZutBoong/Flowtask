@@ -26,6 +26,9 @@ function SocialSignupComplete() {
     const name = params.get('name');
     const initialEmail = params.get('email') || '';
     const needsEmailInput = params.get('needsEmailInput') === 'true';
+    // GitHub 로그인 시 추가 정보
+    const githubUsername = params.get('githubUsername');
+    const githubAccessToken = params.get('githubAccessToken');
 
     useEffect(() => {
         // 필수 파라미터 체크
@@ -131,14 +134,24 @@ function SocialSignupComplete() {
 
         setLoading(true);
         try {
-            const result = await socialRegister({
+            const registerData = {
                 userid: form.userid,
                 email: form.email,
                 phone: form.phone || null,
                 name: decodeURIComponent(name || ''),
                 provider: provider,
                 providerId: providerId
-            });
+            };
+
+            // GitHub 로그인인 경우 GitHub 정보 추가
+            if (provider === 'github' && githubUsername) {
+                registerData.githubUsername = githubUsername;
+                if (githubAccessToken) {
+                    registerData.githubAccessToken = githubAccessToken;
+                }
+            }
+
+            const result = await socialRegister(registerData);
 
             if (result.success) {
                 // 토큰 및 회원 정보 저장
@@ -162,6 +175,7 @@ function SocialSignupComplete() {
             case 'google': return 'Google';
             case 'naver': return 'Naver';
             case 'kakao': return 'Kakao';
+            case 'github': return 'GitHub';
             default: return provider;
         }
     };

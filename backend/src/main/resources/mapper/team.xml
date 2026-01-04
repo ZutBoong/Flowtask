@@ -7,8 +7,8 @@
 		<selectKey keyProperty="teamId" resultType="int" order="BEFORE">
 			SELECT nextval('team_seq')
 		</selectKey>
-		INSERT INTO team (team_id, team_name, team_code, leader_no, description, github_repo_url, created_at)
-		VALUES (#{teamId}, #{teamName}, #{teamCode}, #{leaderNo}, #{description, jdbcType=VARCHAR}, #{githubRepoUrl, jdbcType=VARCHAR}, CURRENT_TIMESTAMP)
+		INSERT INTO team (team_id, team_name, team_code, leader_no, description, github_repo_url, github_issue_sync_enabled, created_at)
+		VALUES (#{teamId}, #{teamName}, #{teamCode}, #{leaderNo}, #{description, jdbcType=VARCHAR}, #{githubRepoUrl, jdbcType=VARCHAR}, #{githubIssueSyncEnabled, jdbcType=BOOLEAN}, CURRENT_TIMESTAMP)
 	</insert>
 
 	<!-- 팀 멤버 추가 -->

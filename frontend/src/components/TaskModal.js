@@ -46,6 +46,34 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
     const [hasGithubRepo, setHasGithubRepo] = useState(false);
     const linkedCommitsRef = useRef(null);
 
+    // task prop이 변경되면 form 상태 동기화 (WebSocket 업데이트 반영)
+    useEffect(() => {
+        if (task) {
+            setForm({
+                taskId: task.taskId || 0,
+                title: task.title || '',
+                description: task.description || '',
+                assigneeNo: task.assigneeNo || null,
+                priority: task.priority || null,
+                startDate: task.startDate || today,
+                dueDate: task.dueDate || ''
+            });
+            setSelectedAssignees(
+                task.assignees?.map(a => a.memberNo) || (task.assigneeNo ? [task.assigneeNo] : [])
+            );
+            setSelectedVerifiers(
+                task.verifiers?.map(v => v.memberNo) || []
+            );
+            // 시간 추출
+            if (task.startDate) {
+                setStartTime(extractTimeFromDateTime(task.startDate));
+            }
+            if (task.dueDate) {
+                setDueTime(extractTimeFromDateTime(task.dueDate));
+            }
+        }
+    }, [task]);
+
     useEffect(() => {
         if (teamId) {
             fetchTeamMembers();
@@ -54,14 +82,7 @@ function TaskModal({ task, teamId, onClose, onSave, loginMember }) {
         if (task?.taskId) {
             fetchFiles();
         }
-        // 기존 task 데이터에서 시간 추출
-        if (task?.startDate) {
-            setStartTime(extractTimeFromDateTime(task.startDate));
-        }
-        if (task?.dueDate) {
-            setDueTime(extractTimeFromDateTime(task.dueDate));
-        }
-    }, [teamId, task?.taskId, task?.startDate, task?.dueDate]);
+    }, [teamId, task?.taskId]);
 
     // 팀의 GitHub 저장소 설정 확인
     const checkGithubRepo = async () => {

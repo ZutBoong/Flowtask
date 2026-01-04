@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTeam } from '../api/teamApi';
 import { getAllMembers } from '../api/teamApi';
+import { getGitHubStatus, listUserRepositories } from '../api/githubIssueApi';
 import './CreateTeam.css';
 
 function CreateTeam() {
@@ -15,6 +16,13 @@ function CreateTeam() {
     const [showDropdown, setShowDropdown] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // GitHub 저장소 연결
+    const [githubConnected, setGithubConnected] = useState(null); // null=확인중, true/false
+    const [repositories, setRepositories] = useState([]);
+    const [selectedRepo, setSelectedRepo] = useState(null);
+    const [loadingRepos, setLoadingRepos] = useState(false);
+    const [showRepoDropdown, setShowRepoDropdown] = useState(false);
 
     // 로그인 확인
     useEffect(() => {
@@ -33,6 +41,29 @@ function CreateTeam() {
         if (loginMember) {
             fetchAllMembers();
         }
+    }, [loginMember]);
+
+    // GitHub 연동 상태 확인
+    useEffect(() => {
+        const checkGitHubStatus = async () => {
+            console.log('[DEBUG] checkGitHubStatus 시작 - loginMember:', loginMember);
+            if (!loginMember || !loginMember.no) {
+                console.log('[DEBUG] loginMember 없음, 스킵');
+                return;
+            }
+            try {
+                console.log('[DEBUG] getGitHubStatus 호출 - memberNo:', loginMember.no);
+                const status = await getGitHubStatus(loginMember.no);
+                console.log('[DEBUG] getGitHubStatus 응답:', status);
+                const result = status.connected && status.hasRepoAccess;
+                console.log('[DEBUG] githubConnected 설정:', result);
+                setGithubConnected(result);
+            } catch (error) {
+                console.error('[DEBUG] GitHub 상태 확인 실패:', error);
+                setGithubConnected(false);
+            }
+        };
+        checkGitHubStatus();
     }, [loginMember]);
 
     const fetchAllMembers = async () => {
@@ -67,6 +98,21 @@ function CreateTeam() {
         member.userid?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // GitHub 저장소 목록 로드
+    const handleLoadRepositories = async () => {
+        setLoadingRepos(true);
+        try {
+            const repos = await listUserRepositories(loginMember.no);
+            setRepositories(Array.isArray(repos) ? repos : []);
+            setShowRepoDropdown(true);
+        } catch (error) {
+            console.error('저장소 목록 조회 실패:', error);
+            alert('저장소 목록을 가져오는데 실패했습니다.');
+        } finally {
+            setLoadingRepos(false);
+        }
+    };
+
     // 팀 생성
     const handleCreateTeam = async () => {
         if (!teamName.trim()) {
@@ -82,11 +128,19 @@ function CreateTeam() {
                 teamName: teamName.trim(),
                 description: teamDescription.trim(),
                 leaderNo: loginMember.no,
-                memberNos: selectedMembers.map(m => m.no)
+                memberNos: selectedMembers.map(m => m.no),
+                githubRepoFullName: selectedRepo?.fullName || null
             });
 
             if (result.success) {
-                alert(`팀이 생성되었습니다!\n팀 코드: ${result.teamCode}`);
+                let message = `팀이 생성되었습니다!\n팀 코드: ${result.teamCode}`;
+                if (result.githubConnected) {
+                    message += '\n\nGitHub 저장소가 연결되었습니다.';
+                    if (!result.webhookCreated) {
+                        message += '\n(Webhook 등록에 실패했습니다. 팀 설정에서 다시 시도하세요.)';
+                    }
+                }
+                alert(message);
                 // 사이드바 팀 목록 갱신
                 window.dispatchEvent(new CustomEvent('teamUpdated'));
                 // 생성된 팀으로 이동
@@ -226,6 +280,88 @@ function CreateTeam() {
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* GitHub 저장소 연결 (선택사항) */}
+                    <section className="github-section">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            GitHub 저장소 연결 <span className="optional-label">(선택사항)</span>
+                        </h2>
+                        <p className="section-description">
+                            GitHub 저장소를 연결하면 Issue가 자동으로 Task로 동기화됩니다.
+                        </p>
+
+                        {githubConnected === null ? (
+                            <div className="github-loading">GitHub 연동 상태 확인 중...</div>
+                        ) : githubConnected ? (
+                            <div className="github-repo-selector">
+                                {selectedRepo ? (
+                                    <div className="selected-repo">
+                                        <span className="repo-name">{selectedRepo.fullName}</span>
+                                        <button
+                                            type="button"
+                                            className="change-repo-btn"
+                                            onClick={() => { setSelectedRepo(null); handleLoadRepositories(); }}
+                                        >
+                                            변경
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="remove-repo-btn"
+                                            onClick={() => setSelectedRepo(null)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="repo-dropdown-wrapper">
+                                        <button
+                                            type="button"
+                                            className="select-repo-btn"
+                                            onClick={handleLoadRepositories}
+                                            disabled={loadingRepos}
+                                        >
+                                            {loadingRepos ? '로딩 중...' : '저장소 선택'}
+                                        </button>
+                                        {showRepoDropdown && repositories.length > 0 && (
+                                            <div className="repo-dropdown">
+                                                {repositories.map(repo => (
+                                                    <div
+                                                        key={repo.id}
+                                                        className="repo-option"
+                                                        onClick={() => {
+                                                            setSelectedRepo(repo);
+                                                            setShowRepoDropdown(false);
+                                                        }}
+                                                    >
+                                                        <span className="repo-name">{repo.fullName}</span>
+                                                        {repo.privateRepo && (
+                                                            <span className="private-badge">Private</span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {showRepoDropdown && repositories.length === 0 && !loadingRepos && (
+                                            <div className="repo-dropdown">
+                                                <div className="no-repos">저장소가 없습니다.</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="github-not-connected">
+                                <p>GitHub 계정이 연결되어 있지 않습니다.</p>
+                                <a href="/mypage" className="connect-github-link">
+                                    마이페이지에서 GitHub 연동하기
+                                </a>
+                                <p className="hint">나중에 팀 설정에서도 연결할 수 있습니다.</p>
                             </div>
                         )}
                     </section>

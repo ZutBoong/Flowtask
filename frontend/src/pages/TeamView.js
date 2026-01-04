@@ -11,6 +11,8 @@ import TimelineView from './views/TimelineView';
 import CalendarView from './views/CalendarView';
 import ChatView from './views/ChatView';
 import FilesView from './views/FilesView';
+import BranchView from './views/BranchView';
+import SettingsView from './views/SettingsView';
 import './TeamView.css';
 
 // 탭 정의
@@ -21,7 +23,9 @@ const TABS = [
     { id: 'timeline', label: '타임라인', icon: '📊' },
     { id: 'calendar', label: '캘린더', icon: '📅' },
     { id: 'chat', label: '채팅', icon: '💬' },
-    { id: 'files', label: '파일', icon: '📁' }
+    { id: 'files', label: '파일', icon: '📁' },
+    { id: 'branches', label: '브랜치', icon: '🌿' },
+    { id: 'settings', label: '설정', icon: '⚙️', leaderOnly: true }
 ];
 
 function TeamView() {
@@ -31,6 +35,8 @@ function TeamView() {
 
     // 현재 활성 탭 (URL 파라미터에서 가져오거나 기본값 'overview')
     const activeTab = searchParams.get('view') || 'overview';
+    // 선택된 Task ID (URL 파라미터에서 가져옴)
+    const selectedTaskId = searchParams.get('task') ? parseInt(searchParams.get('task')) : null;
 
     // 상태 관리
     const [team, setTeam] = useState(null);
@@ -53,8 +59,18 @@ function TeamView() {
 
     // 탭 변경 핸들러
     const handleTabChange = (tabId) => {
+        // 탭 변경 시 task 파라미터는 유지하지 않음
         setSearchParams({ view: tabId });
     };
+
+    // 선택된 Task 변경 핸들러 (URL 파라미터 업데이트)
+    const handleSelectTask = useCallback((taskId) => {
+        const newParams = { view: activeTab };
+        if (taskId) {
+            newParams.task = taskId.toString();
+        }
+        setSearchParams(newParams);
+    }, [activeTab, setSearchParams]);
 
     // 로그아웃 핸들러
     const handleLogout = () => {
@@ -285,7 +301,10 @@ function TeamView() {
         // 데이터 리로드
         refreshData: fetchData,
         // 현재 탭
-        activeTab
+        activeTab,
+        // 선택된 Task (URL 기반)
+        selectedTaskId,
+        onSelectTask: handleSelectTask
     };
 
     // 현재 탭에 해당하는 뷰 렌더링
@@ -323,6 +342,10 @@ function TeamView() {
                 return <ChatView {...viewProps} />;
             case 'files':
                 return <FilesView {...viewProps} />;
+            case 'branches':
+                return <BranchView {...viewProps} />;
+            case 'settings':
+                return <SettingsView {...viewProps} />;
             default:
                 return <OverviewView {...viewProps} />;
         }
@@ -346,7 +369,7 @@ function TeamView() {
                         {team && (
                             <div className="header-tabs">
                                 {TABS.map(tab => {
-                                    if (tab.id === 'admin' && !isLeader) return null;
+                                    if (tab.leaderOnly && !isLeader) return null;
                                     return (
                                         <button
                                             key={tab.id}
@@ -361,7 +384,7 @@ function TeamView() {
                         )}
                     </div>
                     <div className="team-header-right">
-                        {team && ['list', 'board', 'timeline', 'calendar', 'files'].includes(activeTab) && (
+                        {team && ['list', 'board', 'timeline', 'calendar', 'files', 'branches'].includes(activeTab) && (
                             <div className="header-search">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="11" cy="11" r="8" />

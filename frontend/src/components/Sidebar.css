@@ -259,28 +259,6 @@
     background: transparent;
 }
 
-.sidebar .team-settings-btn {
-    display: none;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-}
-
-.sidebar .team-list .team-item:hover .team-settings-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sidebar .team-settings-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
 .no-teams {
     text-align: center;
     color: rgba(255, 255, 255, 0.5);
@@ -827,13 +805,6 @@
 
     .sidebar.mobile-drawer .sidebar-expanded {
         width: 100%;
-    }
-
-    /* 팀 설정 버튼 항상 표시 */
-    .sidebar.mobile-drawer .team-settings-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 }
 

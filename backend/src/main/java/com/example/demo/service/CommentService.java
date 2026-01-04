@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import com.example.demo.dao.CommentDao;
 import com.example.demo.dao.MemberDao;
 import com.example.demo.dao.TaskDao;
@@ -22,6 +23,7 @@ import com.example.demo.model.TaskVerifier;
 import com.example.demo.model.TeamMember;
 import com.example.demo.model.SynodosColumn;
 
+@Slf4j
 @Service
 public class CommentService {
 
@@ -55,6 +57,9 @@ public class CommentService {
 	@Autowired
 	private NotificationService persistentNotificationService;
 
+	@Autowired
+	private GitHubCommentSyncService gitHubCommentSyncService;
+
 	public Comment insert(Comment comment) {
 		int result = dao.insert(comment);
 		if (result == 1) {
@@ -66,9 +71,25 @@ public class CommentService {
 			notifyTaskParticipants(created);
 			// 멘션된 사용자들에게 알림 발송
 			notifyMentionedUsers(created);
+			// GitHub Issue로 댓글 동기화 (GitHub에서 온 댓글이 아닌 경우에만)
+			if (created.getGithubCommentId() == null) {
+				syncCommentToGitHub(created);
+			}
 			return created;
 		}
 		return null;
+	}
+
+	/**
+	 * Synodos 댓글을 GitHub Issue로 동기화
+	 */
+	private void syncCommentToGitHub(Comment comment) {
+		try {
+			gitHubCommentSyncService.syncCommentToGitHub(comment);
+		} catch (Exception e) {
+			// GitHub 동기화 실패해도 댓글 생성은 성공으로 처리
+			log.warn("Failed to sync comment to GitHub: {}", e.getMessage());
+		}
 	}
 
 	public List<Comment> listByTask(int taskId) {

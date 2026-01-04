@@ -14,7 +14,9 @@ import java.util.List;
 public class GitHubIssuePayload {
 
     private String action;  // opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned
+                            // issue_comment: created, edited, deleted
     private Issue issue;
+    private Comment comment;    // for issue_comment events
     private Repository repository;
     private Label label;        // for labeled/unlabeled events
     private User assignee;      // for assigned/unassigned events
@@ -113,6 +115,23 @@ public class GitHubIssuePayload {
     public static class Sender {
         private String login;
         private long id;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Comment {
+        private long id;
+        private String body;
+        private User user;
+
+        @JsonProperty("html_url")
+        private String htmlUrl;
+
+        @JsonProperty("created_at")
+        private String createdAt;
+
+        @JsonProperty("updated_at")
+        private String updatedAt;
     }
 
     /**

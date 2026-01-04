@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS team (
     description TEXT,
     github_repo_url VARCHAR(500),
     github_access_token VARCHAR(500),
-    github_issue_sync_enabled BOOLEAN DEFAULT FALSE,
+    github_issue_sync_enabled BOOLEAN DEFAULT TRUE,
     github_default_column_id INTEGER,
     github_column_mappings TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -147,7 +147,7 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                    WHERE table_name = 'team' AND column_name = 'github_issue_sync_enabled') THEN
-        ALTER TABLE team ADD COLUMN github_issue_sync_enabled BOOLEAN DEFAULT FALSE;
+        ALTER TABLE team ADD COLUMN github_issue_sync_enabled BOOLEAN DEFAULT TRUE;
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                    WHERE table_name = 'team' AND column_name = 'github_default_column_id') THEN
@@ -227,12 +227,14 @@ CREATE TABLE IF NOT EXISTS comment (
     task_id INTEGER NOT NULL REFERENCES task(task_id) ON DELETE CASCADE,
     author_no INTEGER NOT NULL REFERENCES member(no) ON DELETE CASCADE,
     content VARCHAR(2000) NOT NULL,
+    github_comment_id BIGINT,                                   -- GitHub Issue Comment ID (동기화용)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_comment_task ON comment(task_id);
 CREATE INDEX IF NOT EXISTS idx_comment_created ON comment(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comment_github ON comment(github_comment_id) WHERE github_comment_id IS NOT NULL;
 
 -- ========================================
 -- 채팅 메시지 테이블

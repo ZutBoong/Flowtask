@@ -17,20 +17,6 @@ export const handleGitHubCallback = async (code, state) => {
     return response.data;
 };
 
-// ========== GitHub 로그인 ==========
-
-// GitHub 로그인 URL 가져오기
-export const getGitHubLoginUrl = async () => {
-    const response = await axiosInstance.get(`${OAUTH_PATH}/login/authorize`);
-    return response.data;
-};
-
-// GitHub 로그인 콜백 처리
-export const handleGitHubLoginCallback = async (code) => {
-    const response = await axiosInstance.post(`${OAUTH_PATH}/login/callback`, { code, state: 'login' });
-    return response.data;
-};
-
 // GitHub 연동 해제
 export const disconnectGitHub = async (memberNo) => {
     const response = await axiosInstance.delete(`${OAUTH_PATH}/disconnect/${memberNo}`);

@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getMyTeams, deleteTeam, leaveTeam } from '../api/teamApi';
 import { getUnreadCount } from '../api/notificationApi';
 import { getProfileImageUrl } from '../api/memberApi';
-import TeamSettingsModal from './TeamSettingsModal';
 import './Sidebar.css';
 
 function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
@@ -11,7 +10,6 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
     const location = useLocation();
     const [teams, setTeams] = useState([]);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [settingsTeam, setSettingsTeam] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const userMenuRef = useRef(null);
 
@@ -384,25 +382,8 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                                             onSelectTeam(team);
                                             navigate(`/team/${team.teamId}?view=overview`);
                                         }}
-                                        onContextMenu={(e) => {
-                                            e.preventDefault();
-                                            setSettingsTeam(team);
-                                        }}
                                     >
                                         <span className="team-name">{team.teamName}</span>
-                                        <button
-                                            className="team-settings-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSettingsTeam(team);
-                                            }}
-                                            title="팀 설정"
-                                        >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <circle cx="12" cy="12" r="3" />
-                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                                            </svg>
-                                        </button>
                                     </li>
                                 ))}
                             </ul>
@@ -532,32 +513,6 @@ function Sidebar({ isOpen, onToggle, currentTeam, onSelectTeam, loginMember }) {
                 </div>
             )}
             </>
-            )}
-
-            {/* 팀 설정 모달 */}
-            {settingsTeam && (
-                <TeamSettingsModal
-                    team={settingsTeam}
-                    loginMember={loginMember}
-                    onClose={() => setSettingsTeam(null)}
-                    onTeamUpdate={(updates) => {
-                        setTeams(prev => prev.map(t =>
-                            t.teamId === settingsTeam.teamId ? { ...t, ...updates } : t
-                        ));
-                        setSettingsTeam(prev => ({ ...prev, ...updates }));
-                        if (currentTeam?.teamId === settingsTeam.teamId) {
-                            onSelectTeam({ ...currentTeam, ...updates });
-                        }
-                    }}
-                    onTeamDelete={(teamId) => {
-                        const updatedTeams = teams.filter(t => t.teamId !== teamId);
-                        setTeams(updatedTeams);
-                        if (currentTeam?.teamId === teamId) {
-                            onSelectTeam(updatedTeams[0] || null);
-                            navigate('/');
-                        }
-                    }}
-                />
             )}
 
         </>

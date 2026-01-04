@@ -33,13 +33,11 @@ public class GitHubLabelService {
     }
 
     // ==================== Priority Labels ====================
+    // Synodos에서는 URGENT만 사용 (긴급 버튼)
 
     private static final Map<String, LabelConfig> PRIORITY_LABELS = new LinkedHashMap<>();
     static {
-        PRIORITY_LABELS.put("CRITICAL", new LabelConfig("priority:critical", "dc2626", "Critical priority"));
-        PRIORITY_LABELS.put("HIGH", new LabelConfig("priority:high", "f97316", "High priority"));
-        PRIORITY_LABELS.put("MEDIUM", new LabelConfig("priority:medium", "eab308", "Medium priority"));
-        PRIORITY_LABELS.put("LOW", new LabelConfig("priority:low", "22c55e", "Low priority"));
+        PRIORITY_LABELS.put("URGENT", new LabelConfig("priority:urgent", "dc2626", "Urgent priority"));
     }
 
     // ==================== Label Config DTO ====================

@@ -8,11 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.dao.MemberDao;
+import com.example.demo.model.Member;
 import com.example.demo.model.Team;
 import com.example.demo.model.TaskCommit;
 import com.example.demo.service.GitHubService;
 import com.example.demo.service.GitHubService.GitHubBranch;
+import com.example.demo.service.GitHubService.GitHubBranchComparison;
 import com.example.demo.service.GitHubService.GitHubCommit;
+import com.example.demo.service.GitHubService.GitHubGraphCommit;
 import com.example.demo.service.GitHubService.RepoInfo;
 import com.example.demo.service.TaskCommitService;
 import com.example.demo.service.TeamService;
@@ -32,6 +36,9 @@ public class GitHubController {
 
     @Autowired
     private TaskCommitService taskCommitService;
+
+    @Autowired
+    private MemberDao memberDao;
 
     /**
      * 팀 저장소의 브랜치 목록을 조회합니다.
@@ -55,7 +62,10 @@ public class GitHubController {
                 return ResponseEntity.badRequest().body("잘못된 GitHub 저장소 URL입니다.");
             }
 
-            List<GitHubBranch> branches = gitHubService.listBranches(repoInfo.owner, repoInfo.repo);
+            // 팀장의 GitHub 액세스 토큰 조회
+            String accessToken = getLeaderAccessToken(team);
+
+            List<GitHubBranch> branches = gitHubService.listBranches(accessToken, repoInfo.owner, repoInfo.repo);
             return ResponseEntity.ok(branches);
 
         } catch (Exception e) {
@@ -176,5 +186,163 @@ public class GitHubController {
             log.error("Failed to get task commits: {}", e.getMessage());
             return ResponseEntity.status(500).body(e.getMessage());
         }
+    }
+
+    /**
+     * 팀 저장소의 기본 브랜치를 조회합니다.
+     * GET /api/github/default-branch/{teamId}
+     */
+    @GetMapping("/default-branch/{teamId}")
+    public ResponseEntity<?> getDefaultBranch(@PathVariable int teamId) {
+        try {
+            Team team = teamService.findById(teamId);
+            if (team == null) {
+                return ResponseEntity.badRequest().body("팀을 찾을 수 없습니다.");
+            }
+
+            String repoUrl = team.getGithubRepoUrl();
+            if (repoUrl == null || repoUrl.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("GitHub 저장소가 설정되지 않았습니다.");
+            }
+
+            RepoInfo repoInfo = gitHubService.parseRepoUrl(repoUrl);
+            if (repoInfo == null) {
+                return ResponseEntity.badRequest().body("잘못된 GitHub 저장소 URL입니다.");
+            }
+
+            // 팀장의 GitHub 액세스 토큰 조회
+            String accessToken = getLeaderAccessToken(team);
+
+            String defaultBranch = gitHubService.getDefaultBranch(accessToken, repoInfo.owner, repoInfo.repo);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("defaultBranch", defaultBranch);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Failed to get default branch: {}", e.getMessage());
+            return ResponseEntity.status(503).body(e.getMessage());
+        }
+    }
+
+    /**
+     * 브랜치 그래프 시각화용 커밋 데이터를 조회합니다.
+     * GET /api/github/graph/{teamId}?branches=main,develop&depth=50
+     */
+    @GetMapping("/graph/{teamId}")
+    public ResponseEntity<?> getCommitsGraph(
+            @PathVariable int teamId,
+            @RequestParam(defaultValue = "") String branches,
+            @RequestParam(defaultValue = "50") int depth) {
+        try {
+            Team team = teamService.findById(teamId);
+            if (team == null) {
+                return ResponseEntity.badRequest().body("팀을 찾을 수 없습니다.");
+            }
+
+            String repoUrl = team.getGithubRepoUrl();
+            if (repoUrl == null || repoUrl.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("GitHub 저장소가 설정되지 않았습니다.");
+            }
+
+            RepoInfo repoInfo = gitHubService.parseRepoUrl(repoUrl);
+            if (repoInfo == null) {
+                return ResponseEntity.badRequest().body("잘못된 GitHub 저장소 URL입니다.");
+            }
+
+            // 팀장의 GitHub 액세스 토큰 조회
+            String accessToken = getLeaderAccessToken(team);
+
+            // 브랜치 목록 파싱
+            String[] branchList;
+            if (branches == null || branches.trim().isEmpty()) {
+                // 기본 브랜치만 조회
+                String defaultBranch = gitHubService.getDefaultBranch(accessToken, repoInfo.owner, repoInfo.repo);
+                branchList = new String[] { defaultBranch };
+            } else {
+                branchList = branches.split(",");
+            }
+
+            // 각 브랜치의 커밋 조회
+            Map<String, List<GitHubGraphCommit>> commitsByBranch = new HashMap<>();
+            for (String branch : branchList) {
+                String branchName = branch.trim();
+                if (!branchName.isEmpty()) {
+                    List<GitHubGraphCommit> commits = gitHubService.listCommitsWithParents(
+                        accessToken, repoInfo.owner, repoInfo.repo, branchName, depth
+                    );
+                    commitsByBranch.put(branchName, commits);
+                }
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("commitsByBranch", commitsByBranch);
+            result.put("branches", branchList);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Failed to get commits graph: {}", e.getMessage());
+            return ResponseEntity.status(503).body(e.getMessage());
+        }
+    }
+
+    /**
+     * 두 브랜치를 비교하여 분기점(merge base)을 조회합니다.
+     * GET /api/github/compare/{teamId}?base=main&head=feature
+     */
+    @GetMapping("/compare/{teamId}")
+    public ResponseEntity<?> compareBranches(
+            @PathVariable int teamId,
+            @RequestParam String base,
+            @RequestParam String head) {
+        try {
+            Team team = teamService.findById(teamId);
+            if (team == null) {
+                return ResponseEntity.badRequest().body("팀을 찾을 수 없습니다.");
+            }
+
+            String repoUrl = team.getGithubRepoUrl();
+            if (repoUrl == null || repoUrl.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("GitHub 저장소가 설정되지 않았습니다.");
+            }
+
+            RepoInfo repoInfo = gitHubService.parseRepoUrl(repoUrl);
+            if (repoInfo == null) {
+                return ResponseEntity.badRequest().body("잘못된 GitHub 저장소 URL입니다.");
+            }
+
+            if (base == null || base.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("base 브랜치가 필요합니다.");
+            }
+            if (head == null || head.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("head 브랜치가 필요합니다.");
+            }
+
+            // 팀장의 GitHub 액세스 토큰 조회
+            String accessToken = getLeaderAccessToken(team);
+
+            GitHubBranchComparison comparison = gitHubService.compareBranches(
+                accessToken, repoInfo.owner, repoInfo.repo, base.trim(), head.trim()
+            );
+            return ResponseEntity.ok(comparison);
+
+        } catch (Exception e) {
+            log.error("Failed to compare branches: {}", e.getMessage());
+            return ResponseEntity.status(503).body(e.getMessage());
+        }
+    }
+
+    /**
+     * 팀장의 GitHub 액세스 토큰을 조회합니다.
+     */
+    private String getLeaderAccessToken(Team team) {
+        if (team == null || team.getLeaderNo() <= 0) {
+            return null;
+        }
+        Member leader = memberDao.findByNo(team.getLeaderNo());
+        if (leader != null && leader.getGithubAccessToken() != null && !leader.getGithubAccessToken().isEmpty()) {
+            return leader.getGithubAccessToken();
+        }
+        return null;
     }
 }

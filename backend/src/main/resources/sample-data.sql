@@ -57,9 +57,9 @@ ON CONFLICT (userid) DO NOTHING;
 -- =============================================
 -- 2. 팀 데이터
 -- =============================================
-INSERT INTO team (team_id, team_name, description, leader_no, team_code, created_at)
+INSERT INTO team (team_id, team_name, description, leader_no, team_code, github_issue_sync_enabled, created_at)
 VALUES (nextval('team_seq'), 'Synodos 테스트 프로젝트', 'GitHub 연동 테스트를 위한 프로젝트입니다.',
-        (SELECT no FROM member WHERE userid = 'admin'), 'SYNODOS1', CURRENT_TIMESTAMP)
+        (SELECT no FROM member WHERE userid = 'admin'), 'SYNODOS1', TRUE, CURRENT_TIMESTAMP)
 ON CONFLICT (team_code) DO NOTHING;
 
 -- =============================================

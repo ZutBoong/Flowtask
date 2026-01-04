@@ -1,0 +1,604 @@
+/* 밝은 테마 (다른 페이지와 일관성) */
+.branch-view.dark {
+    display: flex;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+/* 좌측 브랜치 패널 */
+.branch-panel {
+    width: 220px;
+    background: white;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.panel-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.branch-count {
+    font-size: 11px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.branch-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.branch-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.branch-item:hover {
+    background: #f8fafc;
+}
+
+.branch-item.selected {
+    background: #f1f5f9;
+}
+
+.branch-item.hidden {
+    opacity: 0.4;
+}
+
+.branch-color-bar {
+    width: 3px;
+    height: 20px;
+    border-radius: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.branch-item .branch-name {
+    flex: 1;
+    font-size: 13px;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.default-badge {
+    font-size: 9px;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+}
+
+.branch-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.branch-item:hover .branch-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.action-btn.active {
+    color: #ef4444;
+}
+
+/* 메인 그래프 영역 */
+.graph-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* 상단 툴바 */
+.graph-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 10px;
+    width: 240px;
+}
+
+.search-icon {
+    font-size: 12px;
+    margin-right: 8px;
+    opacity: 0.6;
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #1e293b;
+    font-size: 13px;
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: #94a3b8;
+}
+
+.clear-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+}
+
+.clear-btn:hover {
+    color: #475569;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.depth-select {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #475569;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.toolbar-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #475569;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.toolbar-btn:hover {
+    background: #f1f5f9;
+}
+
+.zoom-label {
+    font-size: 11px;
+    color: #64748b;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* 그래프 컨텐츠 */
+.graph-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-loading,
+.graph-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100%;
+    color: #64748b;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.graph-error {
+    color: #ef4444;
+}
+
+/* 그래프 뷰포트 */
+.graph-viewport {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: white;
+}
+
+.git-graph-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* 브랜치 라벨 */
+.branch-label-text {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+/* 커밋 노드 */
+.commit-node {
+    cursor: pointer;
+}
+
+.commit-node .node-circle {
+    transition: r 0.15s;
+}
+
+.commit-node:hover .node-circle {
+    r: 10;
+}
+
+.node-initial {
+    pointer-events: none;
+    user-select: none;
+}
+
+/* 호버 툴팁 */
+.commit-tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    max-width: 300px;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tooltip-sha {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 11px;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+.tooltip-message {
+    font-size: 12px;
+    color: #1e293b;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.tooltip-author {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* 컨텍스트 메뉴 */
+.context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 0;
+    min-width: 160px;
+    z-index: 200;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: #1e293b;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.context-menu-item:hover {
+    background: #f1f5f9;
+}
+
+.menu-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+}
+
+/* 우측 상세 패널 */
+.detail-panel {
+    width: 280px;
+    background: white;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.detail-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.close-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #475569;
+}
+
+.detail-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.detail-section {
+    margin-bottom: 16px;
+}
+
+.detail-sha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sha-badge {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 12px;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.copy-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    opacity: 0.7;
+}
+
+.copy-btn:hover {
+    opacity: 1;
+}
+
+.detail-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-message {
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.detail-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.author-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.detail-date {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.detail-branch {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.detail-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.action-button {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.action-button:hover {
+    background: #f1f5f9;
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    color: #fff;
+}
+
+.action-button.primary:hover {
+    opacity: 0.9;
+}
+
+/* 빈 상태 */
+.branch-view-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.branch-view-empty h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.branch-view-empty p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* 스크롤바 스타일링 */
+.branch-list::-webkit-scrollbar,
+.detail-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.branch-list::-webkit-scrollbar-track,
+.detail-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.branch-list::-webkit-scrollbar-thumb,
+.detail-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.branch-list::-webkit-scrollbar-thumb:hover,
+.detail-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+    .branch-panel {
+        width: 180px;
+    }
+
+    .detail-panel {
+        width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .branch-panel {
+        display: none;
+    }
+
+    .detail-panel {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        z-index: 100;
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    }
+}

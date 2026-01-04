@@ -461,8 +461,11 @@ public class MemberController {
 		String name = (String) request.get("name");
 		String provider = (String) request.get("provider");
 		String providerId = (String) request.get("providerId");
+		// GitHub 로그인인 경우 추가 정보
+		String githubUsername = (String) request.get("githubUsername");
+		String githubAccessToken = (String) request.get("githubAccessToken");
 
-		System.out.println("소셜 회원가입 - userid: " + userid + ", email: " + email + ", provider: " + provider);
+		System.out.println("소셜 회원가입 - userid: " + userid + ", email: " + email + ", provider: " + provider + ", githubUsername: " + githubUsername);
 		Map<String, Object> result = new HashMap<>();
 
 		// 아이디 중복 체크
@@ -504,6 +507,15 @@ public class MemberController {
 		if (insertResult == 1) {
 			// 가입 후 조회
 			Member registeredMember = service.findByProviderAndProviderId(provider, providerId);
+
+			// GitHub 로그인인 경우 GitHub 정보 저장
+			if ("github".equalsIgnoreCase(provider) && githubUsername != null && githubAccessToken != null) {
+				registeredMember.setGithubUsername(githubUsername);
+				registeredMember.setGithubAccessToken(githubAccessToken);
+				service.updateGitHubConnection(registeredMember);
+				System.out.println("GitHub 정보 저장 완료 - memberNo: " + registeredMember.getNo() + ", githubUsername: " + githubUsername);
+			}
+
 			registeredMember.setPassword(null);
 
 			// JWT 토큰 발급

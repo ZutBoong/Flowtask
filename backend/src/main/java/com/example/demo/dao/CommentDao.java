@@ -12,4 +12,8 @@ public interface CommentDao {
 	int update(Comment comment);
 	int delete(int commentId);
 	int countByTask(int taskId);
+
+	// GitHub 동기화용
+	Comment findByGithubCommentId(Long githubCommentId);
+	int updateGithubCommentId(int commentId, Long githubCommentId);
 }
